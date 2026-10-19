@@ -1,0 +1,40 @@
+name: fontes oficiais
+
+# Todo dia confere se a Receita publicou versão nova do banco da Calculadora RTC.
+# Se publicou, baixa a pasta nova, roda o eval contra ela e abre um PR com o diff.
+# Nada entra na main sem o eval passar: tabela nova que quebra regra vira PR vermelho.
+
+on:
+  schedule:
+    - cron: '17 10 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  checar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - id: versao
+        run: |
+          if pnpm fontes:checar; then echo "nova=false" >> "$GITHUB_OUTPUT"; else echo "nova=true" >> "$GITHUB_OUTPUT"; fi
+      - if: steps.versao.outputs.nova == 'true'
+        run: pnpm fontes && pnpm eval:sem-ia
+      - if: steps.versao.outputs.nova == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: fontes/nova-versao
+          title: 'fontes: nova versão da tabela oficial'
+          commit-message: 'fontes: nova versão da tabela oficial'
+          body: |
+            A Calculadora RTC publicou uma versão nova do banco. Esta PR traz a pasta nova em `data/fontes/` e o resultado do eval contra ela.
+            Antes de aceitar: trocar `TABELA_PADRAO` em `packages/fontes/src/index.ts` e revisar o diff das classificações.
