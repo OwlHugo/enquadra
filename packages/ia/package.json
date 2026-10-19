@@ -1,0 +1,32 @@
+{
+  "name": "@enquadra/ia",
+  "version": "0.1.0",
+  "description": "Desambiguação por LLM restrita a candidatos válidos, com citação literal verificada.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OwlHugo/enquadra.git",
+    "directory": "packages/ia"
+  },
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@enquadra/dominio": "workspace:*",
+    "ai": "7.0.143",
+    "@ai-sdk/google": "4.0.99",
+    "zod": "4.6.7"
+  }
+}
