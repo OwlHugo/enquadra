@@ -1,0 +1,15 @@
+Enquadra
+Copyright 2026 Hugo Adriano de Oliveira
+
+This product includes data from public Brazilian government sources, redistributed
+unmodified in data/fontes/ for reproducibility:
+
+- Classificações tributárias, situações tributárias e fundamentações legais do IBS e da CBS:
+  API de dados abertos da Calculadora de Tributos sobre Consumo, Receita Federal do Brasil
+  (https://consumo.tributos.gov.br/servico/calcular-tributos-consumo/).
+- Nomenclatura Comum do Mercosul (NCM): Portal Único Siscomex
+  (https://portalunico.siscomex.gov.br/classif/).
+- Texto da Lei Complementar nº 214, de 16 de janeiro de 2025: Presidência da República
+  (https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp214.htm).
+
+These sources are not affiliated with this project and do not endorse it.
