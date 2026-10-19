@@ -1,0 +1,14 @@
+{
+  "name": "@enquadra/evals",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@enquadra/dominio": "workspace:*",
+    "@enquadra/fontes": "workspace:*",
+    "@enquadra/ia": "workspace:*",
+    "zod": "4.6.7"
+  }
+}

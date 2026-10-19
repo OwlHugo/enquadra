@@ -1,0 +1,50 @@
+{
+  "modo": "com-ia",
+  "tabela": "V0059",
+  "casos": 80,
+  "acerto": 1,
+  "errosGraves": 0,
+  "abstencaoCorreta": 1,
+  "chamadasIa": 8,
+  "custoIaUsd": 0.0007038000000000001,
+  "msMedioIa": 1063.125,
+  "porCategoria": {
+    "direto": {
+      "total": 29,
+      "ok": 29
+    },
+    "padrao": {
+      "total": 7,
+      "ok": 7
+    },
+    "excecao": {
+      "total": 4,
+      "ok": 4
+    },
+    "prioridade": {
+      "total": 4,
+      "ok": 4
+    },
+    "condicional": {
+      "total": 17,
+      "ok": 17
+    },
+    "ambiguo": {
+      "total": 7,
+      "ok": 7
+    },
+    "operacao": {
+      "total": 6,
+      "ok": 6
+    },
+    "adversarial": {
+      "total": 4,
+      "ok": 4
+    },
+    "nao_mapeado": {
+      "total": 2,
+      "ok": 2
+    }
+  },
+  "falhas": []
+}
