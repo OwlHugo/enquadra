@@ -1,0 +1,29 @@
+{
+  "name": "@enquadra/mcp",
+  "version": "0.1.0",
+  "description": "Servidor MCP do Enquadra.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OwlHugo/enquadra.git",
+    "directory": "apps/mcp"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@enquadra/dominio": "workspace:*",
+    "@enquadra/fontes": "workspace:*",
+    "@enquadra/ia": "workspace:*",
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "zod": "4.6.7"
+  },
+  "bin": {
+    "enquadra-mcp": "./dist/main.mjs"
+  }
+}

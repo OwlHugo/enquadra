@@ -1,0 +1,28 @@
+{
+  "name": "enquadra",
+  "version": "0.1.0",
+  "description": "Classifica catálogo e XML de NF-e em CST e cClassTrib de IBS/CBS, com fundamento legal.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OwlHugo/enquadra.git",
+    "directory": "apps/cli"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@enquadra/dominio": "workspace:*",
+    "@enquadra/fontes": "workspace:*",
+    "@enquadra/nfe": "workspace:*",
+    "@enquadra/ia": "workspace:*"
+  },
+  "bin": {
+    "enquadra": "./dist/main.mjs"
+  }
+}
