@@ -1,4 +1,6 @@
-import { cClassTrib, isoDate, ncm } from '@enquadra/domain'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { cClassTrib, isoDate, ncm, PRODUCT_RULES } from '@enquadra/domain'
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_TABLE, loadTable } from './index.ts'
 import { createOfficialValidator } from './official-api.ts'
@@ -74,6 +76,16 @@ describe('cliente da API oficial', () => {
   })
 })
 
+type Rule = (typeof PRODUCT_RULES)[number]
+
+const cobre = (r: Rule, leaf: string): boolean =>
+  r.include.some((p) => leaf.startsWith(p)) &&
+  ![...(r.exclude ?? []), ...(r.excludedByProviso?.prefixes ?? [])].some((p) => leaf.startsWith(p))
+
+/** Ressalva da própria lei: o NCM também está num anexo prioritário, onde a API o aceita. */
+const temPrioritaria = (r: Rule, leaf: string): boolean =>
+  PRODUCT_RULES.some((o) => (r.overriddenBy ?? []).includes(o.origin) && cobre(o, leaf))
+
 describe('tabela versionada', () => {
   it('carrega a versão que acompanha o repositório', async () => {
     const t = await loadTable(DEFAULT_TABLE)
@@ -85,5 +97,18 @@ describe('tabela versionada', () => {
     })
     expect(t.classification(cClassTrib('200013'))?.restrictedNcmList).toBe(false)
     expect(t.ncmName(ncm('09012100'))).toBeDefined()
+  })
+
+  it('toda regra de código com lista restrita só cobre NCMs que a API oficial aceita nele', async () => {
+    const t = await loadTable(DEFAULT_TABLE)
+    const file = JSON.parse(readFileSync(join(DEFAULT_TABLE, 'ncm.json'), 'utf8')) as {
+      items: Record<string, string>
+    }
+    const recusados = PRODUCT_RULES.filter((r) => t.classification(r.cClassTrib)?.restrictedNcmList)
+      .flatMap((r) => Object.keys(file.items).map((leaf) => ({ r, leaf })))
+      .filter(({ r, leaf }) => cobre(r, leaf) && !temPrioritaria(r, leaf))
+      .filter(({ r, leaf }) => !t.restrictedAccepting(ncm(leaf))?.includes(r.cClassTrib))
+      .map(({ r, leaf }) => `${r.id} ${leaf}`)
+    expect(recusados).toEqual([])
   })
 })
