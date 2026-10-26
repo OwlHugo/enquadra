@@ -143,7 +143,6 @@ const build = (spec: AnnexSpec): ProductRule[] => {
     const [number, description, ncmColumn, include, exclude, heading] = item
     // Subitem curto ("Sem mecanismo de propulsão") só faz sentido junto do título do item pai.
     const yes = signals(description, heading)
-    const generalUse = include.some((p) => GENERAL_USE_CHAPTERS.some((c) => p.startsWith(c)))
     const condition: Condition = {
       id: `${spec.origin}.${number}`,
       question: `O item é "${description.slice(0, 140)}"?`,
@@ -151,7 +150,7 @@ const build = (spec: AnnexSpec): ProductRule[] => {
       no: [],
       // Item de poucas palavras basta uma; item longo pede duas juntas ("luva" sozinha não basta
       // para "luvas cirúrgicas"). Lista de alternativas (Anexo IX) também basta uma.
-      minMatches: generalUse && yes.length >= 3 ? 2 : 1,
+      minMatches: spec.origin === 'IX' || yes.length < 3 ? 1 : 2,
       ...(spec.requirePositive ? { requirePositive: true } : {}),
       ...(spec.context
         ? { context: spec.context }

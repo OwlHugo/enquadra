@@ -465,7 +465,7 @@ const MANUAL_RULES: readonly ProductRule[] = [
     provision: 'LC 214/2025, art. 9º, V',
     label: 'Fonogramas e videofonogramas musicais brasileiros, imunidade',
     text: 'São imunes também ao IBS e à CBS os fornecimentos: V - de fonogramas e videofonogramas musicais produzidos no Brasil contendo obras musicais ou literomusicais de autores brasileiros e/ou obras em geral interpretadas por artistas brasileiros, bem como os suportes materiais ou arquivos digitais que os contenham, salvo na etapa de replicação industrial de mídias ópticas de leitura a laser;',
-    include: ['852349', '852341', '85238'],
+    include: ['852349', '85238'],
     condition: c.PHONOGRAM,
     unconfirmed:
       'O fonograma foi produzido no Brasil e tem obra ou intérprete brasileiro (art. 9º, V)?',
@@ -484,38 +484,50 @@ const MANUAL_RULES: readonly ProductRule[] = [
   },
 ]
 
-const PET_FOOD: readonly RegExp[] = [
+/** Destino animal na descrição: o alimento dos Anexos I, VII e XV é para consumo humano (arts. 125, 135, 148). */
+const ANIMAL_USE: readonly RegExp[] = [
+  /\bracao\b/,
+  /\banimais\b/,
+  /\bcalopsita/,
   /\bcaes?\b/,
   /\bcachorro/,
   /\bgatos?\b/,
   /\bpassaros?\b/,
-  /\bcalopsita/,
 ]
 
 const ALL_RULES = [...MANUAL_RULES, ...ANNEX_RULES]
 
 /**
  * Ajustes entre anexos:
- * - Alimento (Anexo VII) não vale para ração de animal doméstico.
+ * - Alimento humano (Anexos I, VII e XV) não vale para descrição de ração ou de uso animal.
  * - Cereal em grão (Anexo IX, item 19) também é alimento (milho, soja...): a descrição não diz a
- *   destinação, então a hipótese fica viva e vira pergunta. Cesta básica (Anexo I) e hortifrúti (XV) prevalecem.
+ *   destinação, então a hipótese fica viva e vira pergunta. Quando um anexo de alimento humano está confirmado, ele prevalece.
  */
-export const PRODUCT_RULES: readonly ProductRule[] = ALL_RULES.map((r) => {
-  if (r.origin === 'VII') {
-    return r.condition
-      ? { ...r, condition: { ...r.condition, veto: PET_FOOD } }
-      : { ...r, veto: PET_FOOD }
-  }
+export const PRODUCT_RULES: readonly ProductRule[] = ALL_RULES.flatMap((r) => {
+  if (r.origin === 'I' || r.origin === 'VII' || r.origin === 'XV')
+    return [{ ...r, veto: ANIMAL_USE }]
   if (r.id === 'IX.19' && r.condition) {
     const { requirePositive: _, context: __, ...rest } = r.condition
-    return {
-      ...r,
-      include: r.include.filter((n) => n.startsWith('10') || n.startsWith('12')),
-      overriddenBy: ['I', 'XV'],
-      condition: { ...rest, yes: [], minMatches: 0 },
-    }
+    // Capítulo 11 (farinhas, amidos): é alimento processado, o Anexo VII confirmado prevalece.
+    // Capítulos 10 e 12 (grão, semente): a destinação decide, então o Anexo VII não afasta.
+    const open = { ...rest, yes: [], minMatches: 0 }
+    return [
+      {
+        ...r,
+        include: r.include.filter((n) => !n.startsWith('11')),
+        overriddenBy: ['I', 'XV'],
+        condition: open,
+      },
+      {
+        ...r,
+        id: `${r.id}.processed`,
+        include: r.include.filter((n) => n.startsWith('11')),
+        overriddenBy: ['I', 'VII', 'XV'],
+        condition: open,
+      },
+    ]
   }
-  return r
+  return [r]
 })
 
 /**

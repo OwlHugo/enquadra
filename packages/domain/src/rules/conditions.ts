@@ -8,32 +8,31 @@ import type { Condition } from '../description.ts'
 export const DIAPER: Condition = {
   id: 'diaper',
   question: 'O item é fralda ou artigo higiênico semelhante (não absorvente, tampão ou coletor)?',
-  yes: [
-    /\bfraldas?\b/,
-    /\bgeriatric/,
-    /\broupa intima descartavel\b/,
-    /\bincontinencia/,
-    /\btena\b/,
-  ],
+  yes: [/\bfraldas?\b/, /\bgeriatric/, /\broupa intima descartavel\b/, /\bincontinencia/],
   no: [/\babsorvente/, /\btampao/, /\bcoletor menstrual/, /\bcalcinha absorvente/],
 }
+
+const MENSTRUAL_QUALIFIER =
+  '(?:interno|externo|higienico|noturno|abas|menstrual|ultrafino|ultra fino|diario)'
 
 export const MENSTRUAL_HEALTH: Condition = {
   id: 'menstrual_health',
   question: 'O item é tampão, absorvente ou coletor menstrual (art. 147)?',
   yes: [
-    /\babsorventes?\b/,
+    // "Absorvente" sozinho serve também para seios, incontinência e geriátrico: pede um qualificador menstrual.
+    new RegExp(
+      `\\b(?:absorventes?|abs)\\b(?=.*\\b${MENSTRUAL_QUALIFIER}\\b)|\\b${MENSTRUAL_QUALIFIER}\\b(?=.*\\b(?:absorventes?|abs)\\b)`,
+    ),
     /\btampao/,
     /\bcoletor menstrual/,
     /\bcalcinha absorvente/,
     /\bprotetor diario/,
-    /\babs\b/,
   ],
+  weak: [/\babsorventes?\b/, /\babs\b/],
   no: [
     /\bfraldas?\b/,
     /\bgeriatric/,
     /\bincontinencia/,
-    /\btena\b/,
     /\bseios\b/,
     /\bleite materno/,
     /\bmamilo/,

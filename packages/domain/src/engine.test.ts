@@ -18,6 +18,10 @@ const NCMS = {
   '19059090': 'Outros produtos de padaria',
   '11062000': 'Farinhas, sêmolas e pós de mandioca',
   '07095100': 'Cogumelos do gênero Agaricus',
+  '10059010': 'Milho em grão',
+  '10064000': 'Arroz quebrado',
+  '11022000': 'Farinha de milho',
+  '10083090': 'Outros cereais',
   '31021010': 'Ureia com teor de nitrogênio superior a 45%',
 }
 const table = fakeTable(NCMS, {
@@ -28,6 +32,10 @@ const table = fakeTable(NCMS, {
   '96190000': ['200035'],
   '31021010': ['200038'],
   '07095100': ['200034', '200038'],
+  '10059010': ['200034', '200038'],
+  '10064000': ['200003'],
+  '11022000': ['200003', '200038'],
+  '10083090': ['200034', '200038'],
 })
 const deps = (extra: Partial<Dependencies> = {}): Dependencies => ({
   table,
@@ -58,6 +66,23 @@ describe('camada de anexo', () => {
   it('respeita a exceção escrita no próprio item (cogumelo fora do Anexo XV)', async () => {
     const r = await classify(item('COGUMELO PARIS 200G', '07095100'), deps())
     expect(r.classification?.cClassTrib).toBe('200034')
+  })
+})
+
+describe('alimento humano não vale para uso animal', () => {
+  it.each([
+    ['QUIRERA DE ARROZ P/ RACAO SUINOS 25KG', '10064000'],
+    ['FUBA DE MILHO P/ RACAO 25KG', '11022000'],
+    ['ALPISTE P/ PASSAROS 500G', '10083090'],
+  ])('%s não sai como alimento', async (description, code) => {
+    const r = await classify(item(description, code), deps())
+    expect(r.classification?.cClassTrib).not.toBe('200003')
+    expect(r.classification?.cClassTrib).not.toBe('200034')
+  })
+
+  it('milho em grão sem destinação vira pergunta entre alimento, insumo e tributação normal', async () => {
+    const r = await classify(item('MILHO EM GRAO SC 20KG', '10059010'), deps())
+    expect(r.status).toBe('needs_info')
   })
 })
 
@@ -189,7 +214,7 @@ describe('validação oficial', () => {
 
   it('avisa quando a validação oficial aceita qualquer NCM (200013)', async () => {
     const r = await classify(
-      item('ABSORVENTE', '96190000'),
+      item('ABSORVENTE INTERNO OB', '96190000'),
       deps({ validator: fixedValidator('accepted') }),
     )
     expect(r.alerts.map((a) => a.code)).toContain('weak_official_validation')
