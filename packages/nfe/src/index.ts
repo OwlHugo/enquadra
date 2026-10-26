@@ -1,11 +1,4 @@
-import {
-  cfop,
-  type DataIso,
-  dataIso,
-  ErroDeDominio,
-  type ItemEntrada,
-  ncm,
-} from '@enquadra/dominio'
+import { cfop, type DataIso, dataIso, ErroDeDominio, type ItemEntrada, ncm } from '@enquadra/domain'
 import { XMLParser, XMLValidator } from 'fast-xml-parser'
 
 /**

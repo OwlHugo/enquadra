@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { chaveItem, lerNfe } from './index.ts'
 
-const xml = readFileSync(new URL('../../../exemplos/nfe-mercado.xml', import.meta.url), 'utf8')
+const xml = readFileSync(new URL('../../../examples/nfe-mercado.xml', import.meta.url), 'utf8')
 
 describe('leitura de NF-e', () => {
   const nota = lerNfe(xml)

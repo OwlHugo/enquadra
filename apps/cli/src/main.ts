@@ -2,6 +2,7 @@
 import { readdir, readFile, stat, writeFile } from 'node:fs/promises'
 import { extname, join } from 'node:path'
 import { parseArgs } from 'node:util'
+import { desambiguadorDoAmbiente } from '@enquadra/ai'
 import {
   cfop,
   type Dependencias,
@@ -12,11 +13,10 @@ import {
   ncm,
   type Resultado,
   resumir,
-} from '@enquadra/dominio'
-import { carregarTabela, criarValidadorOficial, TABELA_PADRAO } from '@enquadra/fontes'
-import { desambiguadorDoAmbiente } from '@enquadra/ia'
-import { relatorioHtml } from './relatorio.ts'
-import { cor, linhaFalha, linhaResultado } from './saida.ts'
+} from '@enquadra/domain'
+import { carregarTabela, criarValidadorOficial, TABELA_PADRAO } from '@enquadra/sources'
+import { cor, linhaFalha, linhaResultado } from './output.ts'
+import { relatorioHtml } from './report.ts'
 import { type Falha, lerXmls } from './xmls.ts'
 
 const AJUDA = `enquadra: CST e cClassTrib de IBS/CBS com fundamento na LC 214/2025

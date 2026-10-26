@@ -1,4 +1,4 @@
-import { ErroDeDominio, type ItemEntrada } from '@enquadra/dominio'
+import { ErroDeDominio, type ItemEntrada } from '@enquadra/domain'
 import { chaveItem, lerNfe, type NotaLida } from '@enquadra/nfe'
 
 /** Arquivo que não pôde ser lido como NF-e, com o motivo para a pessoa corrigir. */

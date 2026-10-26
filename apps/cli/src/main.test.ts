@@ -10,7 +10,7 @@ import { beforeAll, describe, expect, it } from 'vitest'
  */
 
 const MAIN = new URL('./main.ts', import.meta.url).pathname
-const EXEMPLO = new URL('../../../exemplos/nfe-mercado.xml', import.meta.url)
+const EXEMPLO = new URL('../../../examples/nfe-mercado.xml', import.meta.url)
 
 const rodar = (...args: string[]) =>
   spawnSync(

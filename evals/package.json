@@ -6,9 +6,9 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@enquadra/dominio": "workspace:*",
-    "@enquadra/fontes": "workspace:*",
-    "@enquadra/ia": "workspace:*",
+    "@enquadra/domain": "workspace:*",
+    "@enquadra/sources": "workspace:*",
+    "@enquadra/ai": "workspace:*",
     "zod": "4.6.7"
   }
 }

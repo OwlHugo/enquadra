@@ -17,10 +17,10 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@enquadra/dominio": "workspace:*",
-    "@enquadra/fontes": "workspace:*",
+    "@enquadra/domain": "workspace:*",
+    "@enquadra/sources": "workspace:*",
     "@enquadra/nfe": "workspace:*",
-    "@enquadra/ia": "workspace:*"
+    "@enquadra/ai": "workspace:*"
   },
   "bin": {
     "enquadra": "./dist/main.mjs"

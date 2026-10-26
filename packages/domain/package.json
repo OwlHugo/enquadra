@@ -1,0 +1,27 @@
+{
+  "name": "@enquadra/domain",
+  "version": "0.1.0",
+  "description": "Motor puro de enquadramento de IBS/CBS: regras da LC 214/2025, camadas de decisão e confiança.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OwlHugo/enquadra.git",
+    "directory": "packages/domain"
+  },
+  "exports": {
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {}
+}

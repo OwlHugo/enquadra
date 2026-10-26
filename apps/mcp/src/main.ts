@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-import { cfop, type Dependencias, dataIso, enquadrar, ncm, REGRAS_PRODUTO } from '@enquadra/dominio'
-import { carregarTabela, criarValidadorOficial, TABELA_PADRAO } from '@enquadra/fontes'
-import { desambiguadorDoAmbiente } from '@enquadra/ia'
+import { desambiguadorDoAmbiente } from '@enquadra/ai'
+import { cfop, type Dependencias, dataIso, enquadrar, ncm, REGRAS_PRODUTO } from '@enquadra/domain'
+import { carregarTabela, criarValidadorOficial, TABELA_PADRAO } from '@enquadra/sources'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod'

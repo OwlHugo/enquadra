@@ -8,8 +8,8 @@ Date: 2026-10-18 · Status: accepted
 
 ## Decision
 
-- `evals/casos.jsonl` holds hand-written cases with the legal source for each expected answer. Ambiguous cases expect `falta_informacao` with the options the law allows.
-- `evals/rodar.ts` reports accuracy per category, **severe errors** (resolved with wrong code), correct abstention, and LLM calls, cost and latency.
+- `evals/cases.jsonl` holds hand-written cases with the legal source for each expected answer. Ambiguous cases expect `falta_informacao` with the options the law allows.
+- `evals/run.ts` reports accuracy per category, **severe errors** (resolved with wrong code), correct abstention, and LLM calls, cost and latency.
 - CI gate: rules-only mode must pass 100% with zero severe errors. AI mode may differ on ambiguous cases, but never with a severe error.
 - Changing the model (`ENQUADRA_MODELO`) is only accepted if `pnpm eval` does not get worse.
 

@@ -2,6 +2,6 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "workspaces": {
     ".": { "entry": ["scripts/*.ts"] },
-    "evals": { "entry": ["diagnostico-ia.ts"] }
+    "evals": { "entry": ["ai-diagnostics.ts"] }
   }
 }

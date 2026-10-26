@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises'
 import { describe, expect, it } from 'vitest'
 import { lerXmls } from './xmls.ts'
 
-const EXEMPLO = new URL('../../../exemplos/nfe-mercado.xml', import.meta.url)
+const EXEMPLO = new URL('../../../examples/nfe-mercado.xml', import.meta.url)
 
 describe('lerXmls', () => {
   it('arquivo que não abre vira falha com o motivo do sistema', async () => {

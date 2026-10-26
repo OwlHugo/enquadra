@@ -24,7 +24,7 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@enquadra/dominio": "workspace:*",
+    "@enquadra/domain": "workspace:*",
     "fast-xml-parser": "5.11.2"
   }
 }
