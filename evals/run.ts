@@ -96,7 +96,10 @@ interface Line {
   error?: string
 }
 
-const runCase = async (evalCase: EvalCase): Promise<Line> => {
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+/** O plano gratuito do Gemini limita as chamadas por minuto: espera e tenta de novo antes de dar o caso como lançado. */
+const runCase = async (evalCase: EvalCase, attempt = 1): Promise<Line> => {
   try {
     const r = await classify(
       {
@@ -109,6 +112,10 @@ const runCase = async (evalCase: EvalCase): Promise<Line> => {
     return { evalCase, r, ok: matchesExpected(evalCase, r), severe: isSevereError(evalCase, r) }
   } catch (e) {
     if (!(e instanceof Error)) throw e
+    if (disambiguator && attempt < 4) {
+      await sleep(20_000)
+      return runCase(evalCase, attempt + 1)
+    }
     return { evalCase, r: null, ok: false, severe: false, error: e.stack ?? e.message }
   }
 }
