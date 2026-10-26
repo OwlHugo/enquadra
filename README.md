@@ -81,7 +81,7 @@ Design rules, each enforced by a test or a CI gate:
 | Mode | Accuracy | Severe errors¹ | Correct abstention | LLM calls | Cost | Latency |
 |---|---|---|---|---|---|---|
 | Rules only (`--sem-ia`) | **100%** (88/88) | **0** | 100% | 0 | 0 | ~0 |
-| Rules + Gemini 3.5 Flash Lite | **100%** (88/88) | **0** | 100% | 13 | US$ 0.0012 total | ~1.16 s per call |
+| Rules + Gemini 3.5 Flash Lite | **100%** (88/88) | **0** | 100% | 13 | US$ 0.0011 total | ~1.13 s per call |
 
 ¹ *Severe error* = marked "resolved" with the wrong code. It is the only mistake that costs a business money without anyone noticing, so CI fails on any severe error in both modes.
 
