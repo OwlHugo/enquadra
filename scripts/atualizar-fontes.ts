@@ -22,16 +22,19 @@ const hoje = new Date().toISOString().slice(0, 10)
 
 const { values } = parseArgs({ options: { checar: { type: 'boolean', default: false } } })
 
+/** Repete só rede, timeout, 5xx e 429; 4xx é pedido errado e para na hora. */
 const json = async <T>(url: string): Promise<T> => {
   for (let t = 1; ; t++) {
-    try {
-      const r = await fetch(url, { signal: AbortSignal.timeout(60_000) })
-      if (!r.ok) throw new Error(`HTTP ${r.status} em ${url}`)
-      return (await r.json()) as T
-    } catch (e) {
+    const r = await fetch(url, { signal: AbortSignal.timeout(60_000) }).catch((e: unknown) => {
       if (t >= 4) throw e
-      await new Promise((ok) => setTimeout(ok, 500 * 2 ** t))
+      return null
+    })
+    if (r?.ok) return (await r.json()) as T
+    if (r && r.status < 500 && r.status !== 429) {
+      throw new Error(`HTTP ${r.status} em ${url}: ${await r.text()}`)
     }
+    if (t >= 4) throw new Error(`HTTP ${r?.status} em ${url} após ${t} tentativas`)
+    await new Promise((ok) => setTimeout(ok, 500 * 2 ** t))
   }
 }
 
