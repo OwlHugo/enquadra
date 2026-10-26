@@ -38,6 +38,26 @@ describe('leitura de NF-e', () => {
     expect(() => lerNfe('<cte><infCte/></cte>')).toThrow('xml_nao_e_nfe')
   })
 
+  it('rejeita XML truncado em vez de devolver só os itens lidos até o corte', () => {
+    const cortado = xml.slice(0, xml.indexOf('<det nItem="3">'))
+    expect(() => lerNfe(cortado)).toThrow('xml_malformado')
+  })
+
+  it.each([
+    ['item sem NCM', '<NCM>10063021</NCM>', '', 'item_sem_ncm'],
+    ['item sem descrição', '<xProd>ARROZ TIPO 1 TIO JOAO 5KG</xProd>', '', 'item_sem_descricao'],
+    ['item sem CFOP', '<CFOP>5102</CFOP><vProd>32.90', '<vProd>32.90', 'item_sem_cfop'],
+    ['modelo que não é NF-e nem NFC-e', '<mod>55</mod>', '<mod>57</mod>', 'modelo_nao_suportado'],
+    ['nota sem emissão', '<dhEmi>2026-10-15T09:12:00-04:00</dhEmi>', '', 'nfe_sem_emissao'],
+  ])('rejeita %s em vez de pular o dado', (_, trecho, troca, codigo) => {
+    expect(() => lerNfe(xml.replace(trecho, troca))).toThrow(codigo)
+  })
+
+  it('rejeita nota sem itens', () => {
+    const semItens = xml.replace(/<det[\s\S]*<\/det>/, '')
+    expect(() => lerNfe(semItens)).toThrow('nfe_sem_itens')
+  })
+
   it('deduplica pelo que importa para o enquadramento', () => {
     const [a] = nota.itens
     if (!a) throw new Error('sem item')
