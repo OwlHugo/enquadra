@@ -98,7 +98,11 @@ interface Line {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-/** O plano gratuito do Gemini limita as chamadas por minuto: espera e tenta de novo antes de dar o caso como lançado. */
+/**
+ * O plano gratuito do Gemini limita as chamadas por minuto. O SDK já repete erro transitório (429, 5xx)
+ * e, esgotadas as tentativas, lança AI_RetryError: só esse erro espera e tenta de novo. Qualquer
+ * outro (bug de domínio, caso mal escrito) propaga como caso que lançou.
+ */
 const runCase = async (evalCase: EvalCase, attempt = 1): Promise<Line> => {
   try {
     const r = await classify(
@@ -112,7 +116,7 @@ const runCase = async (evalCase: EvalCase, attempt = 1): Promise<Line> => {
     return { evalCase, r, ok: matchesExpected(evalCase, r), severe: isSevereError(evalCase, r) }
   } catch (e) {
     if (!(e instanceof Error)) throw e
-    if (disambiguator && attempt < 4) {
+    if (e.name === 'AI_RetryError' && attempt < 4) {
       await sleep(20_000)
       return runCase(evalCase, attempt + 1)
     }
@@ -201,7 +205,9 @@ for (const set of SETS) {
     )
   }
   const shown =
-    set.key === 'development' ? report.failures : report.failures.filter((f) => f.severe)
+    set.key === 'development'
+      ? report.failures
+      : report.failures.filter((f) => f.severe || typeof f.actual === 'string')
   for (const f of shown)
     console.log(`  ✗ ${f.id} ${f.description} → ${JSON.stringify(f.actual)}`.slice(0, 220))
   if (set.key === 'heldOut' && report.failures.length > shown.length) {
