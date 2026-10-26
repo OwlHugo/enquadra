@@ -9,7 +9,7 @@ const ABBREVIATIONS: ReadonlyArray<readonly [RegExp, string]> = [
   [/\bfranc\b/g, 'frances'],
   [/\bint\b/g, 'integral'],
   [/\babsorv\b/g, 'absorvente'],
-  [/\bfrald\b/g, 'diaper'],
+  [/\bfrald\b/g, 'fralda'],
   [/\bacuc\b/g, 'acucar'],
 ]
 
