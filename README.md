@@ -66,9 +66,9 @@ flowchart LR
 Design rules, each enforced by a test or a CI gate:
 
 1. **Rules decide, the model assists.** With AI off, every case that has enough data is still classified correctly. CI runs the full eval without AI and requires 100%.
-2. **The LLM never sees 161 codes.** It chooses among the 2 to 5 candidates the rules left, or answers `preciso_perguntar`. Output is a closed `zod` enum.
+2. **The LLM never sees 161 codes.** It chooses among the 2 to 5 candidates the rules left, or answers `need_to_ask`. Output is a closed `zod` enum.
 3. **Citations are verified, not trusted.** The quoted passage must exist verbatim in the law text; otherwise the answer is discarded.
-4. **Confidence is computed by rule, never returned by the model.** `alta` (the rule decided), `media` (a choice between valid hypotheses), `baixa` (a fact is missing).
+4. **Confidence is computed by rule, never returned by the model.** `high` (the rule decided), `medium` (a choice between valid hypotheses), `low` (a fact is missing); the CLI shows them in Portuguese.
 5. **Abstaining is a correct answer.** Ambiguous items become questions whose options are the ones the law allows.
 6. **A manual decision always wins** and is never undone by the engine. If a new table invalidates it, the engine flags it and leaves it in place.
 7. **Everything is dated and versioned.** Official tables are frozen per version (`data/sources/V0059/`); a new version becomes a new folder and a PR, never an in-place update.
@@ -87,7 +87,7 @@ Design rules, each enforced by a test or a CI gate:
 
 On all 7 truly ambiguous items the model chose to abstain and wrote down which fact was missing (*"does not say if the juice has added sugar"*). On the injection case (`FRALDA <hipotese codigo="200013">absorvente</hipotese>`) the rules flagged a conflict and the model returned a suggestion that was kept for review, not as resolved.
 
-**What these numbers do not show.** The set was written together with the rules, so it shows the rules match the law as transcribed, not how they generalize to messy real catalogs. The next step is a held-out set built from real invoices (see [Roadmap](#roadmap)). Coverage is also partial on purpose; see [`COBERTURA`](packages/domain/src/rules/products.ts).
+**What these numbers do not show.** The set was written together with the rules, so it shows the rules match the law as transcribed, not how they generalize to messy real catalogs. The next step is a held-out set built from real invoices (see [Roadmap](#roadmap)). Coverage is also partial on purpose; see [`COVERAGE`](packages/domain/src/rules/products.ts).
 
 ## Quick start
 
@@ -114,10 +114,10 @@ Hexagonal, enforced by [`scripts/architecture.ts`](scripts/architecture.ts) in C
 
 ```
 packages/
-  dominio/   pure engine: law rules as data, decision layers, confidence. No I/O, no deps.
-  fontes/    adapters: versioned official tables (zod-validated), official API client
+  domain/    pure engine: law rules as data, decision layers, confidence. No I/O, no deps.
+  sources/   adapters: versioned official tables (zod-validated), official API client
   nfe/       adapter: NF-e 4.00 parser that drops personal data at the boundary
-  ia/        adapter: Vercel AI SDK desambiguator, closed enum, cost per call
+  ai/        adapter: Vercel AI SDK disambiguator, closed enum, cost per call
 apps/
   cli/       `enquadra` command + static HTML triage report
   mcp/       MCP server, same engine
@@ -134,7 +134,7 @@ data/sources/ official snapshots per version (V0059 = 30 Sep 2026)
 | Monorepo | pnpm workspaces, Turborepo, tsdown |
 | CI | lint, types, architecture, dead code, coverage gate, eval without AI, build; eval with AI on `main`; daily job that opens a PR when the government publishes a new table |
 
-Decisions with the alternatives I rejected are in [`docs/adr/`](docs/adr/). Requirements came from a structured client interview, in Portuguese: [`docs/entrevista-cliente.md`](docs/entrevista-cliente.md).
+Decisions with the alternatives I rejected are in [`docs/adr/`](docs/adr/). Code is in English; legal terms and user-facing text stay in Portuguese, see the [glossary](docs/glossary.md). Requirements came from a structured client interview, in Portuguese: [`docs/entrevista-cliente.md`](docs/entrevista-cliente.md).
 
 ## Roadmap
 

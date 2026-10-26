@@ -8,9 +8,9 @@ The annexes of LC 214/2025 list NCM codes at four levels (chapter, heading, subh
 
 ## Decision
 
-Each annex item is a `RegraProduto` record in `packages/domain/src/rules/products.ts`: `incluir` prefixes, `excluir` prefixes, optional `condicao`, `ressalvadoPor`, and the **verbatim text** of the item copied from the official Planalto publication. Two escape hatches exist for interpretation, and both must carry a written justification: `afastadoPorRessalva` (prefixes removed by a generic clause) and `inclusaoDerivada` (prefixes derived from a term, e.g. "casca rija" → 08.01, 08.02).
+Each annex item is a `ProductRule` record in `packages/domain/src/rules/products.ts`: `include` prefixes, `exclude` prefixes, optional `condition`, `overriddenBy`, and the **verbatim text** of the item copied from the official Planalto publication. Two escape hatches exist for interpretation, and both must carry a written justification: `excludedByProviso` (prefixes removed by a generic clause) and `derivedInclusion` (prefixes derived from a term, e.g. "casca rija" → 08.01, 08.02).
 
-A test parses the codes out of each `texto` and fails if a listed prefix is not in the law text. It already caught one oddity: the law writes item 26 of Annex I as `2106.9090`, not `2106.90.90`.
+A test parses the codes out of each `text` and fails if a listed prefix is not in the law text. It already caught one oddity: the law writes item 26 of Annex I as `2106.9090`, not `2106.90.90`.
 
 ## Rejected alternatives
 
