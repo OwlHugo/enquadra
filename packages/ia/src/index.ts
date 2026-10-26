@@ -22,10 +22,17 @@ export const desambiguadorDoAmbiente = (
   const chave = env['GEMINI_API_KEY'] ?? env['GOOGLE_GENERATIVE_AI_API_KEY']
   if (!chave) return undefined
   const nome = env['ENQUADRA_MODELO'] ?? MODELO_PADRAO
+  const preco = PRECOS[nome]
+  // Sem preço o custo sairia US$ 0 em todo relatório, e o eval compararia modelos às cegas.
+  if (!preco) {
+    throw new Error(
+      `ENQUADRA_MODELO=${nome} sem preço cadastrado em PRECOS (${Object.keys(PRECOS).join(', ')})`,
+    )
+  }
   const google = createGoogleGenerativeAI({ apiKey: chave })
   return criarDesambiguador({
     modelo: google(nome),
     nomeModelo: nome,
-    preco: PRECOS[nome] ?? { entrada: 0, saida: 0 },
+    preco,
   })
 }

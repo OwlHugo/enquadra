@@ -21,6 +21,9 @@ const NCMS = {
   '31021010': 'Ureia com teor de nitrogênio superior a 45%',
 }
 const tabela = tabelaFalsa(NCMS, {
+  '22021000': [],
+  '19059090': ['200003'],
+  '11062000': ['200003'],
   '10063021': ['200003', '200038'],
   '96190000': ['200035'],
   '31021010': ['200038'],
@@ -146,6 +149,15 @@ describe('padrão e benefícios fora da cobertura', () => {
     const r = await enquadrar(item('UREIA AGRICOLA 50KG', '31021010'), deps())
     expect(r.status).toBe('revisar')
     expect(r.alertas.map((a) => a.codigo)).toContain('beneficio_nao_mapeado')
+  })
+
+  it('NCM não sondado na tabela oficial: integral sem confiança alta e com o motivo', async () => {
+    const r = await enquadrar(item('REFRIGERANTE 2L', '22021000'), {
+      ...deps(),
+      tabela: tabelaFalsa(NCMS),
+    })
+    expect(r).toMatchObject({ status: 'resolvido', confianca: 'media', camada: 'padrao' })
+    expect(r.alertas.map((a) => a.codigo)).toContain('ncm_nao_sondado')
   })
 
   it('NCM inexistente bloqueia', async () => {

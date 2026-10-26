@@ -1,4 +1,5 @@
 import { formatarNcm, type Resultado, resumir } from '@enquadra/dominio'
+import type { Falha } from './xmls.ts'
 
 /**
  * Relatório estático de triagem, um arquivo só, sem dependência e sem JavaScript de terceiros.
@@ -39,7 +40,19 @@ const linha = (r: Resultado): string => {
 </tr><tr class="detalhe"><td colspan="8"><details><summary>Por quê</summary>${detalhe}</details></td></tr>`
 }
 
-export const relatorioHtml = (resultados: readonly Resultado[], versao: string): string => {
+const secaoFalhas = (falhas: readonly Falha[]): string =>
+  falhas.length === 0
+    ? ''
+    : `<section class="falhas"><h2>${falhas.length} ${falhas.length === 1 ? 'arquivo não pôde ser lido' : 'arquivos não puderam ser lidos'}</h2>
+<p class="meta">Os itens destes arquivos não estão na tabela abaixo.</p>
+<table><thead><tr><th>Arquivo</th><th>Motivo</th></tr></thead>
+<tbody>${falhas.map((f) => `<tr><td><code>${esc(f.arquivo)}</code></td><td>${esc(f.motivo)}</td></tr>`).join('')}</tbody></table></section>`
+
+export const relatorioHtml = (
+  resultados: readonly Resultado[],
+  versao: string,
+  falhas: readonly Falha[],
+): string => {
   const r = resumir(resultados)
   const ordenados = [...resultados].sort((a, b) => ORDEM[a.status] - ORDEM[b.status])
   return `<!doctype html><html lang="pt-BR"><meta charset="utf-8">
@@ -67,6 +80,7 @@ summary{cursor:pointer;color:var(--sutil);font-size:12px}
 .alerta.bloqueio{color:var(--verm)}.alerta.atencao{color:var(--ambar)}.alerta.info{color:var(--sutil)}
 .trilha{color:var(--sutil);font-size:12px;padding-left:18px}
 .pergunta{color:var(--azul);font-weight:500}
+.falha{color:var(--verm)}.falhas{margin-bottom:32px}.falhas h2{font-size:15px;font-weight:600;color:var(--verm);margin:0}
 </style>
 <h1>Enquadramento IBS/CBS</h1>
 <p class="meta">${r.total} itens distintos · ${esc(versao)} · gerado em ${new Date().toISOString().slice(0, 16).replace('T', ' ')}</p>
@@ -75,8 +89,9 @@ summary{cursor:pointer;color:var(--sutil);font-size:12px}
 <div class="revisar"><b>${r.revisar}</b>revisar</div>
 <div class="falta_informacao"><b>${r.faltaInformacao}</b>falta informação</div>
 <div><b>${r.comReducao}</b>com redução</div>
+${falhas.length > 0 ? `<div class="falha"><b>${falhas.length}</b>com falha</div>` : ''}
 </div>
-<table><thead><tr><th>Estado</th><th>Descrição</th><th>NCM</th><th>CFOP</th><th>CST</th><th>cClassTrib</th><th class="num">Redução</th><th>Confiança</th></tr></thead>
+${secaoFalhas(falhas)}<table><thead><tr><th>Estado</th><th>Descrição</th><th>NCM</th><th>CFOP</th><th>CST</th><th>cClassTrib</th><th class="num">Redução</th><th>Confiança</th></tr></thead>
 <tbody>${ordenados.map(linha).join('')}</tbody></table>
 <p class="meta">O Enquadra sugere e fundamenta; quem aprova é a pessoa responsável pela escrituração.</p>
 </html>`

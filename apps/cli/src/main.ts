@@ -15,17 +15,19 @@ import {
 } from '@enquadra/dominio'
 import { carregarTabela, criarValidadorOficial, TABELA_PADRAO } from '@enquadra/fontes'
 import { desambiguadorDoAmbiente } from '@enquadra/ia'
-import { chaveItem, lerNfe } from '@enquadra/nfe'
 import { relatorioHtml } from './relatorio.ts'
-import { cor, linhaResultado } from './saida.ts'
+import { cor, linhaFalha, linhaResultado } from './saida.ts'
+import { type Falha, lerXmls } from './xmls.ts'
 
 const AJUDA = `enquadra: CST e cClassTrib de IBS/CBS com fundamento na LC 214/2025
 
 Uso:
   enquadra item "<descrição>" <ncm> [--cfop 5102]
-  enquadra xmls <pasta-ou-arquivo> [--html relatorio.html]
+  enquadra xmls <pasta-ou-arquivo> [--html relatorio.html] [--ignorar-invalidos]
 
 Opções:
+  --ignorar-invalidos  sai com código 0 mesmo se algum XML não puder ser lido
+                 (as falhas continuam no resumo e no relatório)
   --sem-ia       não chama modelo de linguagem (só regras e tabela oficial)
   --offline      não consulta a API da Receita
   --data AAAA-MM-DD  data do fato gerador (padrão: hoje, ou a emissão do XML)
@@ -40,6 +42,7 @@ const { values, positionals } = parseArgs({
     html: { type: 'string' },
     tabela: { type: 'string' },
     'sem-ia': { type: 'boolean', default: false },
+    'ignorar-invalidos': { type: 'boolean', default: false },
     offline: { type: 'boolean', default: false },
     json: { type: 'boolean', default: false },
     ajuda: { type: 'boolean', short: 'h', default: false },
@@ -49,9 +52,12 @@ const { values, positionals } = parseArgs({
 const listarXmls = async (alvo: string): Promise<string[]> => {
   if ((await stat(alvo)).isFile()) return [alvo]
   const entradas = await readdir(alvo, { recursive: true, withFileTypes: true })
-  return entradas
-    .filter((e) => e.isFile() && extname(e.name).toLowerCase() === '.xml')
+  // Link simbólico entra na lista: se apontar para nada, a leitura falha e aparece como falha.
+  const arquivos = entradas
+    .filter((e) => (e.isFile() || e.isSymbolicLink()) && extname(e.name).toLowerCase() === '.xml')
     .map((e) => join(e.parentPath, e.name))
+  if (arquivos.length === 0) throw new ErroDeDominio('sem_xml', `nenhum arquivo .xml em ${alvo}`)
+  return arquivos.sort()
 }
 
 const dependencias = async (): Promise<Dependencias & { versaoTexto: string }> => {
@@ -66,11 +72,17 @@ const dependencias = async (): Promise<Dependencias & { versaoTexto: string }> =
   }
 }
 
-const imprimir = (resultados: readonly Resultado[], cabecalho: string): void => {
-  if (values.json) {
-    process.stdout.write(`${JSON.stringify(resultados, null, 2)}\n`)
-    return
-  }
+const imprimirJson = (dado: unknown): void => {
+  process.stdout.write(`${JSON.stringify(dado, null, 2)}\n`)
+}
+
+const plural = (n: number, um: string, varios: string): string => `${n} ${n === 1 ? um : varios}`
+
+const imprimir = (
+  resultados: readonly Resultado[],
+  cabecalho: string,
+  falhas: readonly Falha[],
+): void => {
   const r = resumir(resultados)
   console.log(cabecalho)
   console.log(
@@ -81,6 +93,10 @@ const imprimir = (resultados: readonly Resultado[], cabecalho: string): void => 
   console.log('')
   for (const res of resultados)
     if (res.status !== 'resolvido' || resultados.length <= 20) console.log(linhaResultado(res))
+  if (falhas.length > 0) {
+    console.log(cor.vermelho(`\n${plural(falhas.length, 'arquivo falhou', 'arquivos falharam')}:`))
+    for (const f of falhas) console.log(linhaFalha(f))
+  }
 }
 
 const comandoItem = async (): Promise<void> => {
@@ -94,7 +110,7 @@ const comandoItem = async (): Promise<void> => {
     ...(cfopTexto ? { cfop: cfop(cfopTexto) } : {}),
   }
   const resultado = await enquadrar(item, deps)
-  if (values.json) return imprimir([resultado], '')
+  if (values.json) return imprimirJson([resultado])
   console.log(linhaResultado(resultado, true))
 }
 
@@ -102,24 +118,19 @@ const comandoXmls = async (): Promise<void> => {
   const alvo = positionals[1]
   if (!alvo) throw new ErroDeDominio('uso', 'enquadra xmls <pasta-ou-arquivo>')
   const deps = await dependencias()
-  const arquivos = await listarXmls(alvo)
-  const distintos = new Map<string, ItemEntrada>()
-  let notas = 0
-  for (const arquivo of arquivos) {
-    try {
-      const nota = lerNfe(await readFile(arquivo, 'utf8'))
-      notas++
-      for (const item of nota.itens) distintos.set(chaveItem(item), item)
-    } catch (erro) {
-      console.error(cor.cinza(`ignorado ${arquivo}: ${(erro as Error).message}`))
-    }
+  const lidos = await lerXmls(await listarXmls(alvo), (arquivo) => readFile(arquivo, 'utf8'))
+  const resultados = await Promise.all(lidos.itens.map((i) => enquadrar(i, deps)))
+  if (values.json) {
+    imprimirJson({ resultados, falhas: lidos.falhas })
+  } else {
+    const cabecalho = `${plural(lidos.itens.length, 'item distinto', 'itens distintos')} em ${plural(lidos.notas, 'nota', 'notas')} · ${deps.versaoTexto}`
+    imprimir(resultados, cabecalho, lidos.falhas)
   }
-  const resultados = await Promise.all([...distintos.values()].map((i) => enquadrar(i, deps)))
-  imprimir(resultados, `${distintos.size} itens distintos em ${notas} notas · ${deps.versaoTexto}`)
   if (values.html) {
-    await writeFile(values.html, relatorioHtml(resultados, deps.versaoTexto))
-    console.log(cor.cinza(`relatório: ${values.html}`))
+    await writeFile(values.html, relatorioHtml(resultados, deps.versaoTexto, lidos.falhas))
+    if (!values.json) console.log(cor.cinza(`relatório: ${values.html}`))
   }
+  if (lidos.falhas.length > 0 && !values['ignorar-invalidos']) process.exitCode = 1
 }
 
 const principal = async (): Promise<void> => {
@@ -130,7 +141,9 @@ const principal = async (): Promise<void> => {
   throw new ErroDeDominio('comando_desconhecido', comando)
 }
 
+// Erro de domínio é mensagem para a pessoa; qualquer outro é bug e sai com stack e causa.
 principal().catch((erro: unknown) => {
-  console.error(cor.vermelho(erro instanceof Error ? erro.message : String(erro)))
+  if (erro instanceof ErroDeDominio) console.error(cor.vermelho(erro.message))
+  else console.error(erro)
   process.exitCode = 1
 })

@@ -9,7 +9,7 @@
 
 ```
 $ npx enquadra xmls ./notas-outubro --html relatorio.html
-5 itens distintos em 1 notas · tabela V0059 (2026-09-30)
+5 itens distintos em 1 nota · tabela V0059 (2026-09-30)
   3 resolvidos   0 revisar   2 falta informação
   2 com redução de alíquota
   custo de IA: US$ 0.00008
@@ -97,6 +97,8 @@ Requires Node 24+ and pnpm 10.
 pnpm install
 pnpm enquadra item "FRALDA PAMPERS G 30UN" 9619.00.00
 pnpm enquadra xmls exemplos --html relatorio.html
+# A file that is not a readable NF-e is listed with its reason in the summary and in the
+# HTML report, and the command exits 1. --ignorar-invalidos exits 0 but still lists them.
 GEMINI_API_KEY=... pnpm enquadra item "PAO KG" 1905.90.90   # LLM only on ambiguous items
 ```
 

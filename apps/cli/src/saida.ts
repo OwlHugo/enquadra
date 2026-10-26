@@ -1,4 +1,5 @@
 import { formatarNcm, type Resultado } from '@enquadra/dominio'
+import type { Falha } from './xmls.ts'
 
 const ativo = process.stdout.isTTY && !process.env['NO_COLOR']
 const pintar = (codigo: number) => (t: string) => (ativo ? `\x1b[${codigo}m${t}\x1b[0m` : t)
@@ -44,3 +45,5 @@ export const linhaResultado = (r: Resultado, detalhado = false): string => {
   for (const t of r.trilha) linhas.push(cor.cinza(`    ${t}`))
   return linhas.join('\n')
 }
+
+export const linhaFalha = (f: Falha): string => `  ${cor.vermelho('✗')} ${f.arquivo}: ${f.motivo}`

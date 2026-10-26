@@ -42,11 +42,35 @@ describe('cliente da API oficial', () => {
     expect(chamadas).toHaveLength(1)
   })
 
-  it('resposta fora do contrato vira indisponível', async () => {
-    const { f } = fetchFalso([() => Response.json({ outra: 1 })])
-    expect(await criarValidadorOficial({ fetch: f, tentativas: 1 }).validar(...args)).toBe(
+  it('falha de rede é repetida e termina em indisponível', async () => {
+    const rede = () => {
+      throw new TypeError('fetch failed', { cause: new Error('ECONNRESET') })
+    }
+    const { f, chamadas } = fetchFalso([rede, rede])
+    expect(await criarValidadorOficial({ fetch: f, tentativas: 2 }).validar(...args)).toBe(
       'indisponivel',
     )
+    expect(chamadas).toHaveLength(2)
+  })
+
+  it('resposta fora do contrato é erro alto, não indisponível', async () => {
+    const { f } = fetchFalso([() => Response.json({ outra: 1 })])
+    await expect(
+      criarValidadorOficial({ fetch: f, tentativas: 1 }).validar(...args),
+    ).rejects.toThrow()
+  })
+
+  it('4xx é erro alto: pedido errado não se resolve tentando de novo', async () => {
+    const { f, chamadas } = fetchFalso([() => new Response('nao encontrada', { status: 404 })])
+    await expect(criarValidadorOficial({ fetch: f }).validar(...args)).rejects.toThrow('404')
+    expect(chamadas).toHaveLength(1)
+  })
+
+  it('erro de programação no fetch não é confundido com rede fora do ar', async () => {
+    const { f } = fetchFalso([])
+    await expect(
+      criarValidadorOficial({ fetch: f, tentativas: 3 }).validar(...args),
+    ).rejects.toThrow('sem resposta')
   })
 })
 

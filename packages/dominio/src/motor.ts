@@ -255,9 +255,18 @@ const decidirPadrao = (
   r.codigo = INTEGRAL
   r.fundamento = FUNDAMENTO_INTEGRAL
   r.camada = 'padrao'
-  const oficiais = (deps.tabela.restritosQueAceitam(item.ncm) ?? []).filter(
-    (c) => !explicados.has(c),
-  )
+  const aceitos = deps.tabela.restritosQueAceitam(item.ncm)
+  if (aceitos === undefined) {
+    // Sem a sondagem oficial do NCM, a tributação integral vale só pelo que o motor transcreveu
+    // da lei: resolve, mas sem confiança alta e com o motivo à vista (alerta em `montar`).
+    r.status = 'resolvido'
+    r.confianca = 'media'
+    r.trilha.push(
+      'O NCM não está em nenhum anexo coberto, mas não foi sondado na tabela oficial: tributação integral sem confirmação oficial.',
+    )
+    return
+  }
+  const oficiais = aceitos.filter((c) => !explicados.has(c))
   if (oficiais.length > 0) {
     r.status = 'revisar'
     r.confianca = 'baixa'
@@ -366,10 +375,16 @@ const montar = (
   validacaoOficial: ValidacaoOficial,
 ): Resultado => {
   const classificacao = r.codigo ? (deps.tabela.classificacao(r.codigo) ?? null) : null
-  if (r.codigo && classificacao) {
-    const outras = (deps.tabela.restritosQueAceitam(item.ncm) ?? []).filter(
-      (c) => c !== r.codigo && !r.considerados.has(c),
-    )
+  const aceitos = deps.tabela.restritosQueAceitam(item.ncm)
+  if (r.codigo && classificacao && aceitos === undefined) {
+    r.alertas.push({
+      codigo: 'ncm_nao_sondado',
+      gravidade: 'atencao',
+      mensagem: `O NCM ${formatarNcm(item.ncm)} não foi sondado na tabela oficial desta versão: não dá para dizer se outro código de lista restrita também o aceita.`,
+    })
+  }
+  if (r.codigo && classificacao && aceitos !== undefined) {
+    const outras = aceitos.filter((c) => c !== r.codigo && !r.considerados.has(c))
     if (outras.length > 0 && !r.alertas.some((a) => a.codigo === 'beneficio_nao_mapeado')) {
       r.alertas.push({
         codigo: 'outras_hipoteses_oficiais',

@@ -44,6 +44,14 @@ const semaforo = (limite: number) => {
   }
 }
 
+/**
+ * `fetch` rejeita com TypeError('fetch failed', { cause }) em falha de rede e com DOMException
+ * TimeoutError no `AbortSignal.timeout`. TypeError sem `cause` é bug (URL ou opção inválida) e não deve ser repetido.
+ */
+const ehFalhaDeRede = (erro: unknown): boolean =>
+  (erro instanceof TypeError && erro.cause !== undefined) ||
+  (erro instanceof DOMException && erro.name === 'TimeoutError')
+
 const esperar = (ms: number) => new Promise((ok) => setTimeout(ok, ms))
 
 export const criarValidadorOficial = (opcoes: OpcoesCliente = {}): ValidadorOficial => {
@@ -54,18 +62,27 @@ export const criarValidadorOficial = (opcoes: OpcoesCliente = {}): ValidadorOfic
   const limitar = semaforo(opcoes.concorrencia ?? 4)
   const cache = new Map<string, Promise<ValidacaoOficial>>()
 
-  /** Uma tentativa. `null` quer dizer "vale tentar de novo" (rede, timeout, 5xx, 429). */
+  /**
+   * Uma tentativa. `null` quer dizer "vale tentar de novo": falha de rede, timeout, 5xx ou 429.
+   * 4xx e resposta fora do contrato não são instabilidade: são pedido errado ou API que mudou,
+   * e viram erro alto em vez de um 'indisponivel' que ninguém investiga.
+   */
   const tentar = async (url: URL): Promise<ValidacaoOficial | null> => {
+    let resposta: Response
     try {
-      const resposta = await limitar(() => http(url, { signal: AbortSignal.timeout(timeoutMs) }))
-      if (resposta.status >= 500 || resposta.status === 429) return null
-      if (!resposta.ok) return 'indisponivel'
-      const corpo = RespostaAplicavel.safeParse(await resposta.json())
-      if (!corpo.success) return 'indisponivel'
-      return corpo.data.valido ? 'aceito' : 'recusado'
-    } catch {
-      return null
+      resposta = await limitar(() => http(url, { signal: AbortSignal.timeout(timeoutMs) }))
+    } catch (erro) {
+      if (ehFalhaDeRede(erro)) return null
+      throw erro
     }
+    if (resposta.status >= 500 || resposta.status === 429) return null
+    if (!resposta.ok) {
+      throw new Error(`API oficial respondeu ${resposta.status} para ${url.search}`, {
+        cause: await resposta.text(),
+      })
+    }
+    const corpo = RespostaAplicavel.parse(await resposta.json())
+    return corpo.valido ? 'aceito' : 'recusado'
   }
 
   const consultar = async (ncm: Ncm, codigo: CClassTrib, data: DataIso) => {
