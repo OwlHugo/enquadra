@@ -6,8 +6,8 @@
   "severeErrors": 0,
   "correctAbstention": 1,
   "aiCalls": 8,
-  "aiCostUsd": 0.0007038000000000001,
-  "avgAiMs": 1063.125,
+  "aiCostUsd": 0.0007214,
+  "avgAiMs": 1128.875,
   "byCategory": {
     "direct": {
       "total": 29,
