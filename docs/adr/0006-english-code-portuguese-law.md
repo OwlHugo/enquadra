@@ -30,3 +30,4 @@ Draw the line by **what the word is**, not by which file it is in:
 - The rename was done with `git mv` and AST-based renaming in commits separate from any logic change, so `git log --follow` and blame still work.
 - The eval cases and reports were rewritten with English keys and enum values; results did not change (80/80, 0 severe errors).
 - The LLM prompt stays in Portuguese: the model reads Portuguese law text and descriptions, and its justification is shown to a Brazilian reviewer. Only the enum it returns (`need_to_ask`) changed.
+- Code comments and test titles are still in Portuguese. They explain the law next to the code and are translated as files are touched, not in a bulk rewrite.
