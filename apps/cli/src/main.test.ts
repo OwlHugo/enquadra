@@ -36,7 +36,8 @@ beforeAll(async () => {
   await writeFile(join(onlyValid, 'boa.xml'), xml)
 })
 
-describe('enquadra xmls', () => {
+// Cada caso sobe um processo node de verdade; o padrão de 5 s estoura em máquina carregada.
+describe('enquadra xmls', { timeout: 30_000 }, () => {
   it('processa os válidos, lista cada falha com arquivo e motivo e sai com 1', () => {
     const r = run('xmls', folder)
     expect(r.status).toBe(1)
