@@ -51,7 +51,7 @@ const secaoFalhas = (falhas: readonly Falha[]): string =>
 export const relatorioHtml = (
   resultados: readonly Resultado[],
   versao: string,
-  falhas: readonly Falha[] = [],
+  falhas: readonly Falha[],
 ): string => {
   const r = resumir(resultados)
   const ordenados = [...resultados].sort((a, b) => ORDEM[a.status] - ORDEM[b.status])

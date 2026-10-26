@@ -14,8 +14,9 @@ export interface XmlsLidos {
   readonly falhas: readonly Falha[]
 }
 
+/** Erro de sistema ao abrir o arquivo (ENOENT, EACCES, EISDIR) traz `syscall`; ERR_* do Node, não. */
 const ehErroDeArquivo = (erro: unknown): erro is NodeJS.ErrnoException =>
-  erro instanceof Error && typeof (erro as NodeJS.ErrnoException).code === 'string'
+  erro instanceof Error && 'syscall' in erro
 
 /**
  * Lê todos os arquivos e separa o que deu certo do que falhou. Um XML inválido não derruba o

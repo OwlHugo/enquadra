@@ -141,7 +141,9 @@ const principal = async (): Promise<void> => {
   throw new ErroDeDominio('comando_desconhecido', comando)
 }
 
+// Erro de domínio é mensagem para a pessoa; qualquer outro é bug e sai com stack e causa.
 principal().catch((erro: unknown) => {
-  console.error(cor.vermelho(erro instanceof Error ? erro.message : String(erro)))
+  if (erro instanceof ErroDeDominio) console.error(cor.vermelho(erro.message))
+  else console.error(erro)
   process.exitCode = 1
 })

@@ -19,6 +19,13 @@ describe('lerXmls', () => {
     await expect(lerXmls(['a.xml'], quebrado)).rejects.toThrow('bug no leitor')
   })
 
+  it('erro interno do Node com code ERR_* também é bug, não falha do arquivo', async () => {
+    const quebrado = async () => {
+      throw Object.assign(new TypeError('x'), { code: 'ERR_INVALID_ARG_TYPE' })
+    }
+    await expect(lerXmls(['a.xml'], quebrado)).rejects.toThrow('x')
+  })
+
   it('deduplica itens repetidos entre notas', async () => {
     const xml = await readFile(EXEMPLO, 'utf8')
     const lidos = await lerXmls(['a.xml', 'b.xml'], async () => xml)

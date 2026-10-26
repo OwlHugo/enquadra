@@ -77,6 +77,16 @@ describe('enquadra xmls', () => {
     ])
   })
 
+  it('uma falha só aparece no singular', async () => {
+    const umaFalha = await mkdtemp(join(tmpdir(), 'enquadra-cli-uma-'))
+    await writeFile(join(umaFalha, 'boa.xml'), await readFile(EXEMPLO, 'utf8'))
+    await writeFile(join(umaFalha, 'ruim.xml'), '<x')
+    const html = join(umaFalha, 'r.html')
+    const r = rodar('xmls', umaFalha, '--html', html)
+    expect(r.stdout).toContain('1 arquivo falhou:')
+    expect(await readFile(html, 'utf8')).toContain('1 arquivo não pôde ser lido')
+  })
+
   it('sem falha nenhuma, sai com 0 e não fala de falha', () => {
     const r = rodar('xmls', soValidos)
     expect(r.status).toBe(0)
