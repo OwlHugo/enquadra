@@ -1,21 +1,21 @@
 {
   "mode": "with-ai",
   "table": "V0059",
-  "cases": 80,
+  "cases": 88,
   "accuracy": 1,
   "severeErrors": 0,
   "correctAbstention": 1,
-  "aiCalls": 8,
-  "aiCostUsd": 0.0007214,
-  "avgAiMs": 1128.875,
+  "aiCalls": 13,
+  "aiCostUsd": 0.0011614000000000001,
+  "avgAiMs": 1155,
   "byCategory": {
     "direct": {
-      "total": 29,
-      "ok": 29
+      "total": 34,
+      "ok": 34
     },
     "default": {
-      "total": 7,
-      "ok": 7
+      "total": 8,
+      "ok": 8
     },
     "exception": {
       "total": 4,
@@ -26,24 +26,20 @@
       "ok": 4
     },
     "conditional": {
-      "total": 17,
-      "ok": 17
+      "total": 16,
+      "ok": 16
     },
     "ambiguous": {
-      "total": 7,
-      "ok": 7
+      "total": 11,
+      "ok": 11
     },
     "operation": {
-      "total": 6,
-      "ok": 6
+      "total": 7,
+      "ok": 7
     },
     "adversarial": {
       "total": 4,
       "ok": 4
-    },
-    "unmapped": {
-      "total": 2,
-      "ok": 2
     }
   },
   "failures": []
