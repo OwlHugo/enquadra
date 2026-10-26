@@ -1,4 +1,4 @@
-import type { ItemEntrada } from '@enquadra/dominio'
+import { ErroDeDominio, type ItemEntrada } from '@enquadra/dominio'
 import { chaveItem, lerNfe, type NotaLida } from '@enquadra/nfe'
 
 /** Arquivo que não pôde ser lido como NF-e, com o motivo para a pessoa corrigir. */
@@ -13,6 +13,9 @@ export interface XmlsLidos {
   readonly itens: readonly ItemEntrada[]
   readonly falhas: readonly Falha[]
 }
+
+const ehErroDeArquivo = (erro: unknown): erro is NodeJS.ErrnoException =>
+  erro instanceof Error && typeof (erro as NodeJS.ErrnoException).code === 'string'
 
 /**
  * Lê todos os arquivos e separa o que deu certo do que falhou. Um XML inválido não derruba o
@@ -30,7 +33,10 @@ export const lerXmls = async (
     try {
       nota = lerNfe(await ler(arquivo))
     } catch (erro) {
-      falhas.push({ arquivo, motivo: erro instanceof Error ? erro.message : String(erro) })
+      // Só vira falha do arquivo o que é problema do arquivo: NF-e inválida ou erro de leitura.
+      // Qualquer outra exceção é bug e derruba o comando.
+      if (!(erro instanceof ErroDeDominio || ehErroDeArquivo(erro))) throw erro
+      falhas.push({ arquivo, motivo: erro.message })
       continue
     }
     notas++

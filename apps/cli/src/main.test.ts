@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process'
-import { mkdtemp, readFile, writeFile } from 'node:fs/promises'
+import { mkdtemp, readFile, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { beforeAll, describe, expect, it } from 'vitest'
@@ -28,6 +28,7 @@ let soValidos: string
 beforeAll(async () => {
   const xml = await readFile(EXEMPLO, 'utf8')
   pasta = await mkdtemp(join(tmpdir(), 'enquadra-cli-'))
+  await symlink(join(pasta, 'nao-existe'), join(pasta, 'd-link-quebrado.xml'))
   await writeFile(join(pasta, 'a-boa.xml'), xml)
   await writeFile(join(pasta, 'b-cortada.xml'), xml.slice(0, xml.indexOf('<det nItem="3">')))
   await writeFile(join(pasta, 'c-cte.xml'), '<cteProc><CTe><infCte/></CTe></cteProc>')
@@ -39,17 +40,18 @@ describe('enquadra xmls', () => {
   it('processa os válidos, lista cada falha com arquivo e motivo e sai com 1', () => {
     const r = rodar('xmls', pasta)
     expect(r.status).toBe(1)
-    expect(r.stdout).toContain('5 itens distintos em 1 notas')
-    expect(r.stdout).toContain('2 arquivos falharam')
+    expect(r.stdout).toContain('5 itens distintos em 1 nota ·')
+    expect(r.stdout).toContain('3 arquivos falharam')
     expect(r.stdout).toMatch(/b-cortada\.xml: xml_malformado/)
     expect(r.stdout).toMatch(/c-cte\.xml: xml_nao_e_nfe/)
+    expect(r.stdout).toMatch(/d-link-quebrado\.xml: ENOENT/)
     expect(r.stdout).toContain('ARROZ TIPO 1 TIO JOAO 5KG')
   })
 
   it('com --ignorar-invalidos sai com 0, mas o resumo continua mostrando as falhas', () => {
     const r = rodar('xmls', pasta, '--ignorar-invalidos')
     expect(r.status).toBe(0)
-    expect(r.stdout).toContain('2 arquivos falharam')
+    expect(r.stdout).toContain('3 arquivos falharam')
     expect(r.stdout).toContain('b-cortada.xml')
   })
 
@@ -58,7 +60,7 @@ describe('enquadra xmls', () => {
     const r = rodar('xmls', pasta, '--html', html)
     expect(r.status).toBe(1)
     const conteudo = await readFile(html, 'utf8')
-    expect(conteudo).toContain('2 arquivos não puderam ser lidos')
+    expect(conteudo).toContain('3 arquivos não puderam ser lidos')
     expect(conteudo).toContain('b-cortada.xml')
     expect(conteudo).toContain('xml_malformado')
   })
@@ -71,13 +73,14 @@ describe('enquadra xmls', () => {
     expect(saida.falhas.map((f) => f.arquivo.split('/').at(-1))).toEqual([
       'b-cortada.xml',
       'c-cte.xml',
+      'd-link-quebrado.xml',
     ])
   })
 
   it('sem falha nenhuma, sai com 0 e não fala de falha', () => {
     const r = rodar('xmls', soValidos)
     expect(r.status).toBe(0)
-    expect(r.stdout).not.toContain('falh')
+    expect(r.stdout).not.toMatch(/arquivos? falh(ou|aram)/)
   })
 
   it('pasta sem XML é erro, não um relatório vazio', async () => {

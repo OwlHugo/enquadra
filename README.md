@@ -9,7 +9,7 @@
 
 ```
 $ npx enquadra xmls ./notas-outubro --html relatorio.html
-5 itens distintos em 1 notas · tabela V0059 (2026-09-30)
+5 itens distintos em 1 nota · tabela V0059 (2026-09-30)
   3 resolvidos   0 revisar   2 falta informação
   2 com redução de alíquota
   custo de IA: US$ 0.00008

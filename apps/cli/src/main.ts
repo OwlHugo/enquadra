@@ -52,8 +52,9 @@ const { values, positionals } = parseArgs({
 const listarXmls = async (alvo: string): Promise<string[]> => {
   if ((await stat(alvo)).isFile()) return [alvo]
   const entradas = await readdir(alvo, { recursive: true, withFileTypes: true })
+  // Link simbólico entra na lista: se apontar para nada, a leitura falha e aparece como falha.
   const arquivos = entradas
-    .filter((e) => e.isFile() && extname(e.name).toLowerCase() === '.xml')
+    .filter((e) => (e.isFile() || e.isSymbolicLink()) && extname(e.name).toLowerCase() === '.xml')
     .map((e) => join(e.parentPath, e.name))
   if (arquivos.length === 0) throw new ErroDeDominio('sem_xml', `nenhum arquivo .xml em ${alvo}`)
   return arquivos.sort()
@@ -71,16 +72,17 @@ const dependencias = async (): Promise<Dependencias & { versaoTexto: string }> =
   }
 }
 
+const imprimirJson = (dado: unknown): void => {
+  process.stdout.write(`${JSON.stringify(dado, null, 2)}\n`)
+}
+
+const plural = (n: number, um: string, varios: string): string => `${n} ${n === 1 ? um : varios}`
+
 const imprimir = (
   resultados: readonly Resultado[],
   cabecalho: string,
-  falhas: readonly Falha[] = [],
+  falhas: readonly Falha[],
 ): void => {
-  if (values.json) {
-    const saida = positionals[0] === 'xmls' ? { resultados, falhas } : resultados
-    process.stdout.write(`${JSON.stringify(saida, null, 2)}\n`)
-    return
-  }
   const r = resumir(resultados)
   console.log(cabecalho)
   console.log(
@@ -92,11 +94,7 @@ const imprimir = (
   for (const res of resultados)
     if (res.status !== 'resolvido' || resultados.length <= 20) console.log(linhaResultado(res))
   if (falhas.length > 0) {
-    console.log(
-      cor.vermelho(
-        `\n${falhas.length} ${falhas.length === 1 ? 'arquivo falhou' : 'arquivos falharam'}:`,
-      ),
-    )
+    console.log(cor.vermelho(`\n${plural(falhas.length, 'arquivo falhou', 'arquivos falharam')}:`))
     for (const f of falhas) console.log(linhaFalha(f))
   }
 }
@@ -112,7 +110,7 @@ const comandoItem = async (): Promise<void> => {
     ...(cfopTexto ? { cfop: cfop(cfopTexto) } : {}),
   }
   const resultado = await enquadrar(item, deps)
-  if (values.json) return imprimir([resultado], '')
+  if (values.json) return imprimirJson([resultado])
   console.log(linhaResultado(resultado, true))
 }
 
@@ -122,11 +120,12 @@ const comandoXmls = async (): Promise<void> => {
   const deps = await dependencias()
   const lidos = await lerXmls(await listarXmls(alvo), (arquivo) => readFile(arquivo, 'utf8'))
   const resultados = await Promise.all(lidos.itens.map((i) => enquadrar(i, deps)))
-  imprimir(
-    resultados,
-    `${lidos.itens.length} itens distintos em ${lidos.notas} notas · ${deps.versaoTexto}`,
-    lidos.falhas,
-  )
+  if (values.json) {
+    imprimirJson({ resultados, falhas: lidos.falhas })
+  } else {
+    const cabecalho = `${plural(lidos.itens.length, 'item distinto', 'itens distintos')} em ${plural(lidos.notas, 'nota', 'notas')} · ${deps.versaoTexto}`
+    imprimir(resultados, cabecalho, lidos.falhas)
+  }
   if (values.html) {
     await writeFile(values.html, relatorioHtml(resultados, deps.versaoTexto, lidos.falhas))
     if (!values.json) console.log(cor.cinza(`relatório: ${values.html}`))

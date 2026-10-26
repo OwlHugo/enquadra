@@ -80,7 +80,7 @@ summary{cursor:pointer;color:var(--sutil);font-size:12px}
 .alerta.bloqueio{color:var(--verm)}.alerta.atencao{color:var(--ambar)}.alerta.info{color:var(--sutil)}
 .trilha{color:var(--sutil);font-size:12px;padding-left:18px}
 .pergunta{color:var(--azul);font-weight:500}
-.falhas{margin-bottom:32px}.falhas h2{font-size:15px;font-weight:600;color:var(--verm);margin:0}
+.falha{color:var(--verm)}.falhas{margin-bottom:32px}.falhas h2{font-size:15px;font-weight:600;color:var(--verm);margin:0}
 </style>
 <h1>Enquadramento IBS/CBS</h1>
 <p class="meta">${r.total} itens distintos · ${esc(versao)} · gerado em ${new Date().toISOString().slice(0, 16).replace('T', ' ')}</p>
@@ -89,7 +89,7 @@ summary{cursor:pointer;color:var(--sutil);font-size:12px}
 <div class="revisar"><b>${r.revisar}</b>revisar</div>
 <div class="falta_informacao"><b>${r.faltaInformacao}</b>falta informação</div>
 <div><b>${r.comReducao}</b>com redução</div>
-${falhas.length > 0 ? `<div class="alerta bloqueio"><b>${falhas.length}</b>com falha</div>` : ''}
+${falhas.length > 0 ? `<div class="falha"><b>${falhas.length}</b>com falha</div>` : ''}
 </div>
 ${secaoFalhas(falhas)}<table><thead><tr><th>Estado</th><th>Descrição</th><th>NCM</th><th>CFOP</th><th>CST</th><th>cClassTrib</th><th class="num">Redução</th><th>Confiança</th></tr></thead>
 <tbody>${ordenados.map(linha).join('')}</tbody></table>
