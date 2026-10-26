@@ -8,21 +8,35 @@ import type { Condition } from '../description.ts'
 export const DIAPER: Condition = {
   id: 'diaper',
   question: 'O item é fralda ou artigo higiênico semelhante (não absorvente, tampão ou coletor)?',
-  yes: [/\bfraldas?\b/, /\bgeriatric/, /\broupa intima descartavel\b/],
+  yes: [/\bfraldas?\b/, /\bgeriatric/, /\broupa intima descartavel\b/, /\bincontinencia/],
   no: [/\babsorvente/, /\btampao/, /\bcoletor menstrual/, /\bcalcinha absorvente/],
 }
+
+const MENSTRUAL_QUALIFIER =
+  '(?:interno|externo|higienico|noturno|abas|menstrual|ultrafino|ultra fino|diario)'
 
 export const MENSTRUAL_HEALTH: Condition = {
   id: 'menstrual_health',
   question: 'O item é tampão, absorvente ou coletor menstrual (art. 147)?',
   yes: [
-    /\babsorventes?\b/,
+    // "Absorvente" sozinho serve também para seios, incontinência e geriátrico: pede um qualificador menstrual.
+    new RegExp(
+      `\\b(?:absorventes?|abs)\\b(?=.*\\b${MENSTRUAL_QUALIFIER}\\b)|\\b${MENSTRUAL_QUALIFIER}\\b(?=.*\\b(?:absorventes?|abs)\\b)`,
+    ),
     /\btampao/,
     /\bcoletor menstrual/,
     /\bcalcinha absorvente/,
     /\bprotetor diario/,
   ],
-  no: [/\bfraldas?\b/, /\bgeriatric/, /\bseios\b/, /\bleite materno/, /\bmamilo/],
+  weak: [/\babsorventes?\b/, /\babs\b/],
+  no: [
+    /\bfraldas?\b/,
+    /\bgeriatric/,
+    /\bincontinencia/,
+    /\bseios\b/,
+    /\bleite materno/,
+    /\bmamilo/,
+  ],
 }
 
 export const FRENCH_BREAD: Condition = {
@@ -115,12 +129,9 @@ export const NO_ADDED_SUGAR: Condition = {
 export const NO_SUGAR_NO_PRESERVATIVE: Condition = {
   id: 'no_sugar_no_preservative',
   question: 'O suco ou polpa é sem adição de açúcar, sem edulcorante e sem conservante?',
-  yes: [
-    /\bintegral\b/,
-    /\b100 ?%/,
-    /\bsem acucar e sem conservante/,
-    /\bsem conservante e sem acucar/,
-  ],
+  // "Integral" sozinho não prova a ausência de conservante: pede um segundo sinal.
+  yes: [/\bintegral\b/, /\bnatural\b/, /\b100 ?%/, /\bsem acucar\b/, /\bsem conservantes?\b/],
+  minMatches: 2,
   no: [
     /\bcom acucar\b/,
     /\badocad/,
@@ -158,12 +169,11 @@ export const REGIONAL_HARD_SHELL: Condition = {
 export const NO_SALT_NO_ADDITIVE: Condition = {
   id: 'no_salt_no_additive',
   question: 'O produto é sem adição de sal ou de qualquer outra substância?',
-  yes: [/\bsem sal\b/, /\bao natural\b/, /\bcozid[oa] no vapor\b/],
+  yes: [/\bsem sal\b/, /\bao natural\b/],
   no: [
     /\bcom sal\b/,
     /\bsalgad/,
     /\btemperad/,
-    /\bconserva\b/,
     /\bsalmoura/,
     /\bmolho\b/,
     /\bcaramelizad/,
@@ -171,4 +181,29 @@ export const NO_SALT_NO_ADDITIVE: Condition = {
     /\bdoce\b/,
     /\bcom acucar\b/,
   ],
+}
+
+export const BLEACH: Condition = {
+  id: 'bleach',
+  question: 'O item é água sanitária (hipoclorito de sódio)?',
+  yes: [/\bagua sanitaria\b/, /\bhipoclorito/],
+  no: [],
+  requirePositive: true,
+}
+
+/** O livro em si tem imunidade; brinquedo, kit e livro de atividades dependem do que é o produto. */
+export const BOOK: Condition = {
+  id: 'book',
+  question: 'O item é livro (e não kit, brinquedo ou álbum de atividades)?',
+  yes: [],
+  minMatches: 0,
+  no: [/\bcolorir/, /\bkit\b/, /\bpelucia/, /\bbrinquedo/, /\bbrinde/],
+}
+
+export const PHONOGRAM: Condition = {
+  id: 'phonogram',
+  question: 'O item é fonograma musical gravado (CD, DVD musical ou disco de vinil)?',
+  yes: [/\bcd\b/, /\bdvd\b/, /\bvinil\b/, /\blp\b/, /\bao vivo\b/],
+  no: [/\bvirgem\b/, /\bregravavel/, /\bcd-?r\b/, /\bjogos?\b/, /\bsoftware\b/],
+  requirePositive: true,
 }

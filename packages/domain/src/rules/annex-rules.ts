@@ -77,6 +77,11 @@ const HEALTH_CONTEXT: readonly RegExp[] = [
   /\bortoped/,
   /\bcateter/,
   /\bsonda\b/,
+  /\bprocedimento/,
+  /\besteril/,
+  /\bdiagnostic/,
+  /\bglicemia/,
+  /\bultrassom/,
 ]
 /** Contexto agropecuário: o NCM do Anexo IX também é de alimento e de produto comum. */
 const AGRO_CONTEXT: readonly RegExp[] = [
@@ -172,6 +177,12 @@ const build = (spec: AnnexSpec): ProductRule[] => {
 
 const ANVISA = 'Anvisa'
 
+/** Cadeira de rodas, suas partes e próteses: NCM só de uso por pessoa com deficiência. */
+const SPECIFIC_XIII = ['8713', '871420', '9021']
+
+const ACCESSIBILITY_ASK =
+  'O produto é dispositivo de acessibilidade para pessoa com deficiência (a descrição e o NCM, sozinhos, não dizem)?'
+
 /** Fórmulas e composições do Anexo VI: só valem para nutrição enteral/parenteral ou EIM. */
 const VI_SIGNALS: Condition = {
   id: 'VI',
@@ -221,6 +232,7 @@ export const ANNEX_RULES: readonly ProductRule[] = [
     provision: 'LC 214/2025, art. 132 e Anexo V',
     label: 'Dispositivos de acessibilidade (Anexo V), redução de 60%',
     extra: () => ({
+      unconfirmed: ACCESSIBILITY_ASK,
       registration: 'norma do órgão público competente',
       buyerVariant: {
         cClassTrib: cClassTrib('200008'),
@@ -234,7 +246,12 @@ export const ANNEX_RULES: readonly ProductRule[] = [
     code: '200007',
     provision: 'LC 214/2025, art. 145, I e Anexo XIII',
     label: 'Dispositivos de acessibilidade (Anexo XIII), alíquota zero',
-    extra: () => ({ registration: 'norma do órgão público competente' }),
+    extra: (item) => ({
+      registration: 'norma do órgão público competente',
+      ...(SPECIFIC_XIII.some((p) => item[3].some((n) => n.startsWith(p)))
+        ? {}
+        : { unconfirmed: ACCESSIBILITY_ASK }),
+    }),
   }),
   ...build({
     origin: 'VI',

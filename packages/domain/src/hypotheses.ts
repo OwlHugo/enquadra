@@ -39,6 +39,13 @@ const matches = (rule: ProductRule, code: Ncm): boolean =>
 
 /** Avalia a condição da regra contra a descrição: hipótese viva ou descartada com motivo. */
 const evaluateRule = (rule: ProductRule, text: string): Hypothesis | Discarded => {
+  if (rule.veto?.some((r) => r.test(text))) {
+    return {
+      rule,
+      by: 'condition',
+      reason: 'a descrição indica ração ou uso animal, fora de alimento humano',
+    }
+  }
   const evaluation = rule.condition ? evaluate(rule.condition, text) : 'meets'
   if (evaluation === 'fails') {
     return { rule, by: 'condition', reason: `a descrição não atende: ${rule.condition?.question}` }

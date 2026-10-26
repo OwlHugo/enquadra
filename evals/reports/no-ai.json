@@ -1,46 +1,1367 @@
 {
-  "mode": "no-ai",
-  "table": "V0059",
-  "cases": 88,
-  "accuracy": 1,
-  "severeErrors": 0,
-  "correctAbstention": 1,
-  "aiCalls": 0,
-  "aiCostUsd": 0,
-  "avgAiMs": 0,
-  "byCategory": {
-    "direct": {
-      "total": 34,
-      "ok": 34
+  "development": {
+    "mode": "no-ai",
+    "table": "V0059",
+    "cases": 88,
+    "accuracy": 1,
+    "severeErrors": 0,
+    "correctAbstention": 1,
+    "outcome": {
+      "resolved": 69,
+      "review": 3,
+      "needsInfo": 16
     },
-    "default": {
-      "total": 8,
-      "ok": 8
+    "aiCalls": 0,
+    "aiCostUsd": 0,
+    "avgAiMs": 0,
+    "byCategory": {
+      "direct": {
+        "total": 34,
+        "ok": 34
+      },
+      "default": {
+        "total": 8,
+        "ok": 8
+      },
+      "exception": {
+        "total": 4,
+        "ok": 4
+      },
+      "priority": {
+        "total": 4,
+        "ok": 4
+      },
+      "conditional": {
+        "total": 16,
+        "ok": 16
+      },
+      "ambiguous": {
+        "total": 11,
+        "ok": 11
+      },
+      "operation": {
+        "total": 7,
+        "ok": 7
+      },
+      "adversarial": {
+        "total": 4,
+        "ok": 4
+      }
     },
-    "exception": {
-      "total": 4,
-      "ok": 4
-    },
-    "priority": {
-      "total": 4,
-      "ok": 4
-    },
-    "conditional": {
-      "total": 16,
-      "ok": 16
-    },
-    "ambiguous": {
-      "total": 11,
-      "ok": 11
-    },
-    "operation": {
-      "total": 7,
-      "ok": 7
-    },
-    "adversarial": {
-      "total": 4,
-      "ok": 4
-    }
+    "failures": []
   },
-  "failures": []
+  "heldOut": {
+    "mode": "no-ai",
+    "table": "V0059",
+    "cases": 330,
+    "accuracy": 0.7393939393939394,
+    "severeErrors": 0,
+    "correctAbstention": 0.6190476190476191,
+    "outcome": {
+      "resolved": 231,
+      "review": 30,
+      "needsInfo": 69
+    },
+    "aiCalls": 0,
+    "aiCostUsd": 0,
+    "avgAiMs": 0,
+    "byCategory": {
+      "annex-I": {
+        "total": 66,
+        "ok": 66
+      },
+      "annex-VII": {
+        "total": 39,
+        "ok": 35
+      },
+      "none": {
+        "total": 111,
+        "ok": 81
+      },
+      "annex-XV": {
+        "total": 18,
+        "ok": 18
+      },
+      "annex-VIII": {
+        "total": 12,
+        "ok": 11
+      },
+      "art147": {
+        "total": 5,
+        "ok": 3
+      },
+      "ambiguous": {
+        "total": 21,
+        "ok": 13
+      },
+      "art133": {
+        "total": 6,
+        "ok": 0
+      },
+      "art146": {
+        "total": 5,
+        "ok": 1
+      },
+      "annex-XII": {
+        "total": 6,
+        "ok": 0
+      },
+      "annex-IV": {
+        "total": 10,
+        "ok": 3
+      },
+      "annex-V": {
+        "total": 2,
+        "ok": 0
+      },
+      "annex-XIII": {
+        "total": 5,
+        "ok": 3
+      },
+      "annex-IX": {
+        "total": 10,
+        "ok": 0
+      },
+      "art9-books": {
+        "total": 7,
+        "ok": 7
+      },
+      "operation": {
+        "total": 7,
+        "ok": 3
+      }
+    },
+    "failures": [
+      {
+        "id": "ho-016",
+        "description": "BEB SOJA ADES ORIGINAL 1L",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-020",
+        "description": "OLEO COMPOSTO SOJA E OLIVA MARIA 500ML",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-022",
+        "description": "AZEITE EXTRA VIRGEM GALLO 500ML",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-029",
+        "description": "ADOCANTE ZERO CAL 100ML",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-038",
+        "description": "POLVILHO DOCE AMAFIL 1KG",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-049",
+        "description": "QUINOA REAL EM GRAOS 250G",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200034"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-089",
+        "description": "BATATA PRE FRITA CONG MCCAIN 2KG",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-096",
+        "description": "ACAI C/ XAROPE DE GUARANA 1L",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-099",
+        "description": "AMENDOIM CRU DESCASCADO 500G",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200034"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-105",
+        "description": "COCO RALADO ADOCADO SOCOCO 100G",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-108",
+        "description": "NECTAR LARANJA DEL VALLE 1L",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-118",
+        "description": "MILHO PIPOCA YOKI 500G",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200034"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-135",
+        "description": "DESINFETANTE PINHO SOL ORIGINAL 500ML",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-136",
+        "description": "ALCOOL GEL 70 ASSEPTGEL 500G",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-141",
+        "description": "ABS ALWAYS NOTURNO C/ABAS C/8",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200013"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-143",
+        "description": "PROTETOR DIARIO CAREFREE C/40",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200013"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-146",
+        "description": "ABSORVENTE P/ SEIOS AMAMENTACAO C/30",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200035"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-147",
+        "description": "ABSORVENTE TENA LADY DISCREET C/8",
+        "expected": {
+          "status": "needs_info",
+          "options": [
+            "200013",
+            "200035"
+          ]
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-150",
+        "description": "DIPIRONA SODICA 500MG C/10 CPR GEN EMS",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200032"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-151",
+        "description": "PARACETAMOL 750MG C/20 MEDLEY",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200032"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-152",
+        "description": "AMOXICILINA 500MG C/21 CAPS GEN",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200032"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-153",
+        "description": "IBUPROFENO 600MG C/20 CPR",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200032"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-154",
+        "description": "OMEPRAZOL 20MG C/28 CAPS",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200032"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-155",
+        "description": "LOSARTANA POTASSICA 50MG C/30 CPR",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200009"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-156",
+        "description": "CLORID METFORMINA 850MG C/30",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200009"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-157",
+        "description": "INSULINA HUMANA NPH 100UI/ML FR 10ML",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200009"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-158",
+        "description": "TAMOXIFENO 20MG C/30 CPR",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200009"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-159",
+        "description": "SINVASTATINA 20MG C/30 CPR",
+        "expected": {
+          "status": "needs_info",
+          "options": [
+            "200009",
+            "200032"
+          ]
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-160",
+        "description": "AAS INFANTIL 100MG C/30 CPR",
+        "expected": {
+          "status": "needs_info",
+          "options": [
+            "200009",
+            "200032"
+          ]
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-161",
+        "description": "ANTICONCEPCIONAL CICLO 21 LEVONORGESTREL+ETINILESTRADIOL",
+        "expected": {
+          "status": "needs_info",
+          "options": [
+            "200009",
+            "200032"
+          ]
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-163",
+        "description": "SORO FISIOLOGICO NACL 0,9% 500ML",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200032"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-164",
+        "description": "SUPLEMENTO VIT C LAVITAN 1G C/10 EFERV",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-166",
+        "description": "TERMOMETRO CLINICO DIGITAL G-TECH",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200004"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-167",
+        "description": "OXIMETRO DE DEDO MULTILASER",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200004"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-171",
+        "description": "AGULHA HIPODERMICA 25X7 C/100",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200030"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-173",
+        "description": "LUVA LATEX P/ LIMPEZA MUCAMBO M",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-174",
+        "description": "PRESERVATIVO JONTEX LUBRIF C/3",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200030"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-175",
+        "description": "BICO MAMADEIRA LATEX LILLO C/2",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-176",
+        "description": "TESTE GRAVIDEZ CLEARBLUE C/1",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200030"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-177",
+        "description": "TIRAS GLICEMIA ACCU-CHEK ACTIVE C/50",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200030"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-179",
+        "description": "GEL P/ ULTRASSOM CARBOGEL 1KG",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200030"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-180",
+        "description": "SONDA URETRAL N12 DESC",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200030"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-182",
+        "description": "GAZE ESTERIL 7,5X7,5 C/10",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-184",
+        "description": "MULETA AXILAR ALUMINIO REGUL PAR",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200004"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-185",
+        "description": "COLETE ORTOPEDICO TLSO",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200004"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-186",
+        "description": "PALMILHA ORTOPEDICA SOB MEDIDA PAR",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200004"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-187",
+        "description": "IMOBILIZADOR TALA PUNHO SALVAPE",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200004"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-189",
+        "description": "BENGALA ALUMINIO REGULAVEL C/ PONTEIRA BORRACHA",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-190",
+        "description": "BENGALA DOBRAVEL P/ CEGO PONTEIRA NYLON",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200031"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-194",
+        "description": "APARELHO AUDITIVO RETROAURICULAR",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200007"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-197",
+        "description": "BARRA APOIO PCD ACESSIBILIDADE NBR9050 80CM",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200007"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-198",
+        "description": "CAMA HOSPITALAR MANUAL 2 MANIVELAS",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200030"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-199",
+        "description": "CALCULADORA FALANTE C/ VOZ P/ DEF VISUAL",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200031"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-200",
+        "description": "CALCULADORA MESA CASIO MX-12B",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-203",
+        "description": "PEDALEIRA ESPORTIVA ALUMINIO GOL G5",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-206",
+        "description": "ARLA 32 GALAO 20L",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-209",
+        "description": "ADUBO NPK 10-10-10 FORTH JARDIM 1KG",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200038"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-210",
+        "description": "UREIA AGRICOLA 46% N SC 50KG",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200038"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-211",
+        "description": "CALCARIO DOLOMITICO AGRICOLA SC 50KG",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200038"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-212",
+        "description": "AREIA SANITARIA GATO PIPICAT 4KG",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-213",
+        "description": "CIMENTO CP II VOTORAN 50KG",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-214",
+        "description": "CAL HIDRATADA CH-III ITAU 20KG",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-215",
+        "description": "SEMENTE MILHO HIBRIDO AG1051 SC 20KG",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200038"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-216",
+        "description": "SEMENTE ALFACE CRESPA ISLA PCT 20G",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200038"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-217",
+        "description": "PINTINHO 1 DIA CAIPIRA PESCOCO PELADO",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200038"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-218",
+        "description": "RACAO BOVINO ENGORDA 22% PROT SC 40KG",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200038"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-219",
+        "description": "SAL MINERAL BOVINO 80P SC 30KG",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200038"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-222",
+        "description": "RACAO P/ CALOPSITA MEGAZOO 350G",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-223",
+        "description": "ALPISTE P/ PASSAROS PCT 500G",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-224",
+        "description": "MILHO EM GRAO SC 20KG",
+        "expected": {
+          "status": "needs_info",
+          "options": [
+            "200034",
+            "200038",
+            "000001"
+          ]
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-226",
+        "description": "VACINA FEBRE AFTOSA BOVINOS 50 DOSES",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200038"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-227",
+        "description": "VACINA V10 CAES 1 DOSE",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-228",
+        "description": "VERMIFUGO DRONTAL PLUS CAES 10KG C/4",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-229",
+        "description": "IVERMECTINA 1% INJ BOVINOS 500ML",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200038"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-230",
+        "description": "IVERMECTINA 1% INJ 50ML BOV/SUI/OVI/CAES",
+        "expected": {
+          "status": "needs_info",
+          "options": [
+            "200038",
+            "000001"
+          ]
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-232",
+        "description": "FORMICIDA ISCA GRANULADA MIREX-S 500G",
+        "expected": {
+          "status": "needs_info",
+          "options": [
+            "200038",
+            "000001"
+          ]
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-233",
+        "description": "INSETICIDA SBP MULTI AEROSOL 300ML",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "ho-251",
+        "description": "BONIF SAB DOVE 90G (LEVE 4 PAGUE 3)",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "410001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "operation"
+        }
+      },
+      {
+        "id": "ho-252",
+        "description": "BONIFICACAO LEITE ITALAC INT 1L",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "410001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "operation"
+        }
+      },
+      {
+        "id": "ho-253",
+        "description": "BRINDE CANECA PORCELANA LOGO LOJA",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "operation"
+        }
+      },
+      {
+        "id": "ho-254",
+        "description": "BRINDE SQUEEZE PLASTICO 500ML",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "operation"
+        }
+      },
+      {
+        "id": "ho-258",
+        "description": "DOACAO SABONETE DOVE P/ ENTIDADE ASSIST",
+        "expected": {
+          "status": "needs_info",
+          "options": [
+            "410003",
+            "410026",
+            "000001"
+          ]
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "operation"
+        }
+      },
+      {
+        "id": "off-006",
+        "description": "AZEITE EXT VIRGEM ANDORINHA 500ml",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "off-026",
+        "description": "Pão De Leite Seven Boys Pacote 450g",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "off-027",
+        "description": "Toddynho sabor Chocolate 200 ml",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "off-043",
+        "description": "Milho para pipoca TIPO 1 Yoki 400g",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200034"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      }
+    ]
+  }
 }

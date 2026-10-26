@@ -25,6 +25,7 @@ export type Origin =
   | 'XII'
   | 'XIII'
   | 'XV'
+  | 'art146'
   | 'art147'
   | 'art9'
 
@@ -49,6 +50,8 @@ export interface ProductRule {
    * confirmar, a regra nunca decide sozinha; vira a pergunta. O texto é a pergunta.
    */
   readonly unconfirmed?: string
+  /** Descrição que afasta a regra mesmo sem condição própria (ex.: ração de animal doméstico no Anexo VII). */
+  readonly veto?: readonly RegExp[]
   /**
    * Autoridade cujo registro a lei exige (Anvisa, MAPA, norma de órgão competente). Não está na
    * nota: a regra decide pelo NCM e pela descrição, mas com confiança média e alerta.
@@ -421,7 +424,9 @@ const MANUAL_RULES: readonly ProductRule[] = [
   VIII('2', 'Dentifrícios do código 3306.10.00 da NCM/SH', ['33061000']),
   VIII('3', 'Escovas de dentes do código 9603.21.00 da NCM/SH', ['96032100']),
   VIII('4', 'Papel higiênico do código 4818.10.00 da NCM/SH', ['48181000']),
-  VIII('5', 'Água sanitária classificada no código 3808.94.19 da NCM/SH', ['38089419']),
+  VIII('5', 'Água sanitária classificada no código 3808.94.19 da NCM/SH', ['38089419'], {
+    condition: c.BLEACH,
+  }),
   VIII('6', 'Sabões em barra classificados no código 3401.19.00 da NCM/SH', ['34011900']),
   VIII(
     '7',
@@ -451,10 +456,79 @@ const MANUAL_RULES: readonly ProductRule[] = [
     label: 'Livros, jornais e periódicos, imunidade',
     text: 'São imunes também ao IBS e à CBS os fornecimentos: IV – de livros, jornais, periódicos e do papel destinado a sua impressão;',
     include: ['4901', '4902', '4903'],
+    condition: c.BOOK,
+  },
+  {
+    id: 'art9.V',
+    origin: 'art9',
+    cClassTrib: cClassTrib('410009'),
+    provision: 'LC 214/2025, art. 9º, V',
+    label: 'Fonogramas e videofonogramas musicais brasileiros, imunidade',
+    text: 'São imunes também ao IBS e à CBS os fornecimentos: V - de fonogramas e videofonogramas musicais produzidos no Brasil contendo obras musicais ou literomusicais de autores brasileiros e/ou obras em geral interpretadas por artistas brasileiros, bem como os suportes materiais ou arquivos digitais que os contenham, salvo na etapa de replicação industrial de mídias ópticas de leitura a laser;',
+    include: ['852349', '85238'],
+    condition: c.PHONOGRAM,
+    unconfirmed:
+      'O fonograma foi produzido no Brasil e tem obra ou intérprete brasileiro (art. 9º, V)?',
+  },
+
+  // ── Medicamentos: soros e vacinas ───────────────────────────────────────
+  {
+    id: 'art146.1.III',
+    origin: 'art146',
+    cClassTrib: cClassTrib('200053'),
+    provision: 'LC 214/2025, art. 146, § 1º, III',
+    label: 'Soros e vacinas registrados na Anvisa, alíquota zero',
+    text: 'São também reduzidas a zero as alíquotas do IBS e da CBS sobre o fornecimento de medicamentos registrados na Anvisa quando: III - classificados como soros ou vacinas, conforme regulamentação sanitária específica. (NCM/SH 3002.41, vacinas para medicina humana)',
+    include: ['300241'],
+    registration: 'Anvisa',
   },
 ]
 
-export const PRODUCT_RULES: readonly ProductRule[] = [...MANUAL_RULES, ...ANNEX_RULES]
+/** Destino animal na descrição: o alimento dos Anexos I, VII e XV é para consumo humano (arts. 125, 135, 148). */
+const ANIMAL_USE: readonly RegExp[] = [
+  /\bracao\b/,
+  /\banimais\b/,
+  /\bcalopsita/,
+  /\bcaes?\b/,
+  /\bcachorro/,
+  /\bgatos?\b/,
+  /\bpassaros?\b/,
+]
+
+const ALL_RULES = [...MANUAL_RULES, ...ANNEX_RULES]
+
+/**
+ * Ajustes entre anexos:
+ * - Alimento humano (Anexos I, VII e XV) não vale para descrição de ração ou de uso animal.
+ * - Cereal em grão (Anexo IX, item 19) também é alimento (milho, soja...): a descrição não diz a
+ *   destinação, então a hipótese fica viva e vira pergunta. Quando um anexo de alimento humano está confirmado, ele prevalece.
+ */
+export const PRODUCT_RULES: readonly ProductRule[] = ALL_RULES.flatMap((r) => {
+  if (r.origin === 'I' || r.origin === 'VII' || r.origin === 'XV')
+    return [{ ...r, veto: ANIMAL_USE }]
+  if (r.id === 'IX.19' && r.condition) {
+    const { requirePositive: _, context: __, ...rest } = r.condition
+    // Capítulo 11 (farinhas, amidos): é alimento processado, o Anexo VII confirmado prevalece.
+    // Capítulos 10 e 12 (grão, semente): a destinação decide, então o Anexo VII não afasta.
+    const open = { ...rest, yes: [], minMatches: 0 }
+    return [
+      {
+        ...r,
+        include: r.include.filter((n) => !n.startsWith('11')),
+        overriddenBy: ['I', 'XV'],
+        condition: open,
+      },
+      {
+        ...r,
+        id: `${r.id}.processed`,
+        include: r.include.filter((n) => n.startsWith('11')),
+        overriddenBy: ['I', 'VII', 'XV'],
+        condition: open,
+      },
+    ]
+  }
+  return [r]
+})
 
 /**
  * O que o motor cobre hoje, por cClassTrib. Tem de bater com `docs/coverage.md` e com o README

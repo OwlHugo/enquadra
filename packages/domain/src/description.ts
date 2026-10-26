@@ -9,7 +9,7 @@ const ABBREVIATIONS: ReadonlyArray<readonly [RegExp, string]> = [
   [/\bfranc\b/g, 'frances'],
   [/\bint\b/g, 'integral'],
   [/\babsorv\b/g, 'absorvente'],
-  [/\bfrald\b/g, 'diaper'],
+  [/\bfrald\b/g, 'fralda'],
   [/\bacuc\b/g, 'acucar'],
 ]
 
@@ -39,6 +39,8 @@ export interface Condition {
   readonly question: string
   readonly yes: readonly RegExp[]
   readonly no: readonly RegExp[]
+  /** Sinal fraco: não confirma, mas impede que um sinal contrário descarte a hipótese (fica pergunta). */
+  readonly weak?: readonly RegExp[]
   /** Sinal que descarta mesmo junto de sinal positivo (ex.: ração para cães no Anexo IX). */
   readonly veto?: readonly RegExp[]
   /** Contexto exigido junto dos sinais (ao menos um): evita confundir NCM de uso geral. */
@@ -54,7 +56,8 @@ export const evaluate = (condition: Condition, normalizedDescription: string): E
   const negative = condition.no.some((r) => r.test(normalizedDescription))
   const positive =
     condition.yes.filter((r) => r.test(normalizedDescription)).length >= (condition.minMatches ?? 1)
-  if (negative && positive) return 'undetermined'
+  const weak = condition.weak?.some((r) => r.test(normalizedDescription)) ?? false
+  if (negative && (positive || weak)) return 'undetermined'
   if (negative) return 'fails'
   const inContext =
     !condition.context || condition.context.some((r) => r.test(normalizedDescription))
