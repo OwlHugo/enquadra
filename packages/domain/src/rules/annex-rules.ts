@@ -22,22 +22,102 @@ import type { Origin, ProductRule } from './products.ts'
 
 /** Palavras que aparecem em quase todo item e não identificam o produto. */
 const GENERIC = new Set(
-  'outros outras outro outra partes parte acessorios acessorio aparelho aparelhos produto produtos exceto classificados classificado classificada codigos codigo mesmo mesma utilizados utilizado utilizada destinados destinadas destinado destinada sistema conjunto equipamentos equipamento instrumentos instrumento dispositivos dispositivo artigos artigo materiais material semelhantes medicina medico medicos cirurgia odontologia individualmente componentes demais especifica legislacao requisitos conformidade definicoes diretamente fabricacao sobre tipo forma pessoa pessoas deficiencia seus suas suportes posicoes posicao subposicao'.split(
+  'para como pela pelo pelas pelos entre ambas ambos desta deste esta este isso cada qualquer quando onde mais menos apenas tambem inclusive incluindo conforme exclusive somente sempre outros outras outro outra partes parte acessorios acessorio aparelho aparelhos produto produtos exceto classificados classificado classificada codigos codigo mesmo mesma utilizados utilizado utilizada destinados destinadas destinado destinada sistema conjunto equipamentos equipamento instrumentos instrumento dispositivos dispositivo artigos artigo materiais material semelhantes medicina medico medicos cirurgia odontologia individualmente componentes demais especifica legislacao requisitos conformidade definicoes diretamente fabricacao sobre tipo forma pessoa pessoas deficiencia seus suas suportes posicoes posicao subposicao'.split(
     ' ',
   ),
 )
 
+/** Singular de uma palavra normalizada, para casar o plural escrito no cadastro. */
+const singular = (w: string): string =>
+  w
+    .replace(/oes$/, 'ao')
+    .replace(/ais$/, 'al')
+    .replace(/eis$/, 'el')
+    .replace(/ns$/, 'm')
+    .replace(/s$/, '')
+
+const WORD_FORMS = (s: string): string => {
+  const forms = [s, `${s}s`, `${s}es`]
+  if (s.endsWith('al')) forms.push(`${s.slice(0, -2)}ais`)
+  if (s.endsWith('el')) forms.push(`${s.slice(0, -2)}eis`)
+  if (s.endsWith('m')) forms.push(`${s.slice(0, -1)}ns`)
+  if (s.endsWith('ao')) forms.push(`${s.slice(0, -2)}oes`)
+  return forms.join('|')
+}
+
+/** Sinais do texto do item; a cláusula "exceto ..." descreve o que sai, não o que entra. */
 const signals = (...texts: (string | null)[]): RegExp[] => {
   const words = new Set<string>()
   for (const t of texts) {
-    for (const w of normalizeDescription(t ?? '').split(' ')) {
-      const word = w.replace(/s$/, '')
+    const included = (t ?? '').split(/\bexceto\b/i)[0] ?? ''
+    for (const w of normalizeDescription(included).split(' ')) {
+      const word = singular(w)
       if (word.length >= 4 && !/\d/.test(word) && !GENERIC.has(w) && !GENERIC.has(word)) {
         words.add(word)
       }
     }
   }
-  return [...words].map((w) => new RegExp(`\\b${w}`))
+  return [...words].map((w) => new RegExp(`\\b(?:${WORD_FORMS(w)})\\b`))
+}
+
+/** Contexto de saúde: NCM de uso geral (plástico, máquinas, móveis) só entra com ele. */
+const HEALTH_CONTEXT: readonly RegExp[] = [
+  /\bhospitalar/,
+  /\bcirurg/,
+  /\bmedic/,
+  /\bclinic/,
+  /\blaborator/,
+  /\bhemodial/,
+  /\bdialise/,
+  /\bpaciente/,
+  /\bsangue/,
+  /\bodontolog/,
+  /\bsus\b/,
+  /\banvisa/,
+  /\bortoped/,
+  /\bcateter/,
+  /\bsonda\b/,
+]
+/** Contexto agropecuário: o NCM do Anexo IX também é de alimento e de produto comum. */
+const AGRO_CONTEXT: readonly RegExp[] = [
+  /\bfertiliz/,
+  /\badubo/,
+  /\bagricol/,
+  /\bagropecuar/,
+  /\bpecuari/,
+  /\bracao\b|\bracoes\b/,
+  /\banimal/,
+  /\bbovin/,
+  /\bsuin/,
+  /\baves?\b/,
+  /\bsemente/,
+  /\bmuda/,
+  /\bdefensiv/,
+  /\binseticid/,
+  /\bfungicid/,
+  /\bherbicid/,
+  /\bveterinar/,
+  /\bplantio/,
+  /\blavoura/,
+  /\bcorretivo/,
+  /\bcalcario/,
+  /\bsubstrato/,
+  /\binoculante/,
+  /\baquicol/,
+  /\balevino/,
+  /\bembri/,
+  /\bsemen\b/,
+  /\bsilagem/,
+  /\bnucleo\b|\bpremix\b/,
+]
+
+/** Capítulos em que o NCM do anexo é de uso geral e o produto pode não ser da saúde. */
+const GENERAL_USE_CHAPTERS = ['39', '40', '84', '85', '94']
+
+/** Primeiro trecho do item até a vírgula ou ponto e vírgula, em no máximo 80 caracteres. */
+const shorten = (text: string): string => {
+  const head = text.split(/[;,]/)[0] ?? text
+  return head.length <= 80 ? head : `${head.slice(0, 80).replace(/\s\S*$/, '')}...`
 }
 
 interface AnnexSpec {
@@ -47,6 +127,9 @@ interface AnnexSpec {
   readonly provision: string
   readonly label: string
   readonly overriddenBy?: readonly Origin[]
+  /** NCM amplo e uso condicionado: sem sinal positivo na descrição a hipótese nem entra. */
+  readonly requirePositive?: true
+  readonly context?: readonly RegExp[]
   readonly extra?: (item: AnnexItem) => Partial<ProductRule>
 }
 
@@ -63,6 +146,12 @@ const build = (spec: AnnexSpec): ProductRule[] => {
       // Item de poucas palavras basta uma; item longo pede duas juntas ("luva" sozinha não basta
       // para "luvas cirúrgicas"). Lista de alternativas (Anexo IX) também basta uma.
       minMatches: spec.origin === 'IX' || yes.length < 3 ? 1 : 2,
+      ...(spec.requirePositive ? { requirePositive: true } : {}),
+      ...(spec.context
+        ? { context: spec.context }
+        : include.some((p) => GENERAL_USE_CHAPTERS.some((c) => p.startsWith(c)))
+          ? { context: HEALTH_CONTEXT }
+          : {}),
     }
     return {
       id: `${spec.origin}.${number}`,
@@ -74,7 +163,7 @@ const build = (spec: AnnexSpec): ProductRule[] => {
       ...(exclude.length > 0 ? { exclude } : {}),
       condition,
       label: spec.label,
-      subject: description.slice(0, 80),
+      subject: shorten(description),
       ...(spec.overriddenBy ? { overriddenBy: spec.overriddenBy } : {}),
       ...spec.extra?.(item),
     }
@@ -168,7 +257,8 @@ export const ANNEX_RULES: readonly ProductRule[] = [
     code: '200038',
     provision: 'LC 214/2025, art. 138 e Anexo IX',
     label: 'Insumos agropecuários e aquícolas (Anexo IX), redução de 60%',
-    overriddenBy: ['I', 'VII', 'XV', 'VIII'],
+    requirePositive: true,
+    context: AGRO_CONTEXT,
     extra: (item) => ({
       registration: 'Ministério da Agricultura e Pecuária (quando exigido)',
       unconfirmed: /destinados? diretamente|utilizados diretamente/.test(item[1])
@@ -177,7 +267,7 @@ export const ANNEX_RULES: readonly ProductRule[] = [
     }),
   }).map((r) =>
     /domésticos/.test(r.text)
-      ? { ...r, condition: { ...r.condition, no: NOT_PET } as Condition }
+      ? { ...r, condition: { ...r.condition, veto: NOT_PET } as Condition }
       : r,
   ),
   ...build({
