@@ -149,7 +149,7 @@ describe('padrão e benefícios fora da cobertura', () => {
   })
 
   it('insumo agropecuário depende da destinação: vira pergunta, nunca código', async () => {
-    const r = await classify(item('UREIA AGRICOLA 50KG', '31021010'), deps())
+    const r = await classify(item('FERTILIZANTE UREIA 50KG', '31021010'), deps())
     expect(r.status).toBe('needs_info')
     expect(r.questions[0]?.options.map((o) => o.cClassTrib)).toEqual(['200038', '000001'])
   })

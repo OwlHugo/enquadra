@@ -87,12 +87,16 @@ const candidatesOf = (alive: readonly Hypothesis[]): Candidate[] => {
   const byCode = new Map<CClassTrib, Hypothesis[]>()
   for (const h of alive)
     byCode.set(h.rule.cClassTrib, [...(byCode.get(h.rule.cClassTrib) ?? []), h])
-  return [...byCode.values()].map((group) => {
-    const [first] = group
-    if (!first) throw new Error('grupo de hipóteses vazio')
-    if (group.length === 1) return candidateOf(first)
-    const subjects = group.map((h) => h.rule.subject ?? h.rule.id).join('; ')
-    return { ...candidateOf(first), condition: `O produto é um destes itens: ${subjects}?` }
+  return [...byCode.values()].map(([first, ...rest]) => {
+    const head = first as Hypothesis
+    if (rest.length === 0) return candidateOf(head)
+    const subjects = [head, ...rest].map((h) => h.rule.subject ?? h.rule.id).join('; ')
+    // O fato de fora da nota (destinação, adquirente) continua na pergunta junto da lista de itens.
+    const external = head.rule.unconfirmed ? ` ${head.rule.unconfirmed}` : ''
+    return {
+      ...candidateOf(head),
+      condition: `O produto é um destes itens: ${subjects}?${external}`,
+    }
   })
 }
 
@@ -123,10 +127,41 @@ export const classify = async (item: InputItem, deps: Dependencies): Promise<Res
     decideManual(item, r, deps)
   } else if (decideOperation(item, r)) {
     await decideProduct(item, ncmName, r, deps)
+  } else if (operationByCfop(item.cfop).kind === 'question') {
+    await addProductOptions(item, ncmName, r, deps)
   }
 
   const validation = await validate(item, r, deps, date)
   return build(item, r, deps, date, validation)
+}
+
+/**
+ * Pergunta de operação cuja resposta "não" devolve o produto à regra normal: as opções dessa
+ * resposta são o que as regras de produto dariam, e não um código fixo.
+ */
+const addProductOptions = async (
+  item: InputItem,
+  ncmName: string,
+  r: Draft,
+  deps: Dependencies,
+): Promise<void> => {
+  const op = operationByCfop(item.cfop)
+  if (op.kind !== 'question' || !op.elseProduct) return
+  const product = newDraft()
+  const { disambiguator: _ai, ...withoutAi } = deps
+  await decideProduct(item, ncmName, product, withoutAi)
+  const codes = product.code ? [product.code] : product.candidates.map((c) => c.cClassTrib)
+  const known = new Set(r.candidates.map((c) => c.cClassTrib))
+  const fresh = codes.filter((c) => !known.has(c))
+  r.trail.push(
+    `Sem a habilitação, o produto segue a tributação normal dele: ${fresh.join(', ') || 'já listada'}.`,
+  )
+  const label = 'Sem habilitação: tributação normal do produto'
+  const extra = fresh.map((cClassTrib) => ({ label, cClassTrib }))
+  for (const e of extra) {
+    r.candidates.push({ ...e, legalBasis: product.legalBasis ?? FULL_TAX_BASIS })
+  }
+  r.questions = r.questions.map((q) => ({ ...q, options: [...q.options, ...extra] }))
 }
 
 const decideManual = (item: InputItem, r: Draft, deps: Dependencies): void => {
@@ -253,6 +288,8 @@ const decideProduct = async (
   const { alive, discarded } = collectHypotheses(item.ncm, item.description)
   for (const d of discarded) r.trail.push(`Descartado ${d.rule.id}: ${d.reason}.`)
   for (const h of [...alive, ...discarded]) {
+    // Ausência de sinal não explica o benefício oficial: o NCM continua pedindo revisão.
+    if ('by' in h && h.by === 'absent') continue
     r.considered.add(h.rule.cClassTrib)
     if (h.rule.buyerVariant) r.considered.add(h.rule.buyerVariant.cClassTrib)
   }
@@ -342,7 +379,11 @@ const disambiguate = async (
   r.status = 'needs_info'
   r.questions.push({
     id: 'product',
-    text: r.candidates.find((c) => c.condition)?.condition ?? 'Qual hipótese da lei se aplica?',
+    text:
+      r.candidates
+        .map((c) => c.condition)
+        .filter((c): c is string => c !== undefined)
+        .join(' | ') || 'Qual hipótese da lei se aplica?',
     options: r.candidates.map((c) => ({ label: c.label, cClassTrib: c.cClassTrib })),
   })
   if (!deps.disambiguator) return

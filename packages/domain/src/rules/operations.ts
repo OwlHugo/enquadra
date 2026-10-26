@@ -18,6 +18,8 @@ export type Operation =
   | {
       readonly kind: 'question'
       readonly question: string
+      /** Se a resposta que dá o benefício for "não", vale a tributação normal do produto. */
+      readonly elseProduct?: true
       readonly options: readonly {
         readonly label: string
         readonly cClassTrib: CClassTrib
@@ -74,13 +76,8 @@ const EXPORT_SUSPENSION = {
       provision: 'LC 214/2025, art. 82',
       text: 'Poderá ser suspenso o pagamento do IBS e da CBS no fornecimento de bens materiais com o fim específico de exportação a empresa comercial exportadora que atenda cumulativamente aos seguintes requisitos:',
     },
-    {
-      label: 'Sem habilitação: tributação integral',
-      cClassTrib: cClassTrib('000001'),
-      provision: 'LC 214/2025, regra geral',
-      text: 'Situações tributadas integralmente pelo IBS e CBS.',
-    },
   ],
+  elseProduct: true,
 } as const satisfies Operation
 
 const SALE = { kind: 'sale' } as const satisfies Operation
