@@ -53,7 +53,26 @@ server.registerTool(
     title: 'Regras cobertas',
     description:
       'Lists the LC 214/2025 rules the engine applies, with the verbatim text of the law (in Portuguese).',
-    inputSchema: { origin: z.enum(['I', 'VII', 'VIII', 'XV', 'art147', 'art9']).optional() },
+    inputSchema: {
+      origin: z
+        .enum([
+          'I',
+          'IV',
+          'V',
+          'VI',
+          'VII',
+          'VIII',
+          'IX',
+          'X',
+          'XI',
+          'XII',
+          'XIII',
+          'XV',
+          'art147',
+          'art9',
+        ])
+        .optional(),
+    },
   },
   async ({ origin }) => {
     const rules = PRODUCT_RULES.filter((r) => !origin || r.origin === origin).map((r) => ({

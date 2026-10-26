@@ -137,6 +137,8 @@ export type AlertCode =
   | 'official_mismatch'
   | 'unmapped_benefit'
   | 'ncm_not_probed'
+  | 'registration_not_checked'
+  | 'buyer_dependent_code'
   | 'other_official_hypotheses'
   | 'weak_official_validation'
   | 'operation_out_of_scope'

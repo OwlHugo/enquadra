@@ -18,6 +18,8 @@ export type Operation =
   | {
       readonly kind: 'question'
       readonly question: string
+      /** Se a resposta que dá o benefício for "não", vale a tributação normal do produto. */
+      readonly elseProduct?: true
       readonly options: readonly {
         readonly label: string
         readonly cClassTrib: CClassTrib
@@ -63,6 +65,21 @@ const BONUS_OR_DONATION = {
   ],
 } as const satisfies Operation
 
+const EXPORT_SUSPENSION = {
+  kind: 'question',
+  question:
+    'O CFOP indica remessa com fim específico de exportação. A suspensão depende de o destinatário ser empresa comercial exportadora que cumpra os requisitos do art. 82 (OEA, patrimônio líquido, entre outros). Ela cumpre?',
+  options: [
+    {
+      label: 'Suspensão do pagamento: fornecimento a exportadora habilitada',
+      cClassTrib: cClassTrib('550001'),
+      provision: 'LC 214/2025, art. 82',
+      text: 'Poderá ser suspenso o pagamento do IBS e da CBS no fornecimento de bens materiais com o fim específico de exportação a empresa comercial exportadora que atenda cumulativamente aos seguintes requisitos:',
+    },
+  ],
+  elseProduct: true,
+} as const satisfies Operation
+
 const SALE = { kind: 'sale' } as const satisfies Operation
 
 /** Grupos de CFOP (3 últimos dígitos) que são saída por venda ou revenda de mercadoria. */
@@ -90,11 +107,6 @@ export const operationByCfop = (code: Cfop | undefined): Operation => {
       reason: `CFOP ${code}: devolução segue a classificação da nota original.`,
     }
   }
-  if (suffix === '501' || suffix === '502') {
-    return {
-      kind: 'out_of_scope',
-      reason: `CFOP ${code}: remessa com fim específico de exportação (suspensão do art. 82 depende de requisitos da exportadora).`,
-    }
-  }
+  if (suffix === '501' || suffix === '502') return EXPORT_SUSPENSION
   return { kind: 'out_of_scope', reason: `CFOP ${code}: operação sem regra no motor.` }
 }

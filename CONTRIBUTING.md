@@ -16,7 +16,7 @@ pnpm check        # lint, types, architecture, tests with coverage gate, eval wi
 3. If the rule needs interpretation, use `excludedByProviso` or `derivedInclusion` with the reasoning written out.
 4. If the law imposes a condition the description must confirm, add a `Condition` in `rules/conditions.ts` and real catalog descriptions to `conditions.test.ts`.
 5. Add at least one case to `evals/cases.jsonl` with the legal source in `source`. Run `pnpm sources:update` if the case uses an NCM not yet probed against the official API.
-6. Update `COVERAGE` in `rules/products.ts` and the README if coverage changed.
+6. Update `docs/coverage.md` and the totals line in the README if coverage changed. `COVERAGE` is computed from the rules, and a test fails if the three disagree.
 
 ## Rules for every PR
 

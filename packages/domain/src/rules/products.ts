@@ -1,5 +1,6 @@
 import type { Condition } from '../description.ts'
 import { type CClassTrib, cClassTrib } from '../types.ts'
+import { ANNEX_RULES } from './annex-rules.ts'
 import * as c from './conditions.ts'
 
 /**
@@ -11,7 +12,21 @@ import * as c from './conditions.ts'
  * subposição ("2101.1" → "21011") ou código ("0405.10.00" → "04051000").
  */
 
-type Origin = 'I' | 'VII' | 'VIII' | 'XV' | 'art147' | 'art9'
+export type Origin =
+  | 'I'
+  | 'IV'
+  | 'V'
+  | 'VI'
+  | 'VII'
+  | 'VIII'
+  | 'IX'
+  | 'X'
+  | 'XI'
+  | 'XII'
+  | 'XIII'
+  | 'XV'
+  | 'art147'
+  | 'art9'
 
 export interface ProductRule {
   readonly id: string
@@ -29,6 +44,20 @@ export interface ProductRule {
   /** Inclusão derivada de termo da lei (ex.: "casca rija" → 0801, 0802), com a justificativa. */
   readonly derivedInclusion?: string
   readonly condition?: Condition
+  /**
+   * Fato que a lei exige e que não está na nota (destinação, adquirente): enquanto ninguém o
+   * confirmar, a regra nunca decide sozinha; vira a pergunta. O texto é a pergunta.
+   */
+  readonly unconfirmed?: string
+  /**
+   * Autoridade cujo registro a lei exige (Anvisa, MAPA, norma de órgão competente). Não está na
+   * nota: a regra decide pelo NCM e pela descrição, mas com confiança média e alerta.
+   */
+  readonly registration?: string
+  /** Código que a lei dá ao mesmo produto quando o adquirente é outro (órgão público, CEBAS). */
+  readonly buyerVariant?: { readonly cClassTrib: CClassTrib; readonly why: string }
+  /** Nome curto do item do anexo, para a pergunta quando vários itens compartilham o NCM. */
+  readonly subject?: string
   /** Origens que, se também casarem, afastam esta regra. */
   readonly overriddenBy?: readonly Origin[]
   readonly label: string
@@ -108,7 +137,7 @@ const XV = (
   ...extra,
 })
 
-export const PRODUCT_RULES: readonly ProductRule[] = [
+const MANUAL_RULES: readonly ProductRule[] = [
   // ── Anexo I ─────────────────────────────────────────────────────────────
   I('1', 'Arroz das subposições 1006.20 e 1006.30 e do código 1006.40.00 da NCM/SH', [
     '100620',
@@ -425,14 +454,24 @@ export const PRODUCT_RULES: readonly ProductRule[] = [
   },
 ]
 
-/** O que o motor cobre hoje. Fica no README e no relatório de eval, para ninguém achar que é mais. */
+export const PRODUCT_RULES: readonly ProductRule[] = [...MANUAL_RULES, ...ANNEX_RULES]
+
+/**
+ * O que o motor cobre hoje, por cClassTrib. Tem de bater com `docs/coverage.md` e com o README
+ * (um teste confere os três). `resolves`: a regra decide sozinha; `asks`: o código só aparece
+ * como opção de pergunta, porque depende de fato que a nota não traz; `alertsOnly`: variante
+ * por adquirente que o motor não decide, só avisa.
+ */
+const codesOf = (rules: readonly ProductRule[]): Set<string> =>
+  new Set(rules.map((r) => r.cClassTrib))
+const askingOnly = (code: string): boolean =>
+  PRODUCT_RULES.filter((r) => r.cClassTrib === code).every((r) => r.unconfirmed !== undefined)
+
+const productCodes = [...codesOf(PRODUCT_RULES)]
 export const COVERAGE = {
-  annexes: ['I', 'VII', 'VIII', 'XV'],
-  articles: ['art. 9º, IV (livros)', 'art. 147 (saúde menstrual)'],
-  outOfScope: [
-    'Anexos II, III, X e XI (serviços e NBS)',
-    'Anexos IV, V, VI, XII e XIII (dispositivos médicos, acessibilidade, nutrição)',
-    'Anexo IX (insumos agropecuários: depende do uso pelo adquirente)',
-    'Regimes de destinatário (administração pública, ZFM, áreas de livre comércio)',
-  ],
+  resolves: [...productCodes.filter((c) => !askingOnly(c)), '000001', '410002', '410004'].sort(),
+  asks: [...productCodes.filter(askingOnly), '410001', '410003', '550001'].sort(),
+  alertsOnly: [
+    ...new Set(PRODUCT_RULES.flatMap((r) => (r.buyerVariant ? [r.buyerVariant.cClassTrib] : []))),
+  ].sort(),
 } as const

@@ -25,7 +25,8 @@ export const normalizeDescription = (text: string): string => {
     .trim()
 }
 
-export type Evaluation = 'meets' | 'fails' | 'undetermined'
+/** `absent`: a condição exige sinal positivo e a descrição não tem nenhum (nem contrário). */
+export type Evaluation = 'meets' | 'fails' | 'undetermined' | 'absent'
 
 /**
  * Fato que a lei exige e que só a descrição (ou a pessoa) pode confirmar.
@@ -38,13 +39,25 @@ export interface Condition {
   readonly question: string
   readonly yes: readonly RegExp[]
   readonly no: readonly RegExp[]
+  /** Sinal que descarta mesmo junto de sinal positivo (ex.: ração para cães no Anexo IX). */
+  readonly veto?: readonly RegExp[]
+  /** Contexto exigido junto dos sinais (ao menos um): evita confundir NCM de uso geral. */
+  readonly context?: readonly RegExp[]
+  /** Sem sinal positivo a hipótese é descartada em vez de virar pergunta. */
+  readonly requirePositive?: true
+  /** Quantos sinais de `yes` precisam aparecer juntos para confirmar (padrão 1). */
+  readonly minMatches?: number
 }
 
 export const evaluate = (condition: Condition, normalizedDescription: string): Evaluation => {
+  if (condition.veto?.some((r) => r.test(normalizedDescription))) return 'fails'
   const negative = condition.no.some((r) => r.test(normalizedDescription))
-  const positive = condition.yes.some((r) => r.test(normalizedDescription))
+  const positive =
+    condition.yes.filter((r) => r.test(normalizedDescription)).length >= (condition.minMatches ?? 1)
   if (negative && positive) return 'undetermined'
   if (negative) return 'fails'
-  if (positive) return 'meets'
-  return 'undetermined'
+  const inContext =
+    !condition.context || condition.context.some((r) => r.test(normalizedDescription))
+  if (positive && inContext) return 'meets'
+  return condition.requirePositive ? 'absent' : 'undetermined'
 }

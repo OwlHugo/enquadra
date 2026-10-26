@@ -18,7 +18,11 @@ export interface Hypothesis {
 /** `condition`: a descrição contradiz a condição; `proviso`: outra regra confirmada tem prioridade. */
 export interface Discarded {
   readonly rule: ProductRule
-  readonly by: 'condition' | 'proviso'
+  /**
+   * `condition`: a descrição contradiz a condição. `absent`: nada na descrição aponta para a
+   * regra (NCM amplo), o que não prova que ela não vale. `proviso`: outra regra confirmada manda.
+   */
+  readonly by: 'condition' | 'absent' | 'proviso'
   readonly reason: string
 }
 
@@ -33,6 +37,20 @@ const matches = (rule: ProductRule, code: Ncm): boolean =>
     matchesPrefix(code, p),
   )
 
+/** Avalia a condição da regra contra a descrição: hipótese viva ou descartada com motivo. */
+const evaluateRule = (rule: ProductRule, text: string): Hypothesis | Discarded => {
+  const evaluation = rule.condition ? evaluate(rule.condition, text) : 'meets'
+  if (evaluation === 'fails') {
+    return { rule, by: 'condition', reason: `a descrição não atende: ${rule.condition?.question}` }
+  }
+  if (evaluation === 'absent') {
+    return { rule, by: 'absent', reason: `nada na descrição indica: ${rule.condition?.question}` }
+  }
+  // Fato fora da nota (destinação, adquirente): a descrição pode descartar, nunca confirmar.
+  const confirmed = rule.unconfirmed && evaluation === 'meets' ? 'undetermined' : evaluation
+  return { rule, evaluation: confirmed, hasCondition: rule.condition !== undefined }
+}
+
 export const collectHypotheses = (
   code: Ncm,
   description: string,
@@ -43,16 +61,9 @@ export const collectHypotheses = (
   const evaluated: Hypothesis[] = []
 
   for (const rule of rules.filter((r) => matches(r, code))) {
-    const evaluation = rule.condition ? evaluate(rule.condition, text) : 'meets'
-    if (evaluation === 'fails') {
-      discarded.push({
-        rule,
-        by: 'condition',
-        reason: `a descrição não atende: ${rule.condition?.question}`,
-      })
-    } else {
-      evaluated.push({ rule, evaluation, hasCondition: rule.condition !== undefined })
-    }
+    const result = evaluateRule(rule, text)
+    if ('by' in result) discarded.push(result)
+    else evaluated.push(result)
   }
 
   // Ressalva entre anexos ("ressalvados os produtos relacionados no Anexo I"):
