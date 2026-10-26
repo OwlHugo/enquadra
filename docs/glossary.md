@@ -48,6 +48,7 @@ Code is in English. The law, the NF-e layout and everything the user reads stay 
 | `issueDate` | *data de emissão* (`dhEmi`) | Used as the taxable event date of an XML item. |
 | `recipientType` | *tipo de destinatário* | `pf` (individual), `pj` (company), `foreign`, `no_recipient`. |
 | `severeError` | *erro grave* | Marked `resolved` with the wrong code. The metric that blocks CI. |
+| `ProductRule.id` | item do anexo | Stable code like `I.16.bread` or `VII.14.hard_shell`: annex, item and an English tag for the sub-case. Shown in the trail as is. |
 
 ## Alert codes
 

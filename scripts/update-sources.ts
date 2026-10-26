@@ -117,7 +117,11 @@ const items: Record<string, string> = Object.fromEntries(
 )
 await writeFile(
   join(folder, 'ncm.json'),
-  JSON.stringify({ act: siscomex.Ato, effectiveDate: siscomex.Data_Ultima_Atualizacao_NCM, items }),
+  JSON.stringify({
+    act: siscomex.Ato,
+    lastUpdateNote: siscomex.Data_Ultima_Atualizacao_NCM,
+    items,
+  }),
 )
 
 // Códigos com lista restrita: os que recusam dois NCM sem relação com anexo nenhum.

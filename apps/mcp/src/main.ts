@@ -7,7 +7,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod'
 
 /**
- * Servidor MCP. Mesmo motor da CLI; o agente que chama recebe o Resultado completo,
+ * Servidor MCP. Mesmo motor da CLI; o agente que chama recebe o Result completo,
  * com fundamento, trilha e perguntas pendentes, para decidir se pergunta ao usuário.
  */
 
@@ -25,7 +25,7 @@ const server = new McpServer({ name: 'enquadra', version: '0.1.0' })
 server.registerTool(
   'classify_item',
   {
-    title: 'Classify item (IBS/CBS)',
+    title: 'Classificar item (IBS/CBS)',
     description:
       'Suggests the IBS/CBS CST and cClassTrib for an NF-e line item, with the article of LC 214/2025, confidence and open questions. Does not compute tax. Human-facing texts in the result are in Brazilian Portuguese.',
     inputSchema: {
@@ -50,7 +50,7 @@ server.registerTool(
 server.registerTool(
   'covered_rules',
   {
-    title: 'Covered rules',
+    title: 'Regras cobertas',
     description:
       'Lists the LC 214/2025 rules the engine applies, with the verbatim text of the law (in Portuguese).',
     inputSchema: { origin: z.enum(['I', 'VII', 'VIII', 'XV', 'art147', 'art9']).optional() },
@@ -72,7 +72,7 @@ server.registerTool(
 server.registerTool(
   'table_version',
   {
-    title: 'Official table version',
+    title: 'Versão da tabela oficial',
     description:
       'Version of the RTC Calculator database used by the engine and the date it was fetched.',
     inputSchema: {},

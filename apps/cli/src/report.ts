@@ -1,5 +1,5 @@
 import { formatNcm, type Result, summarize } from '@enquadra/domain'
-import { CONFIDENCE_LABEL, errorText } from './labels.ts'
+import { CONFIDENCE_LABEL, errorText, STATUS_LABEL } from './labels.ts'
 import type { Failure } from './xmls.ts'
 
 /**
@@ -10,11 +10,7 @@ import type { Failure } from './xmls.ts'
 const esc = (t: string): string => t.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
 
 const ORDER = { needs_info: 0, review: 1, resolved: 2 } as const
-const LABEL = {
-  resolved: 'Resolvido',
-  review: 'Revisar',
-  needs_info: 'Falta informação',
-} as const
+const capitalized = (t: string): string => `${t.charAt(0).toUpperCase()}${t.slice(1)}`
 
 const row = (r: Result): string => {
   const c = r.classification
@@ -30,7 +26,7 @@ const row = (r: Result): string => {
     `<ol class="trail">${r.trail.map((t) => `<li>${esc(t)}</li>`).join('')}</ol>`,
   ].join('')
   return `<tr data-status="${r.status}">
-<td><span class="state ${r.status}">${LABEL[r.status]}</span></td>
+<td><span class="state ${r.status}">${capitalized(STATUS_LABEL[r.status])}</span></td>
 <td>${esc(r.item.description)}</td>
 <td><code>${formatNcm(r.item.ncm)}</code></td>
 <td><code>${r.item.cfop ?? '—'}</code></td>

@@ -15,9 +15,16 @@ export interface Hypothesis {
   readonly hasCondition: boolean
 }
 
+/** `condition`: a descrição contradiz a condição; `proviso`: outra regra confirmada tem prioridade. */
+export interface Discarded {
+  readonly rule: ProductRule
+  readonly by: 'condition' | 'proviso'
+  readonly reason: string
+}
+
 export interface Hypotheses {
   readonly alive: readonly Hypothesis[]
-  readonly discarded: readonly { readonly rule: ProductRule; readonly reason: string }[]
+  readonly discarded: readonly Discarded[]
 }
 
 const matches = (rule: ProductRule, code: Ncm): boolean =>
@@ -32,13 +39,17 @@ export const collectHypotheses = (
   rules: readonly ProductRule[] = PRODUCT_RULES,
 ): Hypotheses => {
   const text = normalizeDescription(description)
-  const discarded: { rule: ProductRule; reason: string }[] = []
+  const discarded: Discarded[] = []
   const evaluated: Hypothesis[] = []
 
   for (const rule of rules.filter((r) => matches(r, code))) {
     const evaluation = rule.condition ? evaluate(rule.condition, text) : 'meets'
     if (evaluation === 'fails') {
-      discarded.push({ rule, reason: `a descrição não atende: ${rule.condition?.question}` })
+      discarded.push({
+        rule,
+        by: 'condition',
+        reason: `a descrição não atende: ${rule.condition?.question}`,
+      })
     } else {
       evaluated.push({ rule, evaluation, hasCondition: rule.condition !== undefined })
     }
@@ -56,6 +67,7 @@ export const collectHypotheses = (
     if (priority) {
       discarded.push({
         rule: h.rule,
+        by: 'proviso',
         reason: `ressalvado pelo ${priority.rule.provision}`,
       })
       return false

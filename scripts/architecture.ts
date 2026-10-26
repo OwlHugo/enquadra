@@ -1,9 +1,9 @@
 /**
  * Fronteiras da arquitetura, checadas no CI. Sem dependência: lê os `import` de cada arquivo.
  *
- *   dominio   → nada (nem outro pacote do repo, nem módulo de I/O do Node)
- *   fontes,
- *   nfe, ia   → só dominio (adaptadores não se conhecem)
+ *   domain    → nada (nem outro pacote do repo, nem módulo de I/O do Node)
+ *   sources,
+ *   nfe, ai   → só domain (adaptadores não se conhecem)
  *   apps      → qualquer pacote, nunca outro app
  *
  * Também falha em import circular entre arquivos.

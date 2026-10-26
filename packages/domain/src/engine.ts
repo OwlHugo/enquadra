@@ -1,5 +1,5 @@
 import { normalizeDescription } from './description.ts'
-import { collectHypotheses, type Hypothesis } from './hypotheses.ts'
+import { collectHypotheses, type Discarded, type Hypothesis } from './hypotheses.ts'
 import { formatNcm } from './ncm.ts'
 import type { Disambiguator, OfficialTable, OfficialValidator } from './ports.ts'
 import { operationByCfop } from './rules/operations.ts'
@@ -189,7 +189,7 @@ const decideByRule = (
   single: Hypothesis,
   alive: readonly Hypothesis[],
   r: Draft,
-  discarded: readonly { readonly reason: string }[],
+  discarded: readonly Discarded[],
 ): void => {
   const byDescription = alive.some((h) => h.hasCondition)
   r.layer = byDescription ? 'description' : 'annex'
@@ -202,7 +202,7 @@ const decideByRule = (
       ? `${single.rule.provision}: a descrição confirma a condição da lei.`
       : `${single.rule.provision}: o NCM está na lista e a lei não impõe condição.`,
   )
-  if (discarded.some((d) => d.reason.startsWith('ressalvado'))) {
+  if (discarded.some((d) => d.by === 'proviso')) {
     r.alerts.push({
       code: 'annex_priority',
       severity: 'info',

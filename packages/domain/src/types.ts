@@ -31,11 +31,29 @@ export const isoDate = (value: string): IsoDate => {
   return value as IsoDate
 }
 
+/** Códigos estáveis de DomainError. A CLI tem um rótulo em português para cada um. */
+export type ErrorCode =
+  | 'invalid_cclasstrib'
+  | 'invalid_date'
+  | 'invalid_ncm'
+  | 'invalid_cfop'
+  | 'malformed_xml'
+  | 'not_an_nfe'
+  | 'unsupported_model'
+  | 'nfe_without_issue_date'
+  | 'nfe_without_items'
+  | 'item_without_description'
+  | 'item_without_ncm'
+  | 'item_without_cfop'
+  | 'no_xml'
+  | 'usage'
+  | 'unknown_command'
+
 /** `code` é estável, para máquina; `detail` é o pedaço do texto que a ponta mostra à pessoa. */
 export class DomainError extends Error {
-  readonly code: string
+  readonly code: ErrorCode
   readonly detail: string
-  constructor(code: string, detail: string) {
+  constructor(code: ErrorCode, detail: string) {
     super(`${code}: ${detail}`)
     this.code = code
     this.detail = detail

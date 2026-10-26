@@ -1,4 +1,4 @@
-import type { Confidence, Layer, OfficialValidation, Status } from '@enquadra/domain'
+import type { Confidence, ErrorCode, Layer, OfficialValidation, Status } from '@enquadra/domain'
 
 /**
  * Texto que a pessoa vê. Os valores do domínio são em inglês (contrato de código); a CLI e o
@@ -27,14 +27,18 @@ export const LAYER_LABEL: Record<Layer, string> = {
 }
 
 export const VALIDATION_LABEL: Record<OfficialValidation, string> = {
-  accepted: 'aceito',
-  rejected: 'recusado',
+  accepted: 'aceita',
+  rejected: 'recusada',
   unavailable: 'indisponível',
   not_checked: 'não consultada',
 }
 
-/** Por que um arquivo ou comando falhou, para a pessoa. Código sem rótulo aparece cru. */
-const ERROR_LABEL: Readonly<Record<string, string>> = {
+/** Erros de leitura de arquivo que viram falha do lote; qualquer outro errno é bug. */
+export const FILE_ERRORS = ['ENOENT', 'EACCES', 'EISDIR'] as const
+export type FileErrorCode = (typeof FILE_ERRORS)[number]
+
+/** Por que um arquivo ou comando falhou, para a pessoa. O tipo obriga um rótulo por código. */
+const ERROR_LABEL: Record<ErrorCode | FileErrorCode, string> = {
   malformed_xml: 'XML malformado',
   not_an_nfe: 'não é NF-e nem NFC-e',
   unsupported_model: 'modelo de documento não suportado',
@@ -55,7 +59,5 @@ const ERROR_LABEL: Readonly<Record<string, string>> = {
   EISDIR: 'é uma pasta, não um arquivo',
 }
 
-export const errorText = (code: string, detail: string): string => {
-  const label = ERROR_LABEL[code] ?? code
-  return detail ? `${label} (${detail})` : label
-}
+export const errorText = (code: ErrorCode | FileErrorCode, detail: string): string =>
+  detail ? `${ERROR_LABEL[code]} (${detail})` : ERROR_LABEL[code]
