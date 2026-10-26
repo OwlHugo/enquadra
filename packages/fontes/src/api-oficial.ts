@@ -44,9 +44,12 @@ const semaforo = (limite: number) => {
   }
 }
 
-/** `fetch` rejeita com TypeError em falha de rede e com DOMException em timeout/abort. */
+/**
+ * `fetch` rejeita com TypeError('fetch failed', { cause }) em falha de rede e com DOMException em
+ * timeout. TypeError sem `cause` é bug (URL ou opção inválida) e não deve ser repetido.
+ */
 const ehFalhaDeRede = (erro: unknown): boolean =>
-  erro instanceof TypeError ||
+  (erro instanceof TypeError && erro.cause !== undefined) ||
   (erro instanceof DOMException && (erro.name === 'TimeoutError' || erro.name === 'AbortError'))
 
 const esperar = (ms: number) => new Promise((ok) => setTimeout(ok, ms))

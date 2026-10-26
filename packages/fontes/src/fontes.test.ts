@@ -44,7 +44,7 @@ describe('cliente da API oficial', () => {
 
   it('falha de rede é repetida e termina em indisponível', async () => {
     const rede = () => {
-      throw new TypeError('fetch failed')
+      throw new TypeError('fetch failed', { cause: new Error('ECONNRESET') })
     }
     const { f, chamadas } = fetchFalso([rede, rede])
     expect(await criarValidadorOficial({ fetch: f, tentativas: 2 }).validar(...args)).toBe(
