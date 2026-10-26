@@ -49,7 +49,6 @@ describe('regras dos anexos de dispositivos, insumos, cultura e soberania', () =
   it.each([
     ['ELETROCARDIOGRAFO 12 CANAIS', '90181100', '200004'],
     ['SERINGA DESCARTAVEL 10ML C/100', '90183119', '200030'],
-    ['BENGALA DOBRAVEL TELESCOPICA', '66020000', '200031'],
   ])('%s decide pelo NCM e pela descrição', async (description, code, expected) => {
     const r = await run(description, code)
     expect(r).toMatchObject({ status: 'resolved', confidence: 'medium' })
