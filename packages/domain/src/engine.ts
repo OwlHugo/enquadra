@@ -72,8 +72,29 @@ const candidateOf = (h: Hypothesis): Candidate => ({
   cClassTrib: h.rule.cClassTrib,
   label: h.rule.label,
   legalBasis: { provision: h.rule.provision, text: h.rule.text },
-  ...(h.rule.condition ? { condition: h.rule.condition.question } : {}),
+  ...(h.rule.unconfirmed
+    ? { condition: h.rule.unconfirmed }
+    : h.rule.condition
+      ? { condition: h.rule.condition.question }
+      : {}),
 })
+
+/**
+ * Vários itens do mesmo anexo compartilham NCM (ex.: 9018.90.99). Para a pessoa, são uma
+ * opção só: o código é o mesmo. A pergunta lista os itens possíveis em vez de escolher um.
+ */
+const candidatesOf = (alive: readonly Hypothesis[]): Candidate[] => {
+  const byCode = new Map<CClassTrib, Hypothesis[]>()
+  for (const h of alive)
+    byCode.set(h.rule.cClassTrib, [...(byCode.get(h.rule.cClassTrib) ?? []), h])
+  return [...byCode.values()].map((group) => {
+    const [first] = group
+    if (!first) throw new Error('grupo de hipóteses vazio')
+    if (group.length === 1) return candidateOf(first)
+    const subjects = group.map((h) => h.rule.subject ?? h.rule.id).join('; ')
+    return { ...candidateOf(first), condition: `O produto é um destes itens: ${subjects}?` }
+  })
+}
 
 const fullTaxCandidate = (reason: string): Candidate => ({
   cClassTrib: FULL_TAX,
@@ -180,9 +201,10 @@ const decideOperation = (item: InputItem, r: Draft): boolean => {
 
 /** Todas as hipóteses vivas confirmadas e apontando para o mesmo código: a regra decide sozinha. */
 const singleHypothesis = (alive: readonly Hypothesis[]): Hypothesis | undefined => {
-  if (alive.some((h) => h.evaluation !== 'meets')) return undefined
+  // Vários itens do mesmo anexo compartilham o NCM e levam ao mesmo código: se um deles está
+  // confirmado, os outros não mudam a resposta.
   const codes = new Set(alive.map((h) => h.rule.cClassTrib))
-  return codes.size === 1 ? alive[0] : undefined
+  return codes.size === 1 ? alive.find((h) => h.evaluation === 'meets') : undefined
 }
 
 const decideByRule = (
@@ -202,6 +224,17 @@ const decideByRule = (
       ? `${single.rule.provision}: a descrição confirma a condição da lei.`
       : `${single.rule.provision}: o NCM está na lista e a lei não impõe condição.`,
   )
+  const { registration, buyerVariant } = single.rule
+  if (registration) {
+    r.alerts.push({
+      code: 'registration_not_checked',
+      severity: 'info',
+      message: `A lei exige registro ou norma (${registration}) que não consta da nota: o Enquadra presume produto regular.`,
+    })
+  }
+  if (buyerVariant) {
+    r.alerts.push({ code: 'buyer_dependent_code', severity: 'warning', message: buyerVariant.why })
+  }
   if (discarded.some((d) => d.by === 'proviso')) {
     r.alerts.push({
       code: 'annex_priority',
@@ -219,17 +252,20 @@ const decideProduct = async (
 ): Promise<void> => {
   const { alive, discarded } = collectHypotheses(item.ncm, item.description)
   for (const d of discarded) r.trail.push(`Descartado ${d.rule.id}: ${d.reason}.`)
-  for (const h of [...alive, ...discarded]) r.considered.add(h.rule.cClassTrib)
+  for (const h of [...alive, ...discarded]) {
+    r.considered.add(h.rule.cClassTrib)
+    if (h.rule.buyerVariant) r.considered.add(h.rule.buyerVariant.cClassTrib)
+  }
 
   if (alive.length === 0) {
-    return decideDefault(item, r, deps, new Set(discarded.map((d) => d.rule.cClassTrib)))
+    return decideDefault(item, r, deps, r.considered)
   }
   const single = singleHypothesis(alive)
   if (single) return decideByRule(single, alive, r, discarded)
 
   // Ambiguidade: mais de uma hipótese viva, ou condição que a descrição não resolve.
   r.layer = 'description'
-  r.candidates = alive.map(candidateOf)
+  r.candidates = candidatesOf(alive)
   if (alive.every((h) => h.hasCondition)) {
     r.candidates.push(fullTaxCandidate('Nenhuma condição acima é verdadeira.'))
   }

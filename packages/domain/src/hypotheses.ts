@@ -51,7 +51,13 @@ export const collectHypotheses = (
         reason: `a descrição não atende: ${rule.condition?.question}`,
       })
     } else {
-      evaluated.push({ rule, evaluation, hasCondition: rule.condition !== undefined })
+      // Fato fora da nota (destinação, adquirente): a descrição pode descartar, nunca confirmar.
+      const confirmed = rule.unconfirmed && evaluation === 'meets' ? 'undetermined' : evaluation
+      evaluated.push({
+        rule,
+        evaluation: confirmed,
+        hasCondition: rule.condition !== undefined,
+      })
     }
   }
 

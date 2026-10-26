@@ -38,11 +38,14 @@ export interface Condition {
   readonly question: string
   readonly yes: readonly RegExp[]
   readonly no: readonly RegExp[]
+  /** Quantos sinais de `yes` precisam aparecer juntos para confirmar (padrão 1). */
+  readonly minMatches?: number
 }
 
 export const evaluate = (condition: Condition, normalizedDescription: string): Evaluation => {
   const negative = condition.no.some((r) => r.test(normalizedDescription))
-  const positive = condition.yes.some((r) => r.test(normalizedDescription))
+  const positive =
+    condition.yes.filter((r) => r.test(normalizedDescription)).length >= (condition.minMatches ?? 1)
   if (negative && positive) return 'undetermined'
   if (negative) return 'fails'
   if (positive) return 'meets'

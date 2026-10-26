@@ -63,7 +63,14 @@ export const INFANT_FORMULA: Condition = {
 export const IEM_DIETARY_FORMULA: Condition = {
   id: 'iem_dietary_formula',
   question: 'O item é fórmula ou alimento para erro inato do metabolismo (ex.: fenilcetonúria)?',
-  yes: [/\berros? inatos?\b/, /\bfenilcetonuri/, /\baminoacidopati/, /\bacidemi/, /\bpku\b/],
+  yes: [
+    /\berros? inatos?\b/,
+    /\bfenilcetonuri/,
+    /\baminoacidopati/,
+    /\bacidemi/,
+    /\bpku\b/,
+    /\bdieta isenta\b/,
+  ],
   no: [/\bwhey\b/, /\bsuplemento/],
 }
 

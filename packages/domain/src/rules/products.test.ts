@@ -9,7 +9,11 @@ import { PRODUCT_RULES } from './products.ts'
 
 /** A lei cita NCM com pontos; o item 26 do Anexo I tem a grafia fora do padrão "2106.9090". */
 const digits = (text: string): string[] =>
-  [...text.matchAll(/\b\d{4}\.\d{4}\b|\b\d{2}(?:\.\d{1,2}){0,3}\b|\b\d{4}\.\d{1,2}(?:\.\d{2})?\b/g)]
+  [
+    ...text.matchAll(
+      /\b\d{4,8}\b|\b\d{4}\.\d{4}\b|\b\d{2}(?:\.\d{1,2}){0,3}\b|\b\d{4}\.\d{1,2}(?:\.\d{2})?\b/g,
+    ),
+  ]
     .map((m) => m[0].replaceAll('.', ''))
     .filter((d) => d.length >= 2)
 

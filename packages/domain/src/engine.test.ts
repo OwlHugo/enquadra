@@ -142,9 +142,16 @@ describe('padrão e benefícios fora da cobertura', () => {
   })
 
   it('não afirma tributação integral quando a tabela oficial aponta benefício não coberto', async () => {
-    const r = await classify(item('UREIA AGRICOLA 50KG', '31021010'), deps())
+    const table = fakeTable(NCMS, { '22021000': ['200044'] })
+    const r = await classify(item('REFRIGERANTE 2L', '22021000'), { ...deps(), table })
     expect(r.status).toBe('review')
     expect(r.alerts.map((a) => a.code)).toContain('unmapped_benefit')
+  })
+
+  it('insumo agropecuário depende da destinação: vira pergunta, nunca código', async () => {
+    const r = await classify(item('UREIA AGRICOLA 50KG', '31021010'), deps())
+    expect(r.status).toBe('needs_info')
+    expect(r.questions[0]?.options.map((o) => o.cClassTrib)).toEqual(['200038', '000001'])
   })
 
   it('NCM não sondado na tabela oficial: integral sem confiança alta e com o motivo', async () => {
@@ -191,9 +198,11 @@ describe('validação oficial', () => {
   it('não confunde hipótese já descartada pelo motor com hipótese oficial não coberta', async () => {
     const pad = await classify(item('ABSORVENTE', '96190000'), deps())
     expect(pad.alerts.map((a) => a.code)).not.toContain('other_official_hypotheses')
-    const rice = await classify(item('ARROZ', '10063021'), deps())
+    const table = fakeTable(NCMS, { '10063021': ['200003', '200044'] })
+    const rice = await classify(item('ARROZ', '10063021'), { ...deps(), table })
     const alert = rice.alerts.find((a) => a.code === 'other_official_hypotheses')
-    expect(alert?.message).toContain('200038')
+    expect(alert?.message).toContain('200044')
+    expect(alert?.message).not.toContain('200038')
   })
 })
 
