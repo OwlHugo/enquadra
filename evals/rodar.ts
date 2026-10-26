@@ -149,5 +149,9 @@ const destino = `${RAIZ}evals/relatorios/${modo}.json`
 if (values.linha) await writeFile(destino, `${JSON.stringify(relatorio, null, 2)}\n`)
 
 // Portão do CI: sem IA não pode haver falha nem erro grave. Com IA, nunca erro grave.
-const reprovado = relatorio.errosGraves > 0 || (modo === 'sem-ia' && relatorio.falhas.length > 0)
+// Caso que lança (API fora do contrato, caso mal escrito) reprova nos dois modos: não é abstenção.
+const excecoes = linhas.filter((l) => l.erro !== undefined).length
+if (excecoes > 0) console.log(`  casos com exceção  ${excecoes}`)
+const reprovado =
+  relatorio.errosGraves > 0 || excecoes > 0 || (modo === 'sem-ia' && relatorio.falhas.length > 0)
 process.exitCode = reprovado ? 1 : 0
