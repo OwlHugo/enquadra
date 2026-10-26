@@ -5,7 +5,7 @@ Levantamento dos 161 `cClassTrib` da tabela oficial `V0059` (30/09/2026) contra 
 - **resolve**: a regra decide sozinha quando NCM, descrição e CFOP bastam.
 - **pergunta**: a regra existe, mas depende de fato que a nota não traz (destinação, adquirente, habilitação); o motor nunca devolve o código em silêncio, devolve a pergunta.
 - **aviso**: código do mesmo produto para outro adquirente; o motor emite o alerta `buyer_dependent_code`.
-- **não coberto**: o motor não tem regra. Se o NCM está na lista oficial desse código, o item sai como `review` com `unmapped_benefit`, nunca como tributação integral.
+- **não coberto**: o motor não tem regra própria. Se a tabela oficial aceita o NCM nesse código e nenhuma regra o explica, o item sai como `review` com `unmapped_benefit`, nunca como tributação integral. Quando o item cai numa pergunta de outro código (ex.: 200038), o código não coberto só aparece no texto da pergunta.
 
 A coluna *Lista de NCM* diz se a API oficial restringe os NCM aceitos no código (17 de 161). Para os 17, todo NCM folha coberto por regra foi conferido na API, e um teste (`packages/sources/src/sources.test.ts`) falha se algum for recusado.
 

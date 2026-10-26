@@ -2,12 +2,12 @@
   "mode": "with-ai",
   "table": "V0059",
   "cases": 88,
-  "accuracy": 1,
+  "accuracy": 0.9886363636363636,
   "severeErrors": 0,
-  "correctAbstention": 1,
-  "aiCalls": 13,
-  "aiCostUsd": 0.0011614000000000001,
-  "avgAiMs": 1155,
+  "correctAbstention": 0.9333333333333333,
+  "aiCalls": 12,
+  "aiCostUsd": 0.0010241000000000002,
+  "avgAiMs": 1583,
   "byCategory": {
     "direct": {
       "total": 34,
@@ -31,7 +31,7 @@
     },
     "ambiguous": {
       "total": 11,
-      "ok": 11
+      "ok": 10
     },
     "operation": {
       "total": 7,
@@ -42,5 +42,18 @@
       "ok": 4
     }
   },
-  "failures": []
+  "failures": [
+    {
+      "id": "annex-008",
+      "description": "LUVA LATEX DOMESTICA LIMPEZA AMARELA",
+      "expected": {
+        "status": "needs_info",
+        "options": [
+          "200030",
+          "000001"
+        ]
+      },
+      "actual": "AI_NoObjectGeneratedError: No object generated: response did not match schema.\n    at Object.parseCompleteOutput (file:///Users/hugoadriano/personal/enquadra/node_modules/.pnpm/ai@7.0.143_zod@4.6.7/node_modules/ai/dist/index.js:3763:41)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async executeGenerateText (file:///Users/hugoadriano/personal/enquadra/node_modules/.pnpm/ai@7.0.143_zod@4.6.7/node_modules/ai/dist/index.js:6010:129)\n    at async runWithTracingChannelSpan (file:///Users/hugoadriano/personal/enquadra/node_modules/.pnpm/ai@7.0.143_zod@4.6.7/node_modules/ai/dist/index.js:4394:80)\n    at async runInTracingChannelSpan (file:///Users/hugoadriano/personal/enquadra/node_modules/.pnpm/ai@7.0.143_zod@4.6.7/node_modules/ai/dist/index.js:4546:64)\n    at async generateText (file:///Users/hugoadriano/personal/enquadra/node_modules/.pnpm/ai@7.0.143_zod@4.6.7/node_modules/ai/dist/index.js:6029:9)\n    at async Object.choose (file:///Users/hugoadriano/personal/enquadra/packages/ai/src/disambiguator.ts:59:22)\n    at async disambiguate (file:///Users/hugoadriano/personal/enquadra/packages/domain/src/engine.ts:391:29)\n    at async decideProduct (file:///Users/hugoadriano/personal/enquadra/packages/domain/src/engine.ts:318:3)\n    at async classify (file:///Users/hugoadriano/personal/enquadra/packages/domain/src/engine.ts:129:5)"
+    }
+  ]
 }

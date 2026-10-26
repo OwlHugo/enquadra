@@ -14,6 +14,13 @@ const table = fakeTable(
     '85176259': 'Aparelhos de comutação',
     '23099090': 'Preparações para alimentação de animais',
     '90181980': 'Outros aparelhos de eletrodiagnóstico',
+    '84212990': 'Outros aparelhos para filtrar',
+    '39269040': 'Outras obras de plástico',
+    '39174000': 'Acessórios de tubos',
+    '10051000': 'Milho para semeadura',
+    '10059010': 'Milho em grão',
+    '90184090': 'Outros',
+    '25232910': 'Cimento Portland',
   },
   {
     '90181100': ['200004'],
@@ -23,6 +30,11 @@ const table = fakeTable(
     '85176259': ['200043', '200044'],
     '23099090': ['200038', '515001'],
     '90181980': ['200004'],
+    '84212990': ['200030'],
+    '39269040': ['200030'],
+    '39174000': ['200030'],
+    '10051000': ['200038', '200034'],
+    '25232910': ['200038'],
   },
 )
 const deps = { table, date: isoDate('2026-10-18') }
@@ -76,6 +88,38 @@ describe('regras dos anexos de dispositivos, insumos, cultura e soberania', () =
 
   it('ração para animal doméstico fica fora do Anexo IX, e a descrição descarta', async () => {
     const r = await run('RACAO CAES ADULTOS 15KG', '23099090')
+    expect(r.questions.flatMap((q) => q.options.map((o) => o.cClassTrib))).not.toContain('200038')
+  })
+
+  it('palavra de ligação ("para") não confirma um item: filtro de água não é dispositivo médico', async () => {
+    for (const [description, code] of [
+      ['FILTRO PARA AGUA PURIFICADOR', '84212990'],
+      ['COLETOR PARA LIXO RECICLAVEL', '39269040'],
+      ['CONECTOR PARA MANGUEIRA JARDIM', '39174000'],
+    ] as const) {
+      const r = await run(description, code)
+      expect(r.classification?.cClassTrib, description).not.toBe('200030')
+    }
+  })
+
+  it('NCM de uso geral com contexto de saúde decide; sem contexto, não', async () => {
+    const com = await run('CONECTOR EM Y HOSPITALAR', '39174000')
+    expect(com.classification?.cClassTrib).toBe('200030')
+  })
+
+  it('semente não é engolida pelo Anexo VII: pergunta entre o insumo e o alimento', async () => {
+    const r = await run('SEMENTE MILHO HIBRIDO 20KG', '10051000')
+    expect(r.status).toBe('needs_info')
+    expect(r.questions.flatMap((q) => q.options.map((o) => o.cClassTrib))).toContain('200038')
+  })
+
+  it('a pergunta de vários itens do mesmo código mantém o fato de fora da nota', async () => {
+    const r = await run('RACAO BOVINO ENGORDA 25KG', '23099090')
+    expect(r.questions[0]?.text).toContain('Anexo IX')
+  })
+
+  it('produto comum no mesmo NCM do Anexo IX não vira pergunta de insumo', async () => {
+    const r = await run('CIMENTO CP II 50KG', '25232910')
     expect(r.questions.flatMap((q) => q.options.map((o) => o.cClassTrib))).not.toContain('200038')
   })
 })
