@@ -12,8 +12,8 @@
       "needsInfo": 11
     },
     "aiCalls": 14,
-    "aiCostUsd": 0.0011823,
-    "avgAiMs": 1033.9285714285713,
+    "aiCostUsd": 0.0012523000000000002,
+    "avgAiMs": 1305.2142857142858,
     "byCategory": {
       "direct": {
         "total": 34,
@@ -54,17 +54,17 @@
     "mode": "with-ai",
     "table": "V0059",
     "cases": 330,
-    "accuracy": 0.8424242424242424,
+    "accuracy": 0.8545454545454545,
     "severeErrors": 0,
     "correctAbstention": 0.7142857142857143,
     "outcome": {
-      "resolved": 234,
-      "review": 72,
-      "needsInfo": 24
+      "resolved": 231,
+      "review": 76,
+      "needsInfo": 23
     },
-    "aiCalls": 60,
-    "aiCostUsd": 0.005338599999999998,
-    "avgAiMs": 1165.7333333333333,
+    "aiCalls": 64,
+    "aiCostUsd": 0.005861300000000001,
+    "avgAiMs": 1443.46875,
     "byCategory": {
       "annex-I": {
         "total": 66,
@@ -76,7 +76,7 @@
       },
       "none": {
         "total": 111,
-        "ok": 89
+        "ok": 91
       },
       "annex-XV": {
         "total": 18,
@@ -88,7 +88,7 @@
       },
       "art147": {
         "total": 5,
-        "ok": 4
+        "ok": 5
       },
       "ambiguous": {
         "total": 21,
@@ -120,7 +120,7 @@
       },
       "annex-IX": {
         "total": 10,
-        "ok": 3
+        "ok": 4
       },
       "art9-books": {
         "total": 7,
@@ -132,6 +132,20 @@
       }
     },
     "failures": [
+      {
+        "id": "ho-016",
+        "description": "BEB SOJA ADES ORIGINAL 1L",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
       {
         "id": "ho-020",
         "description": "OLEO COMPOSTO SOJA E OLIVA MARIA 500ML",
@@ -149,20 +163,6 @@
       {
         "id": "ho-022",
         "description": "AZEITE EXTRA VIRGEM GALLO 500ML",
-        "expected": {
-          "status": "resolved",
-          "cClassTrib": "000001"
-        },
-        "severe": false,
-        "actual": {
-          "status": "review",
-          "cClassTrib": "000001",
-          "layer": "default"
-        }
-      },
-      {
-        "id": "ho-038",
-        "description": "POLVILHO DOCE AMAFIL 1KG",
         "expected": {
           "status": "resolved",
           "cClassTrib": "000001"
@@ -214,20 +214,6 @@
           "status": "review",
           "cClassTrib": "000001",
           "layer": "default"
-        }
-      },
-      {
-        "id": "ho-143",
-        "description": "PROTETOR DIARIO CAREFREE C/40",
-        "expected": {
-          "status": "resolved",
-          "cClassTrib": "200013"
-        },
-        "severe": false,
-        "actual": {
-          "status": "review",
-          "cClassTrib": "200035",
-          "layer": "ai"
         }
       },
       {
@@ -436,20 +422,6 @@
         }
       },
       {
-        "id": "ho-164",
-        "description": "SUPLEMENTO VIT C LAVITAN 1G C/10 EFERV",
-        "expected": {
-          "status": "resolved",
-          "cClassTrib": "000001"
-        },
-        "severe": false,
-        "actual": {
-          "status": "needs_info",
-          "cClassTrib": null,
-          "layer": "description"
-        }
-      },
-      {
         "id": "ho-167",
         "description": "OXIMETRO DE DEDO MULTILASER",
         "expected": {
@@ -458,37 +430,9 @@
         },
         "severe": false,
         "actual": {
-          "status": "needs_info",
-          "cClassTrib": null,
-          "layer": "description"
-        }
-      },
-      {
-        "id": "ho-173",
-        "description": "LUVA LATEX P/ LIMPEZA MUCAMBO M",
-        "expected": {
-          "status": "resolved",
-          "cClassTrib": "000001"
-        },
-        "severe": false,
-        "actual": {
-          "status": "needs_info",
-          "cClassTrib": null,
-          "layer": "description"
-        }
-      },
-      {
-        "id": "ho-182",
-        "description": "GAZE ESTERIL 7,5X7,5 C/10",
-        "expected": {
-          "status": "resolved",
-          "cClassTrib": "000001"
-        },
-        "severe": false,
-        "actual": {
-          "status": "needs_info",
-          "cClassTrib": null,
-          "layer": "description"
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "ai"
         }
       },
       {
@@ -632,20 +576,6 @@
         }
       },
       {
-        "id": "ho-215",
-        "description": "SEMENTE MILHO HIBRIDO AG1051 SC 20KG",
-        "expected": {
-          "status": "resolved",
-          "cClassTrib": "200038"
-        },
-        "severe": false,
-        "actual": {
-          "status": "review",
-          "cClassTrib": "200034",
-          "layer": "ai"
-        }
-      },
-      {
         "id": "ho-217",
         "description": "PINTINHO 1 DIA CAIPIRA PESCOCO PELADO",
         "expected": {
@@ -671,6 +601,20 @@
           "status": "review",
           "cClassTrib": "000001",
           "layer": "default"
+        }
+      },
+      {
+        "id": "ho-222",
+        "description": "RACAO P/ CALOPSITA MEGAZOO 350G",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "200038",
+          "layer": "ai"
         }
       },
       {

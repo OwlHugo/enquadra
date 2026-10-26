@@ -25,7 +25,7 @@ A coluna *Lista de NCM* diz se a API oficial restringe os NCM aceitos no código
 | 200003 | Vendas de produtos destinados à alimentação humana (Anexo I) | resolve | Anexo I (art. 125), lista de NCM. |
 | 200004 | Fornecimento de dispositivos médicos (Anexo XII) | resolve | Anexo XII (art. 144, I), lista de NCM + descrição. |
 | 200005 | Fornecimento de dispositivos médicos para órgãos da administração pública e enti | aviso | Anexo IV para órgão público ou entidade com CEBAS. O motor decide o código do consumidor comum (200030) e emite o alerta `buyer_dependent_code` citando este. |
-| 200007 | Fornecimento dos dispositivos de acessibilidade próprios para pessoas com defici | resolve | Anexo XIII (art. 145, I), lista de NCM + descrição. |
+| 200007 | Fornecimento dos dispositivos de acessibilidade próprios para pessoas com defici | resolve | Anexo XIII (art. 145, I), lista de NCM + descrição. Só cadeira de rodas, suas partes e próteses (8713, 871420, 9021) decidem sozinhas; os demais itens (ex.: barra de apoio 8302.41) viram pergunta porque o NCM é de uso geral. |
 | 200008 | Fornecimento dos dispositivos de acessibilidade próprios para pessoas com defici | aviso | Anexo V para órgão público ou entidade com CEBAS. Alerta `buyer_dependent_code` no 200031. |
 | 200011 | Fornecimento das composições para nutrição enteral e parenteral quando adquirida | aviso | Anexo VI para órgão público ou entidade com CEBAS. Alerta `buyer_dependent_code` no 200033. |
 | 200014 | Fornecimento dos produtos hortícolas, frutas e ovos (Anexo XV) | resolve | Anexo XV (art. 148), lista de NCM. |
@@ -77,7 +77,7 @@ Itens de anexo sem efeito: os de serviço (NBS) dos Anexos II, III, IX (22 a 34)
 | 200004 | resolve | sim | NCM | Fornecimento de dispositivos médicos (Anexo XII) | Anexo XII (art. 144, I), lista de NCM + descrição. |
 | 200005 | aviso | sim | NCM | Fornecimento de dispositivos médicos para órgãos da administração pública e enti | Anexo IV para órgão público ou entidade com CEBAS. O motor decide o código do consumidor comum (200030) e emite o alerta `buyer_dependent_code` citando este. |
 | 200006 | não coberto | não | NCM | Situação de emergência de saúde pública reconhecida pelo Poder público | Emergência de saúde pública: ato conjunto, sem lista de NCM. |
-| 200007 | resolve | sim | NCM | Fornecimento dos dispositivos de acessibilidade próprios para pessoas com defici | Anexo XIII (art. 145, I), lista de NCM + descrição. |
+| 200007 | resolve | sim | NCM | Fornecimento dos dispositivos de acessibilidade próprios para pessoas com defici | Anexo XIII (art. 145, I), lista de NCM + descrição. Só cadeira de rodas, suas partes e próteses (8713, 871420, 9021) decidem sozinhas; os demais itens (ex.: barra de apoio 8302.41) viram pergunta porque o NCM é de uso geral. |
 | 200008 | aviso | sim | NCM | Fornecimento dos dispositivos de acessibilidade próprios para pessoas com defici | Anexo V para órgão público ou entidade com CEBAS. Alerta `buyer_dependent_code` no 200031. |
 | 200009 | não coberto | não | NCM | Fornecimento dos medicamentos registrados na Anvisa | Art. 146: medicamento por finalidade (doenças raras, oncologia, diabetes...) e lista de ato conjunto; a API aceita qualquer NCM e o NCM não revela a finalidade. |
 | 200010 | não coberto | não | NCM | Fornecimento dos medicamentos registrados na Anvisa, adquiridos por órgãos da ad | Art. 146, § 1º: medicamento adquirido por órgão público ou entidade com CEBAS. |

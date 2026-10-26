@@ -42,17 +42,27 @@ Its accuracy is reported, with no target.
 
 ## What it caught
 
-First run, before any rule change (rules only): **72.1%** (238/330), **16 severe errors**. After
-fixing the rules (not the cases): **75.2%** (248/330), **0 severe errors**; with the Gemini
-disambiguator, 84.2% (278/330), 0 severe. The held-out set caught 16 severe errors and a larger
-group of silent gaps, listed in the main README.
+First run, before any rule change (rules only): **72.1%** (238/330), **16 severe errors**. The 16 ids:
+`ho-135 ho-136 ho-147 ho-162 ho-189 ho-196 ho-201 ho-202 ho-223 ho-224 ho-248 ho-249 ho-250 off-068
+off-070 off-071`. Causes: water-bleach NCM shared by disinfectant and alcohol gel; absorvente for
+incontinence read as menstrual; vaccine falling to the default; accessibility NCMs (cane, grab bar,
+alarm clock, hand controls) resolved from the NCM plus one word; bird seed and corn grain read as
+human food; juices, canned corn and chickpeas taken as "no sugar, no salt"; books with toys and CDs.
+
+The rules were then changed (the cases were not). Rules only: **73.9%** (244/330), **0 severe errors**.
+With the Gemini disambiguator, see the main README.
 
 ## Limits
 
-- After the first run I read the failing items to fix the rules, so this set is no longer fully blind
-  for the rules that were changed. The fixes were written as general rules (a whole condition, not a
-  string match), but treat the post-fix numbers as an upper bound. A new, never-seen batch is the next step.
+- The held-out set is **no longer blind** for the rules changed after the first run. Some of the
+  fixes are general (a condition now needs a second signal; accessibility items with a general-use
+  NCM become a question; animal use vetoes human food; a rule for art. 146 § 1º III vaccines). Others
+  are signals taken from the failing items (`ração`, `calopsita`, `procedimento`, `esteril`,
+  `glicemia`, `ultrassom`, `colorir`, `pelucia`, `ao vivo`, ...). Treat the post-fix number as
+  contaminated until a new, never-seen batch is written.
+- With the AI, `accuracy` counts a `review` that carries the right code as a hit (see
+  `evals/run.ts`). The AI does not resolve more items: `resolved` is the same in both modes.
 - The expected code is the author's reading of the law, checked against the API where the API has a
   restricted list. A few `needs_info` items are debatable.
 - Most remaining misses are conservative: the engine asks or marks `review` where the author expected
-  a decision (medicines, vaccines for animals, agricultural inputs). They are not wrong codes.
+  a decision (medicines by active ingredient, animal vaccines, agricultural inputs). They are not wrong codes.

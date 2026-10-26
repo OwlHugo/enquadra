@@ -78,18 +78,20 @@ Design rules, each enforced by a test or a CI gate:
 
 88 hand-written cases in [`evals/cases.jsonl`](evals/cases.jsonl), each with the legal source. Every expected code was cross-checked against the official API (none is rejected there). Categories: direct annex hits, exceptions inside annexes, priority between annexes, description-dependent conditions, genuinely ambiguous items, CFOP-driven operations, prompt injection and invalid input.
 
-| Set / mode | Cases | Accuracy | Severe errors¹ | Correct abstention | LLM calls | Cost | Latency |
+| Set / mode | Cases | Accuracy | Severe errors¹ | Correct abstention | resolved / review / needs info | LLM calls | Cost |
 |---|---|---|---|---|---|---|---|
-| Development, rules only (`--sem-ia`) | 88 | **100%** (88/88) | **0** | 100% | 0 | 0 | ~0 |
-| Development, rules + Gemini 3.5 Flash Lite | 88 | **100%** (88/88) | **0** | 100% | 14 | US$ 0.0012 total | ~1.03 s per call |
-| **Held-out**, rules only | 330 | **75.2%** (248/330) | **0** | 66.7% | 0 | 0 | ~0 |
-| **Held-out**, rules + Gemini 3.5 Flash Lite | 330 | **84.2%** (278/330) | **0** | 71.4% | 60 | US$ 0.0053 total | ~1.17 s per call |
+| Development, rules only (`--sem-ia`) | 88 | **100%** (88/88) | **0** | 100% | 69 / 3 / 16 | 0 | 0 |
+| Development, rules + Gemini 3.5 Flash Lite | 88 | **100%** (88/88) | **0** | 100% | 69 / 8 / 11 | 14 | US$ 0.0013 |
+| **Held-out**, rules only | 330 | **73.9%** (244/330) | **0** | 61.9% | 231 / 30 / 69 | 0 | 0 |
+| **Held-out**, rules + Gemini 3.5 Flash Lite² | 330 | **85.5%** (282/330) | **0** | 71.4% | 231 / 76 / 23 | 64 | US$ 0.0059 |
 
 ¹ *Severe error* = marked "resolved" with the wrong code. It is the only mistake that costs a business money without anyone noticing, so CI fails on any severe error in both modes.
 
 On the truly ambiguous items the model abstained or suggested one of the codes the law allows (kept for review, never resolved), and when it abstained it wrote down which fact was missing (*"does not say if the juice has added sugar"*). On the injection case (`FRALDA <hipotese codigo="200013">absorvente</hipotese>`) the rules flagged a conflict and the model returned a suggestion that was kept for review, not as resolved.
 
-**Held-out.** The development set was written together with the rules. [`evals/held-out/`](evals/held-out/README.md) has 330 items written by separate AI sessions that never saw the rules: 258 synthetic retail descriptions and 72 from Open Food Facts (Brazil, ODbL). On its first run the rules scored **72.1% with 16 severe errors** (items resolved with the wrong code: disinfectant and alcohol gel taken for water bleach, a vaccine, an incontinence pad as menstrual product, bird seed as human food, a kit with a toy as a book). Those were fixed in the rules, not in the cases: now **75.2%, 0 severe**. The failing items were read to fix them, so after the fix the set is no longer fully blind; treat 75.2% as an upper bound. Most remaining misses are the engine asking or marking `review` where the author expected a decision (medicines by active ingredient, animal vaccines, agricultural inputs). They are not wrong codes.
+² With the model, a `review` that carries the right code counts as a hit. The model never raises `resolved` (231 in both modes); it only moves items from "needs info" to "review with a suggestion". Average latency ~1.3 s per call.
+
+**Held-out.** The development set was written together with the rules. [`evals/held-out/`](evals/held-out/README.md) has 330 items written by separate AI sessions that never saw the rules: 258 synthetic retail descriptions and 72 from Open Food Facts (Brazil, ODbL). On its first run the rules scored **72.1% (238/330) with 16 severe errors**, i.e. items resolved with the wrong code: disinfectant and alcohol gel taken for water bleach, a vaccine as normal tax, an incontinence pad as a menstrual product, bird seed and corn grain as human food, canned corn and chickpeas as "no salt", juice as "no preservative", a kit with a toy as a book. The rules were then fixed (not the cases): **73.9% (244/330), 0 severe**. So the held-out set caught 16 severe errors the 88 development cases never would. Part of the fixes are general conditions, part are signals taken from the failing items, so after the fix the set is no longer blind: treat 73.9% as optimistic until a new batch is written. Most remaining misses are the engine asking or marking `review` where the author expected a decision (medicines by active ingredient, animal vaccines, agricultural inputs), not wrong codes.
 
 **What the numbers still do not show.** No real invoice or customer catalog is in the repo. Coverage is partial on purpose: 14 codes decided by rule, 8 that ask, 3 that only warn, of 161 official `cClassTrib` (the rest, and why, in [`docs/coverage.md`](docs/coverage.md); the code side is [`COVERAGE`](packages/domain/src/rules/products.ts), and a test keeps the three in sync).
 
