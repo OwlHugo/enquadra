@@ -6,7 +6,7 @@ import { z } from 'zod'
 /**
  * Desambiguador com LLM. Três travas, nesta ordem:
  * 1. o modelo só vê os candidatos que a regra já validou (nunca os 161 códigos);
- * 2. a saída é um enum fechado com esses códigos ou `preciso_perguntar`;
+ * 2. a saída é um enum fechado com esses códigos ou `need_to_ask`;
  * 3. a citação é conferida pelo motor contra o texto literal da lei (fora daqui).
  * A descrição do produto entra delimitada como dado, nunca como instrução.
  */

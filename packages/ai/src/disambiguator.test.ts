@@ -94,7 +94,7 @@ describe('configuração pelo ambiente', () => {
 
   it('modelo sem preço cadastrado é erro, não custo zero', () => {
     expect(() =>
-      disambiguatorFromEnv({ GEMINI_API_KEY: 'x', ENQUADRA_MODEL: 'modelo-sem-preco' }),
+      disambiguatorFromEnv({ GEMINI_API_KEY: 'x', ENQUADRA_MODELO: 'modelo-sem-preco' }),
     ).toThrow('has no price')
   })
 })

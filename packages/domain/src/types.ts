@@ -15,7 +15,7 @@ export type Cst = Nominal<string, 'Cst'>
 /** CFOP com 4 dígitos. */
 export type Cfop = Nominal<string, 'Cfop'>
 /** Data no formato AAAA-MM-DD. */
-export type IsoDate = Nominal<string, 'DataIso'>
+export type IsoDate = Nominal<string, 'IsoDate'>
 
 export const cClassTrib = (code: string): CClassTrib => {
   if (!/^\d{6}$/.test(code)) throw new DomainError('invalid_cclasstrib', code)
@@ -31,12 +31,15 @@ export const isoDate = (value: string): IsoDate => {
   return value as IsoDate
 }
 
+/** `code` é estável, para máquina; `detail` é o pedaço do texto que a ponta mostra à pessoa. */
 export class DomainError extends Error {
   readonly code: string
+  readonly detail: string
   constructor(code: string, detail: string) {
     super(`${code}: ${detail}`)
     this.code = code
-    this.name = 'ErroDeDominio'
+    this.detail = detail
+    this.name = 'DomainError'
   }
 }
 
@@ -64,8 +67,8 @@ export type Layer = 'manual' | 'operation' | 'annex' | 'description' | 'ai' | 'd
 
 /**
  * Confiança é categoria calculada por regra, nunca um número devolvido por modelo.
- * alta: regra decidiu sem ambiguidade. media: houve escolha entre hipóteses válidas.
- * baixa: falta fato que só a pessoa sabe.
+ * high: regra decidiu sem ambiguidade. medium: houve escolha entre hipóteses válidas.
+ * low: falta fato que só a pessoa sabe.
  */
 export type Confidence = 'high' | 'medium' | 'low'
 

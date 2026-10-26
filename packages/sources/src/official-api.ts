@@ -11,9 +11,9 @@ import { z } from 'zod'
  * Cliente da API pública de dados abertos da Calculadora de Tributos sobre Consumo
  * (Receita Federal / Serpro). Sem chave. OpenAPI em `${BASE}/../api-docs`.
  *
- * Regras de boa vizinhança: no máximo `concorrencia` requisições simultâneas, timeout,
+ * Regras de boa vizinhança: no máximo `concurrency` requisições simultâneas, timeout,
  * repetição com espera crescente, e cache por (ncm, código, data). Se a API cair, o motor
- * segue sem ela e marca 'indisponivel', nunca inventa um 'aceito'.
+ * segue sem ela e marca 'unavailable', nunca inventa um 'accepted'.
  */
 
 export const CALCULATOR_BASE =
@@ -65,7 +65,7 @@ export const createOfficialValidator = (options: ClientOptions = {}): OfficialVa
   /**
    * Uma tentativa. `null` quer dizer "vale tentar de novo": falha de rede, timeout, 5xx ou 429.
    * 4xx e resposta fora do contrato não são instabilidade: são pedido errado ou API que mudou,
-   * e viram erro alto em vez de um 'indisponivel' que ninguém investiga.
+   * e viram erro alto em vez de um 'unavailable' que ninguém investiga.
    */
   const attempt = async (url: URL): Promise<OfficialValidation | null> => {
     let response: Response

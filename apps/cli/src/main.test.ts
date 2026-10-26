@@ -43,9 +43,9 @@ describe('enquadra xmls', { timeout: 30_000 }, () => {
     expect(r.status).toBe(1)
     expect(r.stdout).toContain('5 itens distintos em 1 nota ·')
     expect(r.stdout).toContain('3 arquivos falharam')
-    expect(r.stdout).toMatch(/b-cortada\.xml: malformed_xml/)
-    expect(r.stdout).toMatch(/c-cte\.xml: not_an_nfe/)
-    expect(r.stdout).toMatch(/d-link-quebrado\.xml: ENOENT/)
+    expect(r.stdout).toMatch(/b-cortada\.xml: XML malformado \(linha 1/)
+    expect(r.stdout).toMatch(/c-cte\.xml: não é NF-e nem NFC-e \(infNFe ausente\)/)
+    expect(r.stdout).toMatch(/d-link-quebrado\.xml: arquivo não encontrado/)
     expect(r.stdout).toContain('ARROZ TIPO 1 TIO JOAO 5KG')
   })
 
@@ -63,7 +63,7 @@ describe('enquadra xmls', { timeout: 30_000 }, () => {
     const content = await readFile(html, 'utf8')
     expect(content).toContain('3 arquivos não puderam ser lidos')
     expect(content).toContain('b-cortada.xml')
-    expect(content).toContain('malformed_xml')
+    expect(content).toContain('XML malformado')
   })
 
   it('no modo --json as falhas vêm junto dos resultados', () => {
@@ -98,6 +98,6 @@ describe('enquadra xmls', { timeout: 30_000 }, () => {
     const empty = await mkdtemp(join(tmpdir(), 'enquadra-cli-vazia-'))
     const r = run('xmls', empty)
     expect(r.status).toBe(1)
-    expect(r.stderr).toContain('no_xml')
+    expect(r.stderr).toContain('nenhum XML encontrado (nenhum arquivo .xml em')
   })
 })

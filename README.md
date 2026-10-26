@@ -102,7 +102,7 @@ pnpm enquadra xmls exemplos --html relatorio.html
 GEMINI_API_KEY=... pnpm enquadra item "PAO KG" 1905.90.90   # LLM only on ambiguous items
 ```
 
-MCP server for Claude, Cursor or any MCP client (`classificar_item`, `regras_cobertas`, `versao_tabela`):
+MCP server for Claude, Cursor or any MCP client (`classify_item`, `covered_rules`, `table_version`):
 
 ```json
 { "mcpServers": { "enquadra": { "command": "npx", "args": ["@enquadra/mcp"] } } }

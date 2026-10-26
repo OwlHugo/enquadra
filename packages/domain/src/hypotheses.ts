@@ -10,7 +10,7 @@ import type { Ncm } from './types.ts'
 
 export interface Hypothesis {
   readonly rule: ProductRule
-  /** 'atende' também quando a regra não tem condição. */
+  /** 'meets' também quando a regra não tem condição. */
   readonly evaluation: Evaluation
   readonly hasCondition: boolean
 }

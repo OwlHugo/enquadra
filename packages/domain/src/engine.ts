@@ -261,7 +261,7 @@ const decideDefault = (
   const accepted = deps.table.restrictedAccepting(item.ncm)
   if (accepted === undefined) {
     // Sem a sondagem oficial do NCM, a tributação integral vale só pelo que o motor transcreveu
-    // da lei: resolve, mas sem confiança alta e com o motivo à vista (alerta em `montar`).
+    // da lei: resolve, mas sem confiança alta e com o motivo à vista (alerta em `build`).
     r.status = 'resolved'
     r.confidence = 'medium'
     r.trail.push(

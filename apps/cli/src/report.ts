@@ -1,5 +1,5 @@
 import { formatNcm, type Result, summarize } from '@enquadra/domain'
-import { CONFIDENCE_LABEL } from './labels.ts'
+import { CONFIDENCE_LABEL, errorText } from './labels.ts'
 import type { Failure } from './xmls.ts'
 
 /**
@@ -47,7 +47,7 @@ const failuresSection = (failures: readonly Failure[]): string =>
     : `<section class="failures"><h2>${failures.length} ${failures.length === 1 ? 'arquivo não pôde ser lido' : 'arquivos não puderam ser lidos'}</h2>
 <p class="meta">Os itens destes arquivos não estão na tabela abaixo.</p>
 <table><thead><tr><th>Arquivo</th><th>Motivo</th></tr></thead>
-<tbody>${failures.map((f) => `<tr><td><code>${esc(f.file)}</code></td><td>${esc(f.reason)}</td></tr>`).join('')}</tbody></table></section>`
+<tbody>${failures.map((f) => `<tr><td><code>${esc(f.file)}</code></td><td>${esc(errorText(f.code, f.detail))}</td></tr>`).join('')}</tbody></table></section>`
 
 export const htmlReport = (
   results: readonly Result[],

@@ -11,7 +11,7 @@ import { z } from 'zod'
  * com fundamento, trilha e perguntas pendentes, para decidir se pergunta ao usuário.
  */
 
-const table = await loadTable(process.env['ENQUADRA_TABLE'] ?? DEFAULT_TABLE)
+const table = await loadTable(process.env['ENQUADRA_TABELA'] ?? DEFAULT_TABLE)
 const disambiguator = disambiguatorFromEnv()
 const deps = (date?: string): Dependencies => ({
   table,

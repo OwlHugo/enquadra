@@ -21,12 +21,12 @@ export const disambiguatorFromEnv = (
 ): Disambiguator | undefined => {
   const key = env['GEMINI_API_KEY'] ?? env['GOOGLE_GENERATIVE_AI_API_KEY']
   if (!key) return undefined
-  const name = env['ENQUADRA_MODEL'] ?? DEFAULT_MODEL
+  const name = env['ENQUADRA_MODELO'] ?? DEFAULT_MODEL
   const price = PRICES[name]
   // Sem preço o custo sairia US$ 0 em todo relatório, e o eval compararia modelos às cegas.
   if (!price) {
     throw new Error(
-      `ENQUADRA_MODEL=${name} has no price in PRICES (${Object.keys(PRICES).join(', ')})`,
+      `ENQUADRA_MODELO=${name} has no price in PRICES (${Object.keys(PRICES).join(', ')})`,
     )
   }
   const google = createGoogleGenerativeAI({ apiKey: key })

@@ -11,7 +11,7 @@ Date: 2026-10-18 · Status: accepted
 - `evals/cases.jsonl` holds hand-written cases with the legal source for each expected answer. Ambiguous cases expect `needs_info` with the options the law allows.
 - `evals/run.ts` reports accuracy per category, **severe errors** (resolved with wrong code), correct abstention, and LLM calls, cost and latency.
 - CI gate: rules-only mode must pass 100% with zero severe errors. AI mode may differ on ambiguous cases, but never with a severe error.
-- Changing the model (`ENQUADRA_MODEL`) is only accepted if `pnpm eval` does not get worse.
+- Changing the model (`ENQUADRA_MODELO`) is only accepted if `pnpm eval` does not get worse.
 
 ## Known limitation
 

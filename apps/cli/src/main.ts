@@ -15,6 +15,7 @@ import {
   summarize,
 } from '@enquadra/domain'
 import { createOfficialValidator, DEFAULT_TABLE, loadTable } from '@enquadra/sources'
+import { errorText } from './labels.ts'
 import { color, failureLine, resultLine } from './output.ts'
 import { htmlReport } from './report.ts'
 import { type Failure, readXmls } from './xmls.ts'
@@ -57,7 +58,7 @@ const listXmls = async (target: string): Promise<string[]> => {
   const files = entries
     .filter((e) => (e.isFile() || e.isSymbolicLink()) && extname(e.name).toLowerCase() === '.xml')
     .map((e) => join(e.parentPath, e.name))
-  if (files.length === 0) throw new DomainError('no_xml', `no .xml file in ${target}`)
+  if (files.length === 0) throw new DomainError('no_xml', `nenhum arquivo .xml em ${target}`)
   return files.sort()
 }
 
@@ -140,7 +141,7 @@ const main = async (): Promise<void> => {
 
 // Erro de domínio é mensagem para a pessoa; qualquer outro é bug e sai com stack e causa.
 main().catch((error: unknown) => {
-  if (error instanceof DomainError) console.error(color.red(error.message))
+  if (error instanceof DomainError) console.error(color.red(errorText(error.code, error.detail)))
   else console.error(error)
   process.exitCode = 1
 })

@@ -1,5 +1,11 @@
 import { formatNcm, type Result } from '@enquadra/domain'
-import { CONFIDENCE_LABEL, LAYER_LABEL, STATUS_LABEL, VALIDATION_LABEL } from './labels.ts'
+import {
+  CONFIDENCE_LABEL,
+  errorText,
+  LAYER_LABEL,
+  STATUS_LABEL,
+  VALIDATION_LABEL,
+} from './labels.ts'
 import type { Failure } from './xmls.ts'
 
 const enabled = process.stdout.isTTY && !process.env['NO_COLOR']
@@ -47,4 +53,5 @@ export const resultLine = (r: Result, detailed = false): string => {
   return lines.join('\n')
 }
 
-export const failureLine = (f: Failure): string => `  ${color.red('✗')} ${f.file}: ${f.reason}`
+export const failureLine = (f: Failure): string =>
+  `  ${color.red('✗')} ${f.file}: ${errorText(f.code, f.detail)}`

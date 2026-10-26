@@ -2,12 +2,13 @@
  * Avaliação do motor contra `evals/cases.jsonl`.
  *
  *   node --conditions=development evals/run.ts            com IA (se GEMINI_API_KEY existir)
- *   node --conditions=development evals/run.ts --sem-ia   só regras: é o modo que o CI exige 100%
+ *   node --conditions=development evals/run.ts --no-ai    só regras: é o modo que o CI exige 100%
+ *                                                         (`pnpm eval:sem-ia`)
  *
- * Métricas (definidas em docs/avaliacao.md):
- *   acerto       resultado bate com o esperado (status + código ou opções)
- *   abstencao    casos ambíguos em que o motor perguntou em vez de chutar
- *   erro_grave   motor deu "resolvido" com código errado: é o único erro que custa dinheiro
+ * Métricas:
+ *   accuracy            resultado bate com o esperado (status + código ou opções)
+ *   correctAbstention   casos ambíguos em que o motor perguntou em vez de chutar
+ *   severeErrors        motor deu "resolved" com código errado: o único erro que custa dinheiro
  * Saída: tabela no terminal + evals/reports/<modo>.json, comparado com a linha de base.
  */
 import { readFile, writeFile } from 'node:fs/promises'

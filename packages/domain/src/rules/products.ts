@@ -5,7 +5,7 @@ import * as c from './conditions.ts'
 /**
  * Regras de produto da LC 214/2025, escritas como dado e não como `if`.
  * Cada regra é um item de anexo (ou artigo), com o texto literal da lei
- * copiado do Planalto em 18/10/2026. A cobertura está declarada em `COBERTURA`.
+ * copiado do Planalto em 18/10/2026. A cobertura está declarada em `COVERAGE`.
  *
  * Prefixos de NCM: a lei cita capítulo ("Capítulo 6" → "06"), posição ("09.01" → "0901"),
  * subposição ("2101.1" → "21011") ou código ("0405.10.00" → "04051000").
@@ -23,7 +23,7 @@ export interface ProductRule {
   readonly exclude?: readonly string[]
   /**
    * Prefixos afastados por interpretação de uma ressalva genérica da lei, e não por código
-   * escrito no texto. Ficam separados de `excluir` para que a derivação seja auditável.
+   * escrito no texto. Ficam separados de `exclude` para que a derivação seja auditável.
    */
   readonly excludedByProviso?: { readonly prefixes: readonly string[]; readonly why: string }
   /** Inclusão derivada de termo da lei (ex.: "casca rija" → 0801, 0802), com a justificativa. */

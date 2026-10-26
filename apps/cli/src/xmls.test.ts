@@ -7,9 +7,7 @@ const EXAMPLE = new URL('../../../examples/nfe-mercado.xml', import.meta.url)
 describe('lerXmls', () => {
   it('arquivo que não abre vira falha com o motivo do sistema', async () => {
     const parsed = await readXmls(['/nao/existe.xml'], (a) => readFile(a, 'utf8'))
-    expect(parsed.failures).toEqual([
-      { file: '/nao/existe.xml', reason: expect.stringContaining('ENOENT') },
-    ])
+    expect(parsed.failures).toEqual([{ file: '/nao/existe.xml', code: 'ENOENT', detail: '' }])
   })
 
   it('erro que não é do arquivo (bug) derruba o lote, não vira falha', async () => {

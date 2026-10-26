@@ -50,27 +50,27 @@ const issuedCClassTrib = (taxNode: XmlNode): string | null => {
 export const parseNfe = (xml: string): ParsedInvoice => {
   // O parser aceita XML truncado e devolve só o pedaço lido: sem validar antes, uma nota cortada
   // no meio viraria uma nota com menos itens, sem aviso.
-  const valido = XMLValidator.validate(xml)
-  if (valido !== true) {
-    throw new DomainError('malformed_xml', `line ${valido.err.line}: ${valido.err.msg}`)
+  const validation = XMLValidator.validate(xml)
+  if (validation !== true) {
+    throw new DomainError('malformed_xml', `linha ${validation.err.line}: ${validation.err.msg}`)
   }
   const root = parser.parse(xml) as XmlNode
   const nfe = node(node(root['nfeProc'])['NFe'] ?? root['NFe'])
   const inf = node(nfe['infNFe'])
-  if (Object.keys(inf).length === 0) throw new DomainError('not_an_nfe', 'infNFe missing')
+  if (Object.keys(inf).length === 0) throw new DomainError('not_an_nfe', 'infNFe ausente')
 
   const ide = node(inf['ide'])
   const dest = node(inf['dest'])
   const dhEmi = text(ide['dhEmi'])
-  if (!dhEmi) throw new DomainError('nfe_without_issue_date', 'ide/dhEmi missing')
+  if (!dhEmi) throw new DomainError('nfe_without_issue_date', 'ide/dhEmi ausente')
   const issueDate = isoDate(dhEmi.slice(0, 10))
   const model = text(ide['mod'])
   if (model !== '55' && model !== '65') {
-    throw new DomainError('unsupported_model', `mod=${model ?? 'missing'} (only 55 and 65)`)
+    throw new DomainError('unsupported_model', `mod=${model ?? 'ausente'} (só 55 e 65)`)
   }
 
   const dets = inf['det'] as unknown[] | undefined
-  if (!dets) throw new DomainError('nfe_without_items', 'no det in infNFe')
+  if (!dets) throw new DomainError('nfe_without_items', 'nenhum det em infNFe')
   const items: InputItem[] = []
   const issued: { index: number; cClassTrib: string | null }[] = []
   dets.forEach((det, index) => {
