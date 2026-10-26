@@ -19,7 +19,10 @@ export interface TabelaOficial {
   classificacao(codigo: CClassTrib): Classificacao | undefined
   /** Nome oficial do NCM na nomenclatura vigente, ou undefined se o código não existe. */
   nomeNcm(codigo: Ncm): string | undefined
-  /** cClassTrib cuja lista oficial de NCM aceita este código (só os de lista restrita). */
+  /**
+   * cClassTrib cuja lista oficial de NCM aceita este código (só os de lista restrita).
+   * undefined quando o NCM não foi sondado na API nesta versão, o que é diferente de "nenhum".
+   */
   restritosQueAceitam(codigo: Ncm): readonly CClassTrib[] | undefined
 }
 

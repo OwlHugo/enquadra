@@ -115,6 +115,7 @@ export type CodigoAlerta =
   | 'prioridade_entre_anexos'
   | 'divergencia_oficial'
   | 'beneficio_nao_mapeado'
+  | 'ncm_nao_sondado'
   | 'outras_hipoteses_oficiais'
   | 'validacao_oficial_fraca'
   | 'operacao_fora_do_escopo'
