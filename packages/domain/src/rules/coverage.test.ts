@@ -49,13 +49,13 @@ describe('COVERAGE, docs/coverage.md e README dizem a mesma coisa', () => {
       '200007',
       '200014',
       '200030',
-      '200031',
       '200033',
       '200034',
       '200035',
     ])
       expect(situation(c), c).toBe('resolve')
-    for (const c of ['200038', '200039', '200043']) expect(situation(c), c).toBe('pergunta')
+    for (const c of ['200031', '200038', '200039', '200043'])
+      expect(situation(c), c).toBe('pergunta')
     for (const c of ['200005', '200008', '200011']) expect(situation(c), c).toBe('aviso')
     expect(situation('515001')).toBe('não coberto')
   })

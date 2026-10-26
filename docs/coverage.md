@@ -14,9 +14,9 @@ A coluna *Lista de NCM* diz se a API oficial restringe os NCM aceitos no código
 | Situação | Códigos |
 |---|---|
 | resolve | 14 |
-| pergunta | 6 |
+| pergunta | 8 |
 | aviso | 3 |
-| não coberto | 138 |
+| não coberto | 136 |
 
 ## Os 17 códigos com lista restrita de NCM
 
@@ -30,7 +30,7 @@ A coluna *Lista de NCM* diz se a API oficial restringe os NCM aceitos no código
 | 200011 | Fornecimento das composições para nutrição enteral e parenteral quando adquirida | aviso | Anexo VI para órgão público ou entidade com CEBAS. Alerta `buyer_dependent_code` no 200033. |
 | 200014 | Fornecimento dos produtos hortícolas, frutas e ovos (Anexo XV) | resolve | Anexo XV (art. 148), lista de NCM. |
 | 200030 | Venda dos dispositivos médicos (Anexo IV) | resolve | Anexo IV (art. 131), lista de NCM + descrição. |
-| 200031 | Fornecimento dos dispositivos de acessibilidade próprios para pessoas com defici | resolve | Anexo V (art. 132), lista de NCM + descrição. |
+| 200031 | Fornecimento dos dispositivos de acessibilidade próprios para pessoas com defici | pergunta | Anexo V (art. 132): NCM + descrição indicam o dispositivo, mas o uso por pessoa com deficiência não está na nota; sai como pergunta. |
 | 200033 | Fornecimento das composições para nutrição enteral e parenteral (Anexo VI) | resolve | Anexo VI (art. 133, § 1º), NCM + sinal de nutrição enteral/parenteral ou EIM na descrição. |
 | 200034 | Fornecimento dos alimentos destinados ao consumo humano (Anexo VII) | resolve | Anexo VII (art. 135), lista de NCM. |
 | 200035 | Fornecimento dos produtos de higiene pessoal e limpeza (Anexo VIII) | resolve | Anexo VIII (art. 136), lista de NCM. |
@@ -101,7 +101,7 @@ Itens de anexo sem efeito: os de serviço (NBS) dos Anexos II, III, IX (22 a 34)
 | 200028 | não coberto | não | NBS | Fornecimento dos serviços de educação (Anexo II) | Serviço (NBS): fora do escopo; o Enquadra classifica mercadoria (NCM). |
 | 200029 | não coberto | não | NBS | Fornecimento dos serviços de saúde humana (Anexo III) | Serviço (NBS): fora do escopo; o Enquadra classifica mercadoria (NCM). |
 | 200030 | resolve | sim | NCM | Venda dos dispositivos médicos (Anexo IV) | Anexo IV (art. 131), lista de NCM + descrição. |
-| 200031 | resolve | sim | NCM | Fornecimento dos dispositivos de acessibilidade próprios para pessoas com defici | Anexo V (art. 132), lista de NCM + descrição. |
+| 200031 | pergunta | sim | NCM | Fornecimento dos dispositivos de acessibilidade próprios para pessoas com defici | Anexo V (art. 132): NCM + descrição indicam o dispositivo, mas o uso por pessoa com deficiência não está na nota; sai como pergunta. |
 | 200032 | não coberto | não | NCM | Fornecimento dos medicamentos registrados na Anvisa ou produzidos por farmácias  | Art. 133: medicamento registrado na Anvisa. Sem lista de NCM (a API aceita qualquer): depende do registro e da lista de ato conjunto. |
 | 200033 | resolve | sim | NCM | Fornecimento das composições para nutrição enteral e parenteral (Anexo VI) | Anexo VI (art. 133, § 1º), NCM + sinal de nutrição enteral/parenteral ou EIM na descrição. |
 | 200034 | resolve | sim | NCM | Fornecimento dos alimentos destinados ao consumo humano (Anexo VII) | Anexo VII (art. 135), lista de NCM. |
@@ -123,7 +123,7 @@ Itens de anexo sem efeito: os de serviço (NBS) dos Anexos II, III, IX (22 a 34)
 | 200050 | não coberto | não | NBS ou NCM | Serviços de transporte aéreo regional coletivo de passageiros ou de carga | Serviço, locação ou imóvel: fora do escopo (mercadoria). |
 | 200051 | não coberto | não | NBS ou NCM | Agências de Turismo | Serviço, locação ou imóvel: fora do escopo (mercadoria). |
 | 200052 | não coberto | não | NBS ou NCM | Prestação de serviços de profissões intelectuais | Serviço, locação ou imóvel: fora do escopo (mercadoria). |
-| 200053 | não coberto | não | NCM | Fornecimento de medicamentos registrados na Anvisa, quando  classificados como s | Art. 146, § 1º, III: soros e vacinas por regulamentação sanitária; a API aceita qualquer NCM. |
+| 200053 | resolve | não | NCM | Fornecimento de medicamentos registrados na Anvisa, quando  classificados como s | Art. 146, § 1º, III: vacinas de uso humano (3002.41); a API aceita o NCM. |
 | 200054 | não coberto | não | NCM | Fornecimento de bem material pela cooperativa de produção agropecuária a associa | Cooperativa agropecuária fornecendo a associado: fato do vendedor e do adquirente. |
 | 221001 | não coberto | não | NBS ou NCM | Locação, cessão onerosa ou arrendamento de bem imóvel com alíquota sobre a recei | Imóveis (locação, incorporação, alienação): fora do escopo (mercadoria). |
 | 221002 | não coberto | não | NBS ou NCM | Incorporação imobiliária submetida ao regime especial de tributação | Imóveis (locação, incorporação, alienação): fora do escopo (mercadoria). |
@@ -140,7 +140,7 @@ Itens de anexo sem efeito: os de serviço (NBS) dos Anexos II, III, IX (22 a 34)
 | 410006 | não coberto | não | NBS ou NCM | Fornecimentos realizados por entidades religiosas e templos de qualquer culto | Imunidade por natureza do emitente (ente público, templo, partido, instituição): fato do emitente, fora da nota. |
 | 410007 | não coberto | não | NBS ou NCM | Fornecimentos realizados por partidos políticos, entidades sindicais e instituiç | Imunidade por natureza do emitente (ente público, templo, partido, instituição): fato do emitente, fora da nota. |
 | 410008 | resolve | não | NBS ou NCM | Fornecimentos de livros, jornais, periódicos e do papel destinado a sua impressã | Art. 9º, IV, NCM 4901 a 4903. |
-| 410009 | não coberto | não | NBS ou NCM | Fornecimentos de fonogramas e videofonogramas musicais produzidos no Brasil | Art. 9º, V: fonograma musical brasileiro; o NCM (8523) não separa produção nacional. |
+| 410009 | pergunta | não | NBS ou NCM | Fornecimentos de fonogramas e videofonogramas musicais produzidos no Brasil | Art. 9º, V: mídia musical gravada; produção no Brasil e autor brasileiro não estão na nota, sai como pergunta. |
 | 410010 | não coberto | não | NBS ou NCM | Fornecimentos de serviço de comunicação nas modalidades de radiodifusão sonora e | Fato do emitente ou do adquirente (produtor rural, transportador autônomo, condomínio, rádio, resíduos) ou operação sem lista de NCM. |
 | 410011 | não coberto | não | NCM | Fornecimentos de ouro, quando definido em lei como ativo financeiro ou instrumen | Art. 9º, VII: ouro só quando definido em lei como ativo financeiro; depende da operação. |
 | 410012 | não coberto | não | NBS ou NCM | Fornecimento de condomínio edilício não optante pelo regime regular | Fato do emitente ou do adquirente (produtor rural, transportador autônomo, condomínio, rádio, resíduos) ou operação sem lista de NCM. |
