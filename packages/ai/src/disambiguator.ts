@@ -53,7 +53,7 @@ export const createDisambiguator = (options: DisambiguatorOptions): Disambiguato
     const schema = z.object({
       decision: z.enum(codes),
       quote: z.string(),
-      justification: z.string().max(300),
+      justification: z.string(),
     })
     const start = performance.now()
     const response = await generateText({
