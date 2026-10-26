@@ -11,38 +11,36 @@
 import { readdir, readFile } from 'node:fs/promises'
 import { dirname, join, relative, resolve } from 'node:path'
 
-const RAIZ = resolve(new URL('..', import.meta.url).pathname)
-const IO_DO_NODE = /^node:(fs|net|http|https|child_process|worker_threads|dgram|dns|tls)(\/|$)/
+const ROOT = resolve(new URL('..', import.meta.url).pathname)
+const NODE_IO = /^node:(fs|net|http|https|child_process|worker_threads|dgram|dns|tls)(\/|$)/
 
-interface Regra {
-  readonly de: RegExp
-  readonly permitido: (alvo: string) => boolean
-  readonly motivo: string
+interface Rule {
+  readonly from: RegExp
+  readonly allowed: (target: string) => boolean
+  readonly reason: string
 }
 
-const REGRAS: readonly Regra[] = [
+const RULES: readonly Rule[] = [
   {
-    de: /^packages\/domain\/src\//,
-    permitido: (a) =>
-      !a.startsWith('@enquadra/') &&
-      !IO_DO_NODE.test(a) &&
-      !/^[a-z@]/.test(a.replace(/^node:/, '')),
-    motivo: 'o domínio é puro: sem pacote externo, sem outro pacote do repo, sem I/O',
+    from: /^packages\/domain\/src\//,
+    allowed: (a) =>
+      !a.startsWith('@enquadra/') && !NODE_IO.test(a) && !/^[a-z@]/.test(a.replace(/^node:/, '')),
+    reason: 'the domain is pure: no external package, no other repo package, no I/O',
   },
   {
-    de: /^packages\/(sources|nfe|ai)\/src\//,
-    permitido: (a) => !a.startsWith('@enquadra/') || a === '@enquadra/domain',
-    motivo: 'adaptadores só dependem do domínio',
+    from: /^packages\/(sources|nfe|ai)\/src\//,
+    allowed: (a) => !a.startsWith('@enquadra/') || a === '@enquadra/domain',
+    reason: 'adapters depend only on the domain',
   },
   {
-    de: /^apps\/[^/]+\//,
-    permitido: (a) => !a.startsWith('enquadra') && !a.startsWith('@enquadra/mcp'),
-    motivo: 'apps não importam outros apps',
+    from: /^apps\/[^/]+\//,
+    allowed: (a) => !a.startsWith('enquadra') && !a.startsWith('@enquadra/mcp'),
+    reason: 'apps do not import other apps',
   },
 ]
 
-const listar = async (dir: string): Promise<string[]> =>
-  (await readdir(join(RAIZ, dir), { recursive: true, withFileTypes: true }))
+const listFiles = async (dir: string): Promise<string[]> =>
+  (await readdir(join(ROOT, dir), { recursive: true, withFileTypes: true }))
     .filter(
       (e) =>
         e.isFile() &&
@@ -50,55 +48,55 @@ const listar = async (dir: string): Promise<string[]> =>
         !e.name.endsWith('.test.ts') &&
         e.name !== 'testes.ts',
     )
-    .map((e) => relative(RAIZ, join(e.parentPath, e.name)))
+    .map((e) => relative(ROOT, join(e.parentPath, e.name)))
 
-const importsDe = (codigo: string): string[] =>
+const importsOf = (code: string): string[] =>
   [
-    ...codigo.matchAll(
+    ...code.matchAll(
       /^\s*import\s+(?!type\b)[^'"]*?from\s+['"]([^'"]+)['"]|^\s*import\s+['"]([^'"]+)['"]/gm,
     ),
   ]
     .map((m) => m[1] ?? m[2])
     .filter((x): x is string => x !== undefined)
 
-const arquivos = [...(await listar('packages')), ...(await listar('apps'))].filter((f) =>
+const files = [...(await listFiles('packages')), ...(await listFiles('apps'))].filter((f) =>
   f.includes('/src/'),
 )
-const grafo = new Map<string, string[]>()
-const violacoes: string[] = []
+const graph = new Map<string, string[]>()
+const violations: string[] = []
 
-for (const arquivo of arquivos) {
-  const imports = importsDe(await readFile(join(RAIZ, arquivo), 'utf8'))
-  const regra = REGRAS.find((r) => r.de.test(arquivo))
-  const locais: string[] = []
-  for (const alvo of imports) {
-    if (alvo.startsWith('.')) {
-      locais.push(relative(RAIZ, resolve(RAIZ, dirname(arquivo), alvo)))
+for (const file of files) {
+  const imports = importsOf(await readFile(join(ROOT, file), 'utf8'))
+  const rule = RULES.find((r) => r.from.test(file))
+  const locals: string[] = []
+  for (const target of imports) {
+    if (target.startsWith('.')) {
+      locals.push(relative(ROOT, resolve(ROOT, dirname(file), target)))
       continue
     }
-    if (regra && !regra.permitido(alvo)) violacoes.push(`${arquivo} → ${alvo}: ${regra.motivo}`)
+    if (rule && !rule.allowed(target)) violations.push(`${file} → ${target}: ${rule.reason}`)
   }
-  grafo.set(arquivo, locais)
+  graph.set(file, locals)
 }
 
 // Ciclos: DFS com três cores.
-const cor = new Map<string, 'cinza' | 'preto'>()
-const visitar = (no: string, caminho: string[]): void => {
-  if (cor.get(no) === 'preto') return
-  if (cor.get(no) === 'cinza') {
-    violacoes.push(`ciclo: ${[...caminho.slice(caminho.indexOf(no)), no].join(' → ')}`)
+const color = new Map<string, 'cinza' | 'preto'>()
+const visit = (node: string, chain: string[]): void => {
+  if (color.get(node) === 'preto') return
+  if (color.get(node) === 'cinza') {
+    violations.push(`cycle: ${[...chain.slice(chain.indexOf(node)), node].join(' → ')}`)
     return
   }
-  cor.set(no, 'cinza')
-  for (const vizinho of grafo.get(no) ?? []) visitar(vizinho, [...caminho, no])
-  cor.set(no, 'preto')
+  color.set(node, 'cinza')
+  for (const neighbor of graph.get(node) ?? []) visit(neighbor, [...chain, node])
+  color.set(node, 'preto')
 }
-for (const no of grafo.keys()) visitar(no, [])
+for (const node of graph.keys()) visit(node, [])
 
-if (violacoes.length > 0) {
-  for (const v of violacoes) console.error(`✗ ${v}`)
+if (violations.length > 0) {
+  for (const v of violations) console.error(`✗ ${v}`)
   process.exitCode = 1
 } else {
-  const arestas = [...grafo.values()].reduce((s, v) => s + v.length, 0)
-  console.log(`arquitetura ok · ${arquivos.length} arquivos · ${arestas} imports locais · 0 ciclos`)
+  const edges = [...graph.values()].reduce((s, v) => s + v.length, 0)
+  console.log(`architecture ok · ${files.length} files · ${edges} local imports · 0 cycles`)
 }

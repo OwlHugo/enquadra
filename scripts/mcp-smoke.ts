@@ -5,45 +5,45 @@
 import { spawn } from 'node:child_process'
 import { createInterface } from 'node:readline'
 
-const servidor = spawn(process.execPath, ['--conditions=development', 'apps/mcp/src/main.ts'], {
+const server = spawn(process.execPath, ['--conditions=development', 'apps/mcp/src/main.ts'], {
   cwd: new URL('..', import.meta.url).pathname,
   stdio: ['pipe', 'pipe', 'inherit'],
 })
-const respostas = new Map<number, (r: unknown) => void>()
-createInterface({ input: servidor.stdout }).on('line', (linha) => {
-  const m = JSON.parse(linha) as { id?: number; result?: unknown }
-  if (m.id !== undefined) respostas.get(m.id)?.(m.result)
+const responses = new Map<number, (r: unknown) => void>()
+createInterface({ input: server.stdout }).on('line', (row) => {
+  const m = JSON.parse(row) as { id?: number; result?: unknown }
+  if (m.id !== undefined) responses.get(m.id)?.(m.result)
 })
 let id = 0
-const chamar = (method: string, params: unknown) =>
+const call = (method: string, params: unknown) =>
   new Promise<unknown>((ok) => {
-    respostas.set(++id, ok)
-    servidor.stdin.write(`${JSON.stringify({ jsonrpc: '2.0', id, method, params })}\n`)
+    responses.set(++id, ok)
+    server.stdin.write(`${JSON.stringify({ jsonrpc: '2.0', id, method, params })}\n`)
   })
 
-await chamar('initialize', {
+await call('initialize', {
   protocolVersion: '2025-06-18',
   capabilities: {},
-  clientInfo: { name: 'fumaca', version: '0' },
+  clientInfo: { name: 'smoke', version: '0' },
 })
-servidor.stdin.write(`${JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' })}\n`)
-const lista = (await chamar('tools/list', {})) as { tools: { name: string }[] }
-console.log('ferramentas:', lista.tools.map((t) => t.name).join(', '))
-const r = (await chamar('tools/call', {
-  name: 'classificar_item',
-  arguments: { descricao: 'ABSORVENTE ALWAYS NOTURNO', ncm: '9619.00.00' },
+server.stdin.write(`${JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' })}\n`)
+const list = (await call('tools/list', {})) as { tools: { name: string }[] }
+console.log('tools:', list.tools.map((t) => t.name).join(', '))
+const r = (await call('tools/call', {
+  name: 'classify_item',
+  arguments: { description: 'ABSORVENTE ALWAYS NOTURNO', ncm: '9619.00.00' },
 })) as { content: { text: string }[] }
 const res = JSON.parse(r.content[0]?.text ?? '{}') as {
   status: string
-  classificacao: { cClassTrib: string }
-  validacaoOficial: string
-  alertas: { codigo: string }[]
+  classification: { cClassTrib: string }
+  officialValidation: string
+  alerts: { code: string }[]
 }
 console.log(
-  'classificar_item:',
+  'classify_item:',
   res.status,
-  res.classificacao.cClassTrib,
-  res.validacaoOficial,
-  res.alertas.map((a) => a.codigo).join(','),
+  res.classification.cClassTrib,
+  res.officialValidation,
+  res.alerts.map((a) => a.code).join(','),
 )
-servidor.kill()
+server.kill()

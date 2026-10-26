@@ -18,7 +18,7 @@
     "sources:update": "node scripts/update-sources.ts",
     "sources:check": "node scripts/update-sources.ts --check",
     "eval": "node --conditions=development evals/run.ts",
-    "eval:sem-ia": "node --conditions=development evals/run.ts --sem-ia",
+    "eval:sem-ia": "node --conditions=development evals/run.ts --no-ai",
     "enquadra": "node --conditions=development apps/cli/src/main.ts",
     "check": "pnpm lint && pnpm typecheck && pnpm architecture && pnpm test:coverage && pnpm eval:sem-ia"
   },

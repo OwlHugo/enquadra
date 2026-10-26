@@ -1,7 +1,7 @@
 {
   "name": "@enquadra/mcp",
   "version": "0.1.0",
-  "description": "Servidor MCP do Enquadra.",
+  "description": "Enquadra MCP server.",
   "type": "module",
   "license": "Apache-2.0",
   "repository": {

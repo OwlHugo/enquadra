@@ -1,37 +1,37 @@
-import type { Resultado } from './types.ts'
+import type { Result } from './types.ts'
 
-export interface Resumo {
+export interface Summary {
   readonly total: number
-  readonly resolvidos: number
-  readonly revisar: number
-  readonly faltaInformacao: number
-  readonly comReducao: number
-  readonly bloqueios: number
-  readonly custoIaUsd: number
+  readonly resolved: number
+  readonly review: number
+  readonly needsInfo: number
+  readonly withReduction: number
+  readonly blockers: number
+  readonly aiCostUsd: number
 }
 
-export const resumir = (resultados: readonly Resultado[]): Resumo => {
-  let resolvidos = 0
-  let revisar = 0
-  let faltaInformacao = 0
-  let comReducao = 0
-  let bloqueios = 0
-  let custoIaUsd = 0
-  for (const r of resultados) {
-    if (r.status === 'resolvido') resolvidos++
-    else if (r.status === 'revisar') revisar++
-    else faltaInformacao++
-    if ((r.classificacao?.reducaoCbs ?? 0) > 0) comReducao++
-    if (r.alertas.some((a) => a.gravidade === 'bloqueio')) bloqueios++
-    custoIaUsd += r.ia?.custoUsd ?? 0
+export const summarize = (results: readonly Result[]): Summary => {
+  let resolved = 0
+  let review = 0
+  let needsInfo = 0
+  let withReduction = 0
+  let blockers = 0
+  let aiCostUsd = 0
+  for (const r of results) {
+    if (r.status === 'resolved') resolved++
+    else if (r.status === 'review') review++
+    else needsInfo++
+    if ((r.classification?.cbsReduction ?? 0) > 0) withReduction++
+    if (r.alerts.some((a) => a.severity === 'blocker')) blockers++
+    aiCostUsd += r.ai?.costUsd ?? 0
   }
   return {
-    total: resultados.length,
-    resolvidos,
-    revisar,
-    faltaInformacao,
-    comReducao,
-    bloqueios,
-    custoIaUsd,
+    total: results.length,
+    resolved,
+    review,
+    needsInfo,
+    withReduction,
+    blockers,
+    aiCostUsd,
   }
 }

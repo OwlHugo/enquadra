@@ -1,7 +1,7 @@
 {
   "name": "@enquadra/domain",
   "version": "0.1.0",
-  "description": "Motor puro de enquadramento de IBS/CBS: regras da LC 214/2025, camadas de decisão e confiança.",
+  "description": "Pure IBS/CBS classification engine: LC 214/2025 rules, decision layers and confidence.",
   "type": "module",
   "license": "Apache-2.0",
   "repository": {

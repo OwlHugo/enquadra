@@ -1,4 +1,4 @@
-import { cfop, type DataIso, dataIso, ErroDeDominio, type ItemEntrada, ncm } from '@enquadra/domain'
+import { cfop, DomainError, type InputItem, type IsoDate, isoDate, ncm } from '@enquadra/domain'
 import { XMLParser, XMLValidator } from 'fast-xml-parser'
 
 /**
@@ -8,17 +8,17 @@ import { XMLParser, XMLValidator } from 'fast-xml-parser'
  * para nunca chegarem a log, relatório ou modelo de linguagem.
  */
 
-export type TipoDestinatario = 'pf' | 'pj' | 'estrangeiro' | 'sem_destinatario'
+export type RecipientType = 'pf' | 'pj' | 'foreign' | 'no_recipient'
 
-export interface NotaLida {
-  readonly chave: string | null
-  readonly modelo: '55' | '65'
-  readonly emissao: DataIso
-  readonly ufDestino: string | null
-  readonly tipoDestinatario: TipoDestinatario
-  readonly itens: readonly ItemEntrada[]
+export interface ParsedInvoice {
+  readonly key: string | null
+  readonly model: '55' | '65'
+  readonly issueDate: IsoDate
+  readonly destinationUf: string | null
+  readonly recipientType: RecipientType
+  readonly items: readonly InputItem[]
   /** Itens que vieram com o grupo IBSCBS já preenchido: permite auditar o que foi emitido. */
-  readonly emitido: readonly { readonly indice: number; readonly cClassTrib: string | null }[]
+  readonly issued: readonly { readonly index: number; readonly cClassTrib: string | null }[]
 }
 
 const parser = new XMLParser({
@@ -26,77 +26,78 @@ const parser = new XMLParser({
   attributeNamePrefix: '@',
   removeNSPrefix: true,
   parseTagValue: false,
-  isArray: (nome) => nome === 'det',
+  isArray: (name) => name === 'det',
 })
 
-type No = Record<string, unknown>
-const no = (valor: unknown): No => (valor && typeof valor === 'object' ? (valor as No) : {})
-const texto = (valor: unknown): string | null => (typeof valor === 'string' ? valor : null)
+type XmlNode = Record<string, unknown>
+const node = (value: unknown): XmlNode =>
+  value && typeof value === 'object' ? (value as XmlNode) : {}
+const text = (value: unknown): string | null => (typeof value === 'string' ? value : null)
 
-const tipoDestinatario = (dest: No): TipoDestinatario => {
-  if (Object.keys(dest).length === 0) return 'sem_destinatario'
-  if (texto(dest['idEstrangeiro']) !== null) return 'estrangeiro'
-  if (texto(dest['CNPJ'])) return 'pj'
+const recipientType = (dest: XmlNode): RecipientType => {
+  if (Object.keys(dest).length === 0) return 'no_recipient'
+  if (text(dest['idEstrangeiro']) !== null) return 'foreign'
+  if (text(dest['CNPJ'])) return 'pj'
   return 'pf'
 }
 
 /** Procura o grupo de IBS/CBS sem depender da posição exata dentro de `imposto`. */
-const cClassTribEmitido = (imposto: No): string | null => {
-  const grupo = no(imposto['IBSCBS'])
-  return texto(grupo['cClassTrib'])
+const issuedCClassTrib = (taxNode: XmlNode): string | null => {
+  const group = node(taxNode['IBSCBS'])
+  return text(group['cClassTrib'])
 }
 
-export const lerNfe = (xml: string): NotaLida => {
+export const parseNfe = (xml: string): ParsedInvoice => {
   // O parser aceita XML truncado e devolve só o pedaço lido: sem validar antes, uma nota cortada
   // no meio viraria uma nota com menos itens, sem aviso.
   const valido = XMLValidator.validate(xml)
   if (valido !== true) {
-    throw new ErroDeDominio('xml_malformado', `linha ${valido.err.line}: ${valido.err.msg}`)
+    throw new DomainError('malformed_xml', `line ${valido.err.line}: ${valido.err.msg}`)
   }
-  const raiz = parser.parse(xml) as No
-  const nfe = no(no(raiz['nfeProc'])['NFe'] ?? raiz['NFe'])
-  const inf = no(nfe['infNFe'])
-  if (Object.keys(inf).length === 0) throw new ErroDeDominio('xml_nao_e_nfe', 'infNFe ausente')
+  const root = parser.parse(xml) as XmlNode
+  const nfe = node(node(root['nfeProc'])['NFe'] ?? root['NFe'])
+  const inf = node(nfe['infNFe'])
+  if (Object.keys(inf).length === 0) throw new DomainError('not_an_nfe', 'infNFe missing')
 
-  const ide = no(inf['ide'])
-  const dest = no(inf['dest'])
-  const dhEmi = texto(ide['dhEmi'])
-  if (!dhEmi) throw new ErroDeDominio('nfe_sem_emissao', 'ide/dhEmi ausente')
-  const emissao = dataIso(dhEmi.slice(0, 10))
-  const modelo = texto(ide['mod'])
-  if (modelo !== '55' && modelo !== '65') {
-    throw new ErroDeDominio('modelo_nao_suportado', `mod=${modelo ?? 'ausente'} (só 55 e 65)`)
+  const ide = node(inf['ide'])
+  const dest = node(inf['dest'])
+  const dhEmi = text(ide['dhEmi'])
+  if (!dhEmi) throw new DomainError('nfe_without_issue_date', 'ide/dhEmi missing')
+  const issueDate = isoDate(dhEmi.slice(0, 10))
+  const model = text(ide['mod'])
+  if (model !== '55' && model !== '65') {
+    throw new DomainError('unsupported_model', `mod=${model ?? 'missing'} (only 55 and 65)`)
   }
 
   const dets = inf['det'] as unknown[] | undefined
-  if (!dets) throw new ErroDeDominio('nfe_sem_itens', 'nenhum det em infNFe')
-  const itens: ItemEntrada[] = []
-  const emitido: { indice: number; cClassTrib: string | null }[] = []
-  dets.forEach((det, indice) => {
-    const prod = no(no(det)['prod'])
-    const descricao = texto(prod['xProd'])
-    const ncmBruto = texto(prod['NCM'])
-    const cfopBruto = texto(prod['CFOP'])
+  if (!dets) throw new DomainError('nfe_without_items', 'no det in infNFe')
+  const items: InputItem[] = []
+  const issued: { index: number; cClassTrib: string | null }[] = []
+  dets.forEach((det, index) => {
+    const prod = node(node(det)['prod'])
+    const description = text(prod['xProd'])
+    const rawNcm = text(prod['NCM'])
+    const rawCfop = text(prod['CFOP'])
     // xProd, NCM e CFOP são obrigatórios no leiaute 4.00: item sem eles é nota inválida, não
     // item a pular (nem venda presumida, que é o que o motor faria sem CFOP).
-    if (!descricao) throw new ErroDeDominio('item_sem_descricao', `item ${indice + 1}`)
-    if (!ncmBruto) throw new ErroDeDominio('item_sem_ncm', `item ${indice + 1}: ${descricao}`)
-    if (!cfopBruto) throw new ErroDeDominio('item_sem_cfop', `item ${indice + 1}: ${descricao}`)
-    itens.push({ descricao, ncm: ncm(ncmBruto), cfop: cfop(cfopBruto), data: emissao })
-    emitido.push({ indice, cClassTrib: cClassTribEmitido(no(no(det)['imposto'])) })
+    if (!description) throw new DomainError('item_without_description', `item ${index + 1}`)
+    if (!rawNcm) throw new DomainError('item_without_ncm', `item ${index + 1}: ${description}`)
+    if (!rawCfop) throw new DomainError('item_without_cfop', `item ${index + 1}: ${description}`)
+    items.push({ description, ncm: ncm(rawNcm), cfop: cfop(rawCfop), date: issueDate })
+    issued.push({ index, cClassTrib: issuedCClassTrib(node(node(det)['imposto'])) })
   })
 
   return {
-    chave: texto(inf['@Id'])?.replace(/^NFe/, '') ?? null,
-    modelo,
-    emissao,
-    ufDestino: texto(no(dest['enderDest'])['UF']),
-    tipoDestinatario: tipoDestinatario(dest),
-    itens,
-    emitido,
+    key: text(inf['@Id'])?.replace(/^NFe/, '') ?? null,
+    model,
+    issueDate,
+    destinationUf: text(node(dest['enderDest'])['UF']),
+    recipientType: recipientType(dest),
+    items,
+    issued,
   }
 }
 
 /** Chave de deduplicação: 5 mil notas costumam ter algumas centenas de itens distintos. */
-export const chaveItem = (item: ItemEntrada): string =>
-  [item.ncm, item.cfop ?? '-', item.descricao.trim().toLowerCase().replace(/\s+/g, ' ')].join('|')
+export const itemKey = (item: InputItem): string =>
+  [item.ncm, item.cfop ?? '-', item.description.trim().toLowerCase().replace(/\s+/g, ' ')].join('|')

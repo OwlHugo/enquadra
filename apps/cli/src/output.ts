@@ -1,49 +1,50 @@
-import { formatarNcm, type Resultado } from '@enquadra/domain'
-import type { Falha } from './xmls.ts'
+import { formatNcm, type Result } from '@enquadra/domain'
+import { CONFIDENCE_LABEL, LAYER_LABEL, STATUS_LABEL, VALIDATION_LABEL } from './labels.ts'
+import type { Failure } from './xmls.ts'
 
-const ativo = process.stdout.isTTY && !process.env['NO_COLOR']
-const pintar = (codigo: number) => (t: string) => (ativo ? `\x1b[${codigo}m${t}\x1b[0m` : t)
+const enabled = process.stdout.isTTY && !process.env['NO_COLOR']
+const paint = (code: number) => (t: string) => (enabled ? `\x1b[${code}m${t}\x1b[0m` : t)
 
-export const cor = {
-  verde: pintar(32),
-  ambar: pintar(33),
-  azul: pintar(34),
-  vermelho: pintar(31),
-  cinza: pintar(90),
-  negrito: pintar(1),
+export const color = {
+  green: paint(32),
+  amber: paint(33),
+  blue: paint(34),
+  red: paint(31),
+  gray: paint(90),
+  bold: paint(1),
 }
 
 const STATUS = {
-  resolvido: cor.verde('resolvido'),
-  revisar: cor.ambar('revisar'),
-  falta_informacao: cor.azul('falta informação'),
+  resolved: color.green(STATUS_LABEL.resolved),
+  review: color.amber(STATUS_LABEL.review),
+  needs_info: color.blue(STATUS_LABEL.needs_info),
 } as const
 
-export const linhaResultado = (r: Resultado, detalhado = false): string => {
-  const codigo = r.classificacao
-    ? `${r.classificacao.cst} ${r.classificacao.cClassTrib}`
+export const resultLine = (r: Result, detailed = false): string => {
+  const code = r.classification
+    ? `${r.classification.cst} ${r.classification.cClassTrib}`
     : '--- ------'
-  const reducao = r.classificacao?.reducaoCbs ? cor.cinza(` −${r.classificacao.reducaoCbs}%`) : ''
-  const cabeca = `${cor.negrito(codigo)}${reducao}  ${formatarNcm(r.item.ncm)}  ${r.item.descricao}  ${STATUS[r.status]}`
-  if (!detalhado) return cabeca
-  const linhas = [cabeca]
-  if (r.fundamento)
-    linhas.push(`  ${r.fundamento.dispositivo}`, cor.cinza(`  "${r.fundamento.texto}"`))
-  for (const a of r.alertas)
-    linhas.push(
-      `  ${a.gravidade === 'bloqueio' ? cor.vermelho('!') : cor.ambar('·')} ${a.mensagem}`,
-    )
-  for (const p of r.perguntas) {
-    linhas.push(`  ${cor.azul('?')} ${p.texto}`)
-    for (const o of p.opcoes) linhas.push(cor.cinza(`      ${o.cClassTrib}  ${o.rotulo}`))
+  const reduction = r.classification?.cbsReduction
+    ? color.gray(` −${r.classification.cbsReduction}%`)
+    : ''
+  const head = `${color.bold(code)}${reduction}  ${formatNcm(r.item.ncm)}  ${r.item.description}  ${STATUS[r.status]}`
+  if (!detailed) return head
+  const lines = [head]
+  if (r.legalBasis)
+    lines.push(`  ${r.legalBasis.provision}`, color.gray(`  "${r.legalBasis.text}"`))
+  for (const a of r.alerts)
+    lines.push(`  ${a.severity === 'blocker' ? color.red('!') : color.amber('·')} ${a.message}`)
+  for (const p of r.questions) {
+    lines.push(`  ${color.blue('?')} ${p.text}`)
+    for (const o of p.options) lines.push(color.gray(`      ${o.cClassTrib}  ${o.label}`))
   }
-  linhas.push(
-    cor.cinza(
-      `  validação oficial: ${r.validacaoOficial} · ${r.tabela.versao} · confiança ${r.confianca} · camada ${r.camada}`,
+  lines.push(
+    color.gray(
+      `  validação oficial: ${VALIDATION_LABEL[r.officialValidation]} · ${r.table.version} · confiança ${CONFIDENCE_LABEL[r.confidence]} · camada ${LAYER_LABEL[r.layer]}`,
     ),
   )
-  for (const t of r.trilha) linhas.push(cor.cinza(`    ${t}`))
-  return linhas.join('\n')
+  for (const t of r.trail) lines.push(color.gray(`    ${t}`))
+  return lines.join('\n')
 }
 
-export const linhaFalha = (f: Falha): string => `  ${cor.vermelho('✗')} ${f.arquivo}: ${f.motivo}`
+export const failureLine = (f: Failure): string => `  ${color.red('✗')} ${f.file}: ${f.reason}`

@@ -1,5 +1,6 @@
-import { formatarNcm, type Resultado, resumir } from '@enquadra/domain'
-import type { Falha } from './xmls.ts'
+import { formatNcm, type Result, summarize } from '@enquadra/domain'
+import { CONFIDENCE_LABEL } from './labels.ts'
+import type { Failure } from './xmls.ts'
 
 /**
  * Relatório estático de triagem, um arquivo só, sem dependência e sem JavaScript de terceiros.
@@ -8,91 +9,91 @@ import type { Falha } from './xmls.ts'
 
 const esc = (t: string): string => t.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
 
-const ORDEM = { falta_informacao: 0, revisar: 1, resolvido: 2 } as const
-const ROTULO = {
-  resolvido: 'Resolvido',
-  revisar: 'Revisar',
-  falta_informacao: 'Falta informação',
+const ORDER = { needs_info: 0, review: 1, resolved: 2 } as const
+const LABEL = {
+  resolved: 'Resolvido',
+  review: 'Revisar',
+  needs_info: 'Falta informação',
 } as const
 
-const linha = (r: Resultado): string => {
-  const c = r.classificacao
-  const detalhe = [
-    r.fundamento
-      ? `<p class="lei"><b>${esc(r.fundamento.dispositivo)}</b><br>“${esc(r.fundamento.texto)}”</p>`
+const row = (r: Result): string => {
+  const c = r.classification
+  const detail = [
+    r.legalBasis
+      ? `<p class="law"><b>${esc(r.legalBasis.provision)}</b><br>“${esc(r.legalBasis.text)}”</p>`
       : '',
-    ...r.alertas.map((a) => `<p class="alerta ${a.gravidade}">${esc(a.mensagem)}</p>`),
-    ...r.perguntas.map(
+    ...r.alerts.map((a) => `<p class="alert ${a.severity}">${esc(a.message)}</p>`),
+    ...r.questions.map(
       (p) =>
-        `<p class="pergunta">${esc(p.texto)}</p><ul>${p.opcoes.map((o) => `<li><code>${o.cClassTrib}</code> ${esc(o.rotulo)}</li>`).join('')}</ul>`,
+        `<p class="question">${esc(p.text)}</p><ul>${p.options.map((o) => `<li><code>${o.cClassTrib}</code> ${esc(o.label)}</li>`).join('')}</ul>`,
     ),
-    `<ol class="trilha">${r.trilha.map((t) => `<li>${esc(t)}</li>`).join('')}</ol>`,
+    `<ol class="trail">${r.trail.map((t) => `<li>${esc(t)}</li>`).join('')}</ol>`,
   ].join('')
   return `<tr data-status="${r.status}">
-<td><span class="estado ${r.status}">${ROTULO[r.status]}</span></td>
-<td>${esc(r.item.descricao)}</td>
-<td><code>${formatarNcm(r.item.ncm)}</code></td>
+<td><span class="state ${r.status}">${LABEL[r.status]}</span></td>
+<td>${esc(r.item.description)}</td>
+<td><code>${formatNcm(r.item.ncm)}</code></td>
 <td><code>${r.item.cfop ?? '—'}</code></td>
 <td><code>${c?.cst ?? '—'}</code></td>
 <td><code>${c?.cClassTrib ?? '—'}</code></td>
-<td class="num">${c?.reducaoCbs ? `${c.reducaoCbs}%` : '—'}</td>
-<td>${r.confianca}</td>
-</tr><tr class="detalhe"><td colspan="8"><details><summary>Por quê</summary>${detalhe}</details></td></tr>`
+<td class="num">${c?.cbsReduction ? `${c.cbsReduction}%` : '—'}</td>
+<td>${CONFIDENCE_LABEL[r.confidence]}</td>
+</tr><tr class="detail"><td colspan="8"><details><summary>Por quê</summary>${detail}</details></td></tr>`
 }
 
-const secaoFalhas = (falhas: readonly Falha[]): string =>
-  falhas.length === 0
+const failuresSection = (failures: readonly Failure[]): string =>
+  failures.length === 0
     ? ''
-    : `<section class="falhas"><h2>${falhas.length} ${falhas.length === 1 ? 'arquivo não pôde ser lido' : 'arquivos não puderam ser lidos'}</h2>
+    : `<section class="failures"><h2>${failures.length} ${failures.length === 1 ? 'arquivo não pôde ser lido' : 'arquivos não puderam ser lidos'}</h2>
 <p class="meta">Os itens destes arquivos não estão na tabela abaixo.</p>
 <table><thead><tr><th>Arquivo</th><th>Motivo</th></tr></thead>
-<tbody>${falhas.map((f) => `<tr><td><code>${esc(f.arquivo)}</code></td><td>${esc(f.motivo)}</td></tr>`).join('')}</tbody></table></section>`
+<tbody>${failures.map((f) => `<tr><td><code>${esc(f.file)}</code></td><td>${esc(f.reason)}</td></tr>`).join('')}</tbody></table></section>`
 
-export const relatorioHtml = (
-  resultados: readonly Resultado[],
-  versao: string,
-  falhas: readonly Falha[],
+export const htmlReport = (
+  results: readonly Result[],
+  version: string,
+  failures: readonly Failure[],
 ): string => {
-  const r = resumir(resultados)
-  const ordenados = [...resultados].sort((a, b) => ORDEM[a.status] - ORDEM[b.status])
+  const r = summarize(results)
+  const sorted = [...results].sort((a, b) => ORDER[a.status] - ORDER[b.status])
   return `<!doctype html><html lang="pt-BR"><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Enquadra · ${r.total} itens</title>
 <style>
-:root{--fundo:#fbfaf8;--texto:#1d1d1f;--sutil:#6e6e73;--linha:#e8e6e1;--verde:#2f7d4f;--ambar:#a8620a;--azul:#2c5fa8;--verm:#b42318;
-font:14px/1.45 Inter,ui-sans-serif,system-ui,sans-serif;color:var(--texto);background:var(--fundo)}
-@media(prefers-color-scheme:dark){:root{--fundo:#141414;--texto:#ececec;--sutil:#8e8e93;--linha:#2a2a2a}}
+:root{--bg:#fbfaf8;--fg:#1d1d1f;--muted:#6e6e73;--rule:#e8e6e1;--green:#2f7d4f;--amber:#a8620a;--blue:#2c5fa8;--red:#b42318;
+font:14px/1.45 Inter,ui-sans-serif,system-ui,sans-serif;color:var(--fg);background:var(--bg)}
+@media(prefers-color-scheme:dark){:root{--bg:#141414;--fg:#ececec;--muted:#8e8e93;--rule:#2a2a2a}}
 body{max-width:1180px;margin:40px auto;padding:0 24px}
 h1{font-size:18px;font-weight:600;margin:0}
-.meta{color:var(--sutil);margin:4px 0 24px}
-.contadores{display:flex;gap:24px;margin-bottom:24px}
-.contadores div{font-variant-numeric:tabular-nums}.contadores b{font-size:22px;display:block;font-weight:600}
+.meta{color:var(--muted);margin:4px 0 24px}
+.counters{display:flex;gap:24px;margin-bottom:24px}
+.counters div{font-variant-numeric:tabular-nums}.counters b{font-size:22px;display:block;font-weight:600}
 table{width:100%;border-collapse:collapse}
-th{text-align:left;font-weight:500;color:var(--sutil);border-bottom:1px solid var(--linha);padding:8px 10px}
-td{border-bottom:1px solid var(--linha);padding:8px 10px;vertical-align:top}
-tr.detalhe td{border-bottom:1px solid var(--linha);padding-top:0}
+th{text-align:left;font-weight:500;color:var(--muted);border-bottom:1px solid var(--rule);padding:8px 10px}
+td{border-bottom:1px solid var(--rule);padding:8px 10px;vertical-align:top}
+tr.detail td{border-bottom:1px solid var(--rule);padding-top:0}
 code{font:12.5px/1 "Geist Mono","JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
 .num{text-align:right;font-variant-numeric:tabular-nums}
-.estado{font-size:12px;font-weight:500}.estado::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;background:currentColor}
-.resolvido{color:var(--verde)}.revisar{color:var(--ambar)}.falta_informacao{color:var(--azul)}
-summary{cursor:pointer;color:var(--sutil);font-size:12px}
-.lei{border-left:2px solid var(--linha);padding-left:10px;color:var(--sutil)}
-.alerta.bloqueio{color:var(--verm)}.alerta.atencao{color:var(--ambar)}.alerta.info{color:var(--sutil)}
-.trilha{color:var(--sutil);font-size:12px;padding-left:18px}
-.pergunta{color:var(--azul);font-weight:500}
-.falha{color:var(--verm)}.falhas{margin-bottom:32px}.falhas h2{font-size:15px;font-weight:600;color:var(--verm);margin:0}
+.state{font-size:12px;font-weight:500}.state::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;background:currentColor}
+.resolved{color:var(--green)}.review{color:var(--amber)}.needs_info{color:var(--blue)}
+summary{cursor:pointer;color:var(--muted);font-size:12px}
+.law{border-left:2px solid var(--rule);padding-left:10px;color:var(--muted)}
+.alert.blocker{color:var(--red)}.alert.warning{color:var(--amber)}.alert.info{color:var(--muted)}
+.trail{color:var(--muted);font-size:12px;padding-left:18px}
+.question{color:var(--blue);font-weight:500}
+.failure{color:var(--red)}.failures{margin-bottom:32px}.failures h2{font-size:15px;font-weight:600;color:var(--red);margin:0}
 </style>
 <h1>Enquadramento IBS/CBS</h1>
-<p class="meta">${r.total} itens distintos · ${esc(versao)} · gerado em ${new Date().toISOString().slice(0, 16).replace('T', ' ')}</p>
-<div class="contadores">
-<div class="resolvido"><b>${r.resolvidos}</b>resolvidos</div>
-<div class="revisar"><b>${r.revisar}</b>revisar</div>
-<div class="falta_informacao"><b>${r.faltaInformacao}</b>falta informação</div>
-<div><b>${r.comReducao}</b>com redução</div>
-${falhas.length > 0 ? `<div class="falha"><b>${falhas.length}</b>com falha</div>` : ''}
+<p class="meta">${r.total} itens distintos · ${esc(version)} · gerado em ${new Date().toISOString().slice(0, 16).replace('T', ' ')}</p>
+<div class="counters">
+<div class="resolved"><b>${r.resolved}</b>resolvidos</div>
+<div class="review"><b>${r.review}</b>revisar</div>
+<div class="needs_info"><b>${r.needsInfo}</b>falta informação</div>
+<div><b>${r.withReduction}</b>com redução</div>
+${failures.length > 0 ? `<div class="failure"><b>${failures.length}</b>com falha</div>` : ''}
 </div>
-${secaoFalhas(falhas)}<table><thead><tr><th>Estado</th><th>Descrição</th><th>NCM</th><th>CFOP</th><th>CST</th><th>cClassTrib</th><th class="num">Redução</th><th>Confiança</th></tr></thead>
-<tbody>${ordenados.map(linha).join('')}</tbody></table>
+${failuresSection(failures)}<table><thead><tr><th>Estado</th><th>Descrição</th><th>NCM</th><th>CFOP</th><th>CST</th><th>cClassTrib</th><th class="num">Redução</th><th>Confiança</th></tr></thead>
+<tbody>${sorted.map(row).join('')}</tbody></table>
 <p class="meta">O Enquadra sugere e fundamenta; quem aprova é a pessoa responsável pela escrituração.</p>
 </html>`
 }

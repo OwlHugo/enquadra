@@ -1,23 +1,23 @@
-import { normalizarDescricao } from './description.ts'
-import { type Hipotese, levantarHipoteses } from './hypotheses.ts'
-import { formatarNcm } from './ncm.ts'
-import type { Desambiguador, TabelaOficial, ValidadorOficial } from './ports.ts'
-import { operacaoPorCfop } from './rules/operations.ts'
+import { normalizeDescription } from './description.ts'
+import { collectHypotheses, type Hypothesis } from './hypotheses.ts'
+import { formatNcm } from './ncm.ts'
+import type { Disambiguator, OfficialTable, OfficialValidator } from './ports.ts'
+import { operationByCfop } from './rules/operations.ts'
 import {
-  type Alerta,
-  type Camada,
-  type Candidato,
+  type AiUsage,
+  type Alert,
+  type Candidate,
   type CClassTrib,
-  type Confianca,
+  type Confidence,
   cClassTrib,
-  type DataIso,
-  type Fundamento,
-  type ItemEntrada,
-  type Pergunta,
-  type Resultado,
+  type InputItem,
+  type IsoDate,
+  type Layer,
+  type LegalBasis,
+  type OfficialValidation,
+  type Question,
+  type Result,
   type Status,
-  type UsoDeIa,
-  type ValidacaoOficial,
 } from './types.ts'
 
 /**
@@ -26,386 +26,389 @@ import {
  * A primeira camada que decide encerra; cada passo deixa uma linha na trilha.
  */
 
-export interface Dependencias {
-  readonly tabela: TabelaOficial
-  readonly data: DataIso
-  readonly validador?: ValidadorOficial
-  readonly desambiguador?: Desambiguador
+export interface Dependencies {
+  readonly table: OfficialTable
+  readonly date: IsoDate
+  readonly validator?: OfficialValidator
+  readonly disambiguator?: Disambiguator
 }
 
-const INTEGRAL = cClassTrib('000001')
-const FUNDAMENTO_INTEGRAL: Fundamento = {
-  dispositivo: 'LC 214/2025, regra geral',
-  texto: 'Situações tributadas integralmente pelo IBS e CBS.',
+const FULL_TAX = cClassTrib('000001')
+const FULL_TAX_BASIS: LegalBasis = {
+  provision: 'LC 214/2025, regra geral',
+  text: 'Situações tributadas integralmente pelo IBS e CBS.',
 }
 
-interface Rascunho {
+interface Draft {
   status: Status
-  confianca: Confianca
-  camada: Camada
-  codigo: CClassTrib | null
-  fundamento: Fundamento | null
-  candidatos: Candidato[]
-  perguntas: Pergunta[]
-  alertas: Alerta[]
-  trilha: string[]
-  ia: UsoDeIa | null
+  confidence: Confidence
+  layer: Layer
+  code: CClassTrib | null
+  legalBasis: LegalBasis | null
+  candidates: Candidate[]
+  questions: Question[]
+  alerts: Alert[]
+  trail: string[]
+  ai: AiUsage | null
   /** Códigos que o motor já analisou (escolhidos, candidatos ou descartados com motivo). */
-  considerados: Set<CClassTrib>
+  considered: Set<CClassTrib>
 }
 
-const novo = (): Rascunho => ({
-  status: 'revisar',
-  confianca: 'baixa',
-  camada: 'padrao',
-  codigo: null,
-  fundamento: null,
-  candidatos: [],
-  perguntas: [],
-  alertas: [],
-  trilha: [],
-  ia: null,
-  considerados: new Set(),
+const newDraft = (): Draft => ({
+  status: 'review',
+  confidence: 'low',
+  layer: 'default',
+  code: null,
+  legalBasis: null,
+  candidates: [],
+  questions: [],
+  alerts: [],
+  trail: [],
+  ai: null,
+  considered: new Set(),
 })
 
-const candidatoDe = (h: Hipotese): Candidato => ({
-  cClassTrib: h.regra.cClassTrib,
-  rotulo: h.regra.rotulo,
-  fundamento: { dispositivo: h.regra.dispositivo, texto: h.regra.texto },
-  ...(h.regra.condicao ? { condicao: h.regra.condicao.pergunta } : {}),
+const candidateOf = (h: Hypothesis): Candidate => ({
+  cClassTrib: h.rule.cClassTrib,
+  label: h.rule.label,
+  legalBasis: { provision: h.rule.provision, text: h.rule.text },
+  ...(h.rule.condition ? { condition: h.rule.condition.question } : {}),
 })
 
-const candidatoIntegral = (motivo: string): Candidato => ({
-  cClassTrib: INTEGRAL,
-  rotulo: 'Tributação integral',
-  fundamento: FUNDAMENTO_INTEGRAL,
-  condicao: motivo,
+const fullTaxCandidate = (reason: string): Candidate => ({
+  cClassTrib: FULL_TAX,
+  label: 'Tributação integral',
+  legalBasis: FULL_TAX_BASIS,
+  condition: reason,
 })
 
-export const enquadrar = async (item: ItemEntrada, deps: Dependencias): Promise<Resultado> => {
-  const r = novo()
-  const data = item.data ?? deps.data
-  const nomeNcm = deps.tabela.nomeNcm(item.ncm)
+export const classify = async (item: InputItem, deps: Dependencies): Promise<Result> => {
+  const r = newDraft()
+  const date = item.date ?? deps.date
+  const ncmName = deps.table.ncmName(item.ncm)
 
-  if (nomeNcm === undefined) {
-    r.alertas.push({
-      codigo: 'ncm_inexistente',
-      gravidade: 'bloqueio',
-      mensagem: `NCM ${formatarNcm(item.ncm)} não existe na nomenclatura vigente.`,
+  if (ncmName === undefined) {
+    r.alerts.push({
+      code: 'unknown_ncm',
+      severity: 'blocker',
+      message: `NCM ${formatNcm(item.ncm)} não existe na nomenclatura vigente.`,
     })
-    r.trilha.push('NCM não encontrado na nomenclatura: nada a classificar.')
-    return montar(item, r, deps, data, 'nao_consultado')
+    r.trail.push('NCM não encontrado na nomenclatura: nada a classificar.')
+    return build(item, r, deps, date, 'not_checked')
   }
-  r.trilha.push(`NCM ${formatarNcm(item.ncm)}: ${nomeNcm}`)
+  r.trail.push(`NCM ${formatNcm(item.ncm)}: ${ncmName}`)
 
-  if (item.decisaoManual) {
-    decidirManual(item, r, deps)
-  } else if (decidirOperacao(item, r)) {
-    await decidirProduto(item, nomeNcm, r, deps)
+  if (item.manualDecision) {
+    decideManual(item, r, deps)
+  } else if (decideOperation(item, r)) {
+    await decideProduct(item, ncmName, r, deps)
   }
 
-  const validacao = await validar(item, r, deps, data)
-  return montar(item, r, deps, data, validacao)
+  const validation = await validate(item, r, deps, date)
+  return build(item, r, deps, date, validation)
 }
 
-const decidirManual = (item: ItemEntrada, r: Rascunho, deps: Dependencias): void => {
-  const manual = item.decisaoManual
+const decideManual = (item: InputItem, r: Draft, deps: Dependencies): void => {
+  const manual = item.manualDecision
   if (!manual) return
-  r.camada = 'manual'
-  r.codigo = manual.cClassTrib
-  r.fundamento = { dispositivo: `Decisão de ${manual.autor} em ${manual.em}`, texto: manual.motivo }
-  if (deps.tabela.classificacao(manual.cClassTrib)) {
-    r.status = 'resolvido'
-    r.confianca = 'alta'
-    r.trilha.push(`Decisão manual mantida: ${manual.cClassTrib} (${manual.motivo}).`)
+  r.layer = 'manual'
+  r.code = manual.cClassTrib
+  r.legalBasis = {
+    provision: `Decisão de ${manual.author} em ${manual.decidedOn}`,
+    text: manual.reason,
+  }
+  if (deps.table.classification(manual.cClassTrib)) {
+    r.status = 'resolved'
+    r.confidence = 'high'
+    r.trail.push(`Decisão manual mantida: ${manual.cClassTrib} (${manual.reason}).`)
   } else {
-    r.alertas.push({
-      codigo: 'decisao_manual_invalidada',
-      gravidade: 'bloqueio',
-      mensagem: `O código ${manual.cClassTrib} decidido manualmente não existe na tabela ${deps.tabela.versao}.`,
+    r.alerts.push({
+      code: 'manual_decision_invalidated',
+      severity: 'blocker',
+      message: `O código ${manual.cClassTrib} decidido manualmente não existe na tabela ${deps.table.version}.`,
     })
-    r.trilha.push(
+    r.trail.push(
       'Decisão manual aponta para código fora da tabela vigente: não foi trocada, precisa de revisão.',
     )
   }
 }
 
 /** Devolve true quando a operação é venda e o produto deve ser analisado. */
-const decidirOperacao = (item: ItemEntrada, r: Rascunho): boolean => {
+const decideOperation = (item: InputItem, r: Draft): boolean => {
   if (item.cfop === undefined) {
-    r.alertas.push({
-      codigo: 'cfop_ausente',
-      gravidade: 'info',
-      mensagem: 'Sem CFOP: considerado como venda de mercadoria.',
+    r.alerts.push({
+      code: 'missing_cfop',
+      severity: 'info',
+      message: 'Sem CFOP: considerado como venda de mercadoria.',
     })
   }
-  const op = operacaoPorCfop(item.cfop)
-  switch (op.tipo) {
-    case 'venda':
-      r.trilha.push(item.cfop ? `CFOP ${item.cfop}: venda.` : 'Sem CFOP: tratado como venda.')
+  const op = operationByCfop(item.cfop)
+  switch (op.kind) {
+    case 'sale':
+      r.trail.push(item.cfop ? `CFOP ${item.cfop}: venda.` : 'Sem CFOP: tratado como venda.')
       return true
-    case 'propria':
-      r.camada = 'operacao'
-      r.status = 'resolvido'
-      r.confianca = 'alta'
-      r.codigo = op.cClassTrib
-      r.fundamento = { dispositivo: op.dispositivo, texto: op.texto }
-      r.trilha.push(`CFOP ${item.cfop}: ${op.rotulo}. A operação decide antes do produto.`)
+    case 'own':
+      r.layer = 'operation'
+      r.status = 'resolved'
+      r.confidence = 'high'
+      r.code = op.cClassTrib
+      r.legalBasis = { provision: op.provision, text: op.text }
+      r.trail.push(`CFOP ${item.cfop}: ${op.label}. A operação decide antes do produto.`)
       return false
-    case 'pergunta':
-      r.camada = 'operacao'
-      r.status = 'falta_informacao'
-      r.candidatos = op.opcoes.map((o) => ({
+    case 'question':
+      r.layer = 'operation'
+      r.status = 'needs_info'
+      r.candidates = op.options.map((o) => ({
         cClassTrib: o.cClassTrib,
-        rotulo: o.rotulo,
-        fundamento: { dispositivo: o.dispositivo, texto: o.texto },
+        label: o.label,
+        legalBasis: { provision: o.provision, text: o.text },
       }))
-      r.perguntas.push({ id: 'operacao', texto: op.pergunta, opcoes: op.opcoes })
-      r.trilha.push(`CFOP ${item.cfop}: a operação depende de um fato que só a empresa sabe.`)
+      r.questions.push({ id: 'operation', text: op.question, options: op.options })
+      r.trail.push(`CFOP ${item.cfop}: a operação depende de um fato que só a empresa sabe.`)
       return false
-    case 'fora_do_escopo':
-      r.camada = 'operacao'
-      r.alertas.push({
-        codigo: 'operacao_fora_do_escopo',
-        gravidade: 'atencao',
-        mensagem: op.motivo,
+    case 'out_of_scope':
+      r.layer = 'operation'
+      r.alerts.push({
+        code: 'operation_out_of_scope',
+        severity: 'warning',
+        message: op.reason,
       })
-      r.trilha.push(op.motivo)
+      r.trail.push(op.reason)
       return false
   }
 }
 
 /** Todas as hipóteses vivas confirmadas e apontando para o mesmo código: a regra decide sozinha. */
-const hipoteseUnica = (vivas: readonly Hipotese[]): Hipotese | undefined => {
-  if (vivas.some((h) => h.avaliacao !== 'atende')) return undefined
-  const codigos = new Set(vivas.map((h) => h.regra.cClassTrib))
-  return codigos.size === 1 ? vivas[0] : undefined
+const singleHypothesis = (alive: readonly Hypothesis[]): Hypothesis | undefined => {
+  if (alive.some((h) => h.evaluation !== 'meets')) return undefined
+  const codes = new Set(alive.map((h) => h.rule.cClassTrib))
+  return codes.size === 1 ? alive[0] : undefined
 }
 
-const decidirPorRegra = (
-  unica: Hipotese,
-  vivas: readonly Hipotese[],
-  r: Rascunho,
-  descartadas: readonly { readonly motivo: string }[],
+const decideByRule = (
+  single: Hypothesis,
+  alive: readonly Hypothesis[],
+  r: Draft,
+  discarded: readonly { readonly reason: string }[],
 ): void => {
-  const porDescricao = vivas.some((h) => h.temCondicao)
-  r.camada = porDescricao ? 'descricao' : 'anexo'
-  r.status = 'resolvido'
-  r.confianca = porDescricao ? 'media' : 'alta'
-  r.codigo = unica.regra.cClassTrib
-  r.fundamento = { dispositivo: unica.regra.dispositivo, texto: unica.regra.texto }
-  r.trilha.push(
-    porDescricao
-      ? `${unica.regra.dispositivo}: a descrição confirma a condição da lei.`
-      : `${unica.regra.dispositivo}: o NCM está na lista e a lei não impõe condição.`,
+  const byDescription = alive.some((h) => h.hasCondition)
+  r.layer = byDescription ? 'description' : 'annex'
+  r.status = 'resolved'
+  r.confidence = byDescription ? 'medium' : 'high'
+  r.code = single.rule.cClassTrib
+  r.legalBasis = { provision: single.rule.provision, text: single.rule.text }
+  r.trail.push(
+    byDescription
+      ? `${single.rule.provision}: a descrição confirma a condição da lei.`
+      : `${single.rule.provision}: o NCM está na lista e a lei não impõe condição.`,
   )
-  if (descartadas.some((d) => d.motivo.startsWith('ressalvado'))) {
-    r.alertas.push({
-      codigo: 'prioridade_entre_anexos',
-      gravidade: 'info',
-      mensagem: 'O NCM também aparece em outro anexo, afastado pela ressalva da própria lei.',
+  if (discarded.some((d) => d.reason.startsWith('ressalvado'))) {
+    r.alerts.push({
+      code: 'annex_priority',
+      severity: 'info',
+      message: 'O NCM também aparece em outro anexo, afastado pela ressalva da própria lei.',
     })
   }
 }
 
-const decidirProduto = async (
-  item: ItemEntrada,
-  nomeNcm: string,
-  r: Rascunho,
-  deps: Dependencias,
+const decideProduct = async (
+  item: InputItem,
+  ncmName: string,
+  r: Draft,
+  deps: Dependencies,
 ): Promise<void> => {
-  const { vivas, descartadas } = levantarHipoteses(item.ncm, item.descricao)
-  for (const d of descartadas) r.trilha.push(`Descartado ${d.regra.id}: ${d.motivo}.`)
-  for (const h of [...vivas, ...descartadas]) r.considerados.add(h.regra.cClassTrib)
+  const { alive, discarded } = collectHypotheses(item.ncm, item.description)
+  for (const d of discarded) r.trail.push(`Descartado ${d.rule.id}: ${d.reason}.`)
+  for (const h of [...alive, ...discarded]) r.considered.add(h.rule.cClassTrib)
 
-  if (vivas.length === 0) {
-    return decidirPadrao(item, r, deps, new Set(descartadas.map((d) => d.regra.cClassTrib)))
+  if (alive.length === 0) {
+    return decideDefault(item, r, deps, new Set(discarded.map((d) => d.rule.cClassTrib)))
   }
-  const unica = hipoteseUnica(vivas)
-  if (unica) return decidirPorRegra(unica, vivas, r, descartadas)
+  const single = singleHypothesis(alive)
+  if (single) return decideByRule(single, alive, r, discarded)
 
   // Ambiguidade: mais de uma hipótese viva, ou condição que a descrição não resolve.
-  r.camada = 'descricao'
-  r.candidatos = vivas.map(candidatoDe)
-  if (vivas.every((h) => h.temCondicao)) {
-    r.candidatos.push(candidatoIntegral('Nenhuma condição acima é verdadeira.'))
+  r.layer = 'description'
+  r.candidates = alive.map(candidateOf)
+  if (alive.every((h) => h.hasCondition)) {
+    r.candidates.push(fullTaxCandidate('Nenhuma condição acima é verdadeira.'))
   }
-  r.alertas.push({
-    codigo: vivas.length > 1 ? 'ncm_multiplo' : 'descricao_condicional',
-    gravidade: 'atencao',
-    mensagem:
-      vivas.length > 1
-        ? `O NCM ${formatarNcm(item.ncm)} cabe em ${vivas.length} hipóteses da lei; a descrição decide.`
+  r.alerts.push({
+    code: alive.length > 1 ? 'multiple_hypotheses' : 'description_condition',
+    severity: 'warning',
+    message:
+      alive.length > 1
+        ? `O NCM ${formatNcm(item.ncm)} cabe em ${alive.length} hipóteses da lei; a descrição decide.`
         : 'A lei impõe uma condição que a descrição do item não deixa clara.',
   })
-  r.trilha.push(`Ambíguo entre ${r.candidatos.map((c) => c.cClassTrib).join(', ')}.`)
-  await desambiguar(item, nomeNcm, r, deps)
+  r.trail.push(`Ambíguo entre ${r.candidates.map((c) => c.cClassTrib).join(', ')}.`)
+  await disambiguate(item, ncmName, r, deps)
 }
 
 /**
  * Nenhuma regra coberta vale. Se a tabela oficial aceita o NCM num benefício que o motor
  * não explica (nem descartou com motivo), não dá para afirmar tributação integral.
  */
-const decidirPadrao = (
-  item: ItemEntrada,
-  r: Rascunho,
-  deps: Dependencias,
-  explicados: ReadonlySet<CClassTrib>,
+const decideDefault = (
+  item: InputItem,
+  r: Draft,
+  deps: Dependencies,
+  explained: ReadonlySet<CClassTrib>,
 ): void => {
-  r.codigo = INTEGRAL
-  r.fundamento = FUNDAMENTO_INTEGRAL
-  r.camada = 'padrao'
-  const aceitos = deps.tabela.restritosQueAceitam(item.ncm)
-  if (aceitos === undefined) {
+  r.code = FULL_TAX
+  r.legalBasis = FULL_TAX_BASIS
+  r.layer = 'default'
+  const accepted = deps.table.restrictedAccepting(item.ncm)
+  if (accepted === undefined) {
     // Sem a sondagem oficial do NCM, a tributação integral vale só pelo que o motor transcreveu
     // da lei: resolve, mas sem confiança alta e com o motivo à vista (alerta em `montar`).
-    r.status = 'resolvido'
-    r.confianca = 'media'
-    r.trilha.push(
+    r.status = 'resolved'
+    r.confidence = 'medium'
+    r.trail.push(
       'O NCM não está em nenhum anexo coberto, mas não foi sondado na tabela oficial: tributação integral sem confirmação oficial.',
     )
     return
   }
-  const oficiais = aceitos.filter((c) => !explicados.has(c))
-  if (oficiais.length > 0) {
-    r.status = 'revisar'
-    r.confianca = 'baixa'
-    r.alertas.push({
-      codigo: 'beneficio_nao_mapeado',
-      gravidade: 'atencao',
-      mensagem: `A tabela oficial aceita este NCM em ${oficiais.join(', ')}, que o motor ainda não cobre. Confira antes de usar a tributação integral.`,
+  const official = accepted.filter((c) => !explained.has(c))
+  if (official.length > 0) {
+    r.status = 'review'
+    r.confidence = 'low'
+    r.alerts.push({
+      code: 'unmapped_benefit',
+      severity: 'warning',
+      message: `A tabela oficial aceita este NCM em ${official.join(', ')}, que o motor ainda não cobre. Confira antes de usar a tributação integral.`,
     })
-    r.trilha.push(
-      `Nenhuma regra coberta casou, mas a tabela oficial aceita o NCM em ${oficiais.join(', ')}.`,
+    r.trail.push(
+      `Nenhuma regra coberta casou, mas a tabela oficial aceita o NCM em ${official.join(', ')}.`,
     )
     return
   }
-  r.status = 'resolvido'
-  r.confianca = 'alta'
-  r.trilha.push(
-    explicados.size > 0
+  r.status = 'resolved'
+  r.confidence = 'high'
+  r.trail.push(
+    explained.size > 0
       ? 'As hipóteses da lei para este NCM foram afastadas pela descrição: tributação integral.'
       : 'O NCM não está em nenhum anexo coberto: tributação integral.',
   )
 }
 
-const literal = (citacao: string, texto: string): boolean => {
-  const c = normalizarDescricao(citacao)
-  return c.length >= 12 && normalizarDescricao(texto).includes(c)
+const isVerbatim = (quote: string, text: string): boolean => {
+  const c = normalizeDescription(quote)
+  return c.length >= 12 && normalizeDescription(text).includes(c)
 }
 
-const desambiguar = async (
-  item: ItemEntrada,
-  nomeNcm: string,
-  r: Rascunho,
-  deps: Dependencias,
+const disambiguate = async (
+  item: InputItem,
+  ncmName: string,
+  r: Draft,
+  deps: Dependencies,
 ): Promise<void> => {
-  r.status = 'falta_informacao'
-  r.perguntas.push({
-    id: 'produto',
-    texto: r.candidatos.find((c) => c.condicao)?.condicao ?? 'Qual hipótese da lei se aplica?',
-    opcoes: r.candidatos.map((c) => ({ rotulo: c.rotulo, cClassTrib: c.cClassTrib })),
+  r.status = 'needs_info'
+  r.questions.push({
+    id: 'product',
+    text: r.candidates.find((c) => c.condition)?.condition ?? 'Qual hipótese da lei se aplica?',
+    options: r.candidates.map((c) => ({ label: c.label, cClassTrib: c.cClassTrib })),
   })
-  if (!deps.desambiguador) return
+  if (!deps.disambiguator) return
 
-  const { escolha, uso } = await deps.desambiguador.escolher({
+  const { choice, usage } = await deps.disambiguator.choose({
     item,
-    nomeNcm,
-    candidatos: r.candidatos,
+    ncmName,
+    candidates: r.candidates,
   })
-  r.ia = uso
-  if (escolha.tipo === 'preciso_perguntar') {
-    r.trilha.push(`IA (${uso.modelo}) pediu pergunta: ${escolha.motivo}`)
+  r.ai = usage
+  if (choice.kind === 'need_to_ask') {
+    r.trail.push(`IA (${usage.model}) pediu pergunta: ${choice.reason}`)
     return
   }
-  const alvo = r.candidatos.find((c) => c.cClassTrib === escolha.cClassTrib)
-  const fonte = alvo ? `${alvo.fundamento.texto} ${item.descricao}` : ''
-  if (!alvo || !literal(escolha.citacao, fonte)) {
-    r.alertas.push({
-      codigo: 'ia_descartada',
-      gravidade: 'atencao',
-      mensagem: alvo
+  const target = r.candidates.find((c) => c.cClassTrib === choice.cClassTrib)
+  const source = target ? `${target.legalBasis.text} ${item.description}` : ''
+  if (!target || !isVerbatim(choice.quote, source)) {
+    r.alerts.push({
+      code: 'ai_discarded',
+      severity: 'warning',
+      message: target
         ? 'A citação devolvida pela IA não existe no texto da lei: resposta descartada.'
-        : `A IA devolveu ${escolha.cClassTrib}, fora dos candidatos: resposta descartada.`,
+        : `A IA devolveu ${choice.cClassTrib}, fora dos candidatos: resposta descartada.`,
     })
-    r.trilha.push('Resposta da IA descartada pela verificação de citação.')
+    r.trail.push('Resposta da IA descartada pela verificação de citação.')
     return
   }
-  r.camada = 'ia'
-  r.status = 'revisar'
-  r.confianca = 'media'
-  r.codigo = alvo.cClassTrib
-  r.fundamento = alvo.fundamento
-  r.trilha.push(`IA (${uso.modelo}) sugeriu ${alvo.cClassTrib}: ${escolha.justificativa}`)
+  r.layer = 'ai'
+  r.status = 'review'
+  r.confidence = 'medium'
+  r.code = target.cClassTrib
+  r.legalBasis = target.legalBasis
+  r.trail.push(`IA (${usage.model}) sugeriu ${target.cClassTrib}: ${choice.justification}`)
 }
 
-const validar = async (
-  item: ItemEntrada,
-  r: Rascunho,
-  deps: Dependencias,
-  data: DataIso,
-): Promise<ValidacaoOficial> => {
-  if (!r.codigo || !deps.validador) return 'nao_consultado'
-  const v = await deps.validador.validar(item.ncm, r.codigo, data)
-  const cls = deps.tabela.classificacao(r.codigo)
-  if (v === 'recusado') {
-    r.status = 'revisar'
-    r.confianca = 'baixa'
-    r.alertas.push({
-      codigo: 'divergencia_oficial',
-      gravidade: 'bloqueio',
-      mensagem: `A API oficial recusa o NCM ${formatarNcm(item.ncm)} no código ${r.codigo}.`,
+const validate = async (
+  item: InputItem,
+  r: Draft,
+  deps: Dependencies,
+  date: IsoDate,
+): Promise<OfficialValidation> => {
+  if (!r.code || !deps.validator) return 'not_checked'
+  const v = await deps.validator.validate(item.ncm, r.code, date)
+  const cls = deps.table.classification(r.code)
+  if (v === 'rejected') {
+    r.status = 'review'
+    r.confidence = 'low'
+    r.alerts.push({
+      code: 'official_mismatch',
+      severity: 'blocker',
+      message: `A API oficial recusa o NCM ${formatNcm(item.ncm)} no código ${r.code}.`,
     })
-    r.trilha.push('Validação oficial recusou a combinação NCM x cClassTrib.')
-  } else if (v === 'aceito' && cls && !cls.listaNcmRestrita && r.codigo !== INTEGRAL) {
-    r.alertas.push({
-      codigo: 'validacao_oficial_fraca',
-      gravidade: 'info',
-      mensagem: `A API oficial aceita qualquer NCM em ${r.codigo}: a validação dela não confirma o enquadramento, só a regra do Enquadra.`,
+    r.trail.push('Validação oficial recusou a combinação NCM x cClassTrib.')
+  } else if (v === 'accepted' && cls && !cls.restrictedNcmList && r.code !== FULL_TAX) {
+    r.alerts.push({
+      code: 'weak_official_validation',
+      severity: 'info',
+      message: `A API oficial aceita qualquer NCM em ${r.code}: a validação dela não confirma o enquadramento, só a regra do Enquadra.`,
     })
   }
   return v
 }
 
-const montar = (
-  item: ItemEntrada,
-  r: Rascunho,
-  deps: Dependencias,
-  data: DataIso,
-  validacaoOficial: ValidacaoOficial,
-): Resultado => {
-  const classificacao = r.codigo ? (deps.tabela.classificacao(r.codigo) ?? null) : null
-  const aceitos = deps.tabela.restritosQueAceitam(item.ncm)
-  if (r.codigo && classificacao && aceitos === undefined) {
-    r.alertas.push({
-      codigo: 'ncm_nao_sondado',
-      gravidade: 'atencao',
-      mensagem: `O NCM ${formatarNcm(item.ncm)} não foi sondado na tabela oficial desta versão: não dá para dizer se outro código de lista restrita também o aceita.`,
+const build = (
+  item: InputItem,
+  r: Draft,
+  deps: Dependencies,
+  date: IsoDate,
+  officialValidation: OfficialValidation,
+): Result => {
+  const classification = r.code ? (deps.table.classification(r.code) ?? null) : null
+  const accepted = deps.table.restrictedAccepting(item.ncm)
+  if (r.code && classification && accepted === undefined) {
+    r.alerts.push({
+      code: 'ncm_not_probed',
+      severity: 'warning',
+      message: `O NCM ${formatNcm(item.ncm)} não foi sondado na tabela oficial desta versão: não dá para dizer se outro código de lista restrita também o aceita.`,
     })
   }
-  if (r.codigo && classificacao && aceitos !== undefined) {
-    const outras = aceitos.filter((c) => c !== r.codigo && !r.considerados.has(c))
-    if (outras.length > 0 && !r.alertas.some((a) => a.codigo === 'beneficio_nao_mapeado')) {
-      r.alertas.push({
-        codigo: 'outras_hipoteses_oficiais',
-        gravidade: 'info',
-        mensagem: `A tabela oficial também aceita este NCM em ${outras.join(', ')}, hipótese que o motor não cobre (outro destinatário, uso ou regime).`,
+  if (r.code && classification && accepted !== undefined) {
+    const others = accepted.filter((c) => c !== r.code && !r.considered.has(c))
+    if (others.length > 0 && !r.alerts.some((a) => a.code === 'unmapped_benefit')) {
+      r.alerts.push({
+        code: 'other_official_hypotheses',
+        severity: 'info',
+        message: `A tabela oficial também aceita este NCM em ${others.join(', ')}, hipótese que o motor não cobre (outro destinatário, uso ou regime).`,
       })
     }
   }
   return {
     item,
     status: r.status,
-    confianca: r.confianca,
-    camada: r.camada,
-    classificacao,
-    fundamento: r.fundamento,
-    candidatos: r.candidatos,
-    perguntas: r.perguntas,
-    alertas: r.alertas,
-    validacaoOficial,
-    tabela: { versao: deps.tabela.versao, data },
-    trilha: r.trilha,
-    ia: r.ia,
+    confidence: r.confidence,
+    layer: r.layer,
+    classification,
+    legalBasis: r.legalBasis,
+    candidates: r.candidates,
+    questions: r.questions,
+    alerts: r.alerts,
+    officialValidation,
+    table: { version: deps.table.version, date },
+    trail: r.trail,
+    ai: r.ai,
   }
 }

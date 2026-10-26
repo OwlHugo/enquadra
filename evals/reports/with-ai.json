@@ -1,39 +1,39 @@
 {
-  "modo": "com-ia",
-  "tabela": "V0059",
-  "casos": 80,
-  "acerto": 1,
-  "errosGraves": 0,
-  "abstencaoCorreta": 1,
-  "chamadasIa": 8,
-  "custoIaUsd": 0.0007038000000000001,
-  "msMedioIa": 1063.125,
-  "porCategoria": {
-    "direto": {
+  "mode": "with-ai",
+  "table": "V0059",
+  "cases": 80,
+  "accuracy": 1,
+  "severeErrors": 0,
+  "correctAbstention": 1,
+  "aiCalls": 8,
+  "aiCostUsd": 0.0007038000000000001,
+  "avgAiMs": 1063.125,
+  "byCategory": {
+    "direct": {
       "total": 29,
       "ok": 29
     },
-    "padrao": {
+    "default": {
       "total": 7,
       "ok": 7
     },
-    "excecao": {
+    "exception": {
       "total": 4,
       "ok": 4
     },
-    "prioridade": {
+    "priority": {
       "total": 4,
       "ok": 4
     },
-    "condicional": {
+    "conditional": {
       "total": 17,
       "ok": 17
     },
-    "ambiguo": {
+    "ambiguous": {
       "total": 7,
       "ok": 7
     },
-    "operacao": {
+    "operation": {
       "total": 6,
       "ok": 6
     },
@@ -41,10 +41,10 @@
       "total": 4,
       "ok": 4
     },
-    "nao_mapeado": {
+    "unmapped": {
       "total": 2,
       "ok": 2
     }
   },
-  "falhas": []
+  "failures": []
 }

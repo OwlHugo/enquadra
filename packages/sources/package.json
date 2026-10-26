@@ -1,7 +1,7 @@
 {
   "name": "@enquadra/sources",
   "version": "0.1.0",
-  "description": "Tabelas oficiais versionadas e cliente da API de dados abertos da Calculadora RTC.",
+  "description": "Versioned official tables and client for the RTC Calculator open-data API.",
   "type": "module",
   "license": "Apache-2.0",
   "repository": {

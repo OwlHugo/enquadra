@@ -1,40 +1,40 @@
 import { describe, expect, it } from 'vitest'
 import { cfop } from '../ncm.ts'
-import { operacaoPorCfop } from './operations.ts'
+import { operationByCfop } from './operations.ts'
 
 /** Tabela de CFOP → tratamento. Um caso por grupo, porque erro aqui contamina todo o item. */
 describe('operação pelo CFOP', () => {
   it.each([
-    ['5102', 'venda'],
-    ['6102', 'venda'],
-    ['5405', 'venda'],
-    ['5656', 'venda'],
-    ['5667', 'venda'],
-    ['5152', 'propria'],
-    ['6409', 'propria'],
-    ['7101', 'propria'],
-    ['5910', 'pergunta'],
-    ['6910', 'pergunta'],
-    ['5202', 'fora_do_escopo'],
-    ['5411', 'fora_do_escopo'],
-    ['5501', 'fora_do_escopo'],
-    ['7501', 'fora_do_escopo'],
-    ['1102', 'fora_do_escopo'],
-    ['2102', 'fora_do_escopo'],
-    ['3102', 'fora_do_escopo'],
-    ['5949', 'fora_do_escopo'],
-  ])('%s → %s', (codigo, tipo) => {
-    expect(operacaoPorCfop(cfop(codigo)).tipo).toBe(tipo)
+    ['5102', 'sale'],
+    ['6102', 'sale'],
+    ['5405', 'sale'],
+    ['5656', 'sale'],
+    ['5667', 'sale'],
+    ['5152', 'own'],
+    ['6409', 'own'],
+    ['7101', 'own'],
+    ['5910', 'question'],
+    ['6910', 'question'],
+    ['5202', 'out_of_scope'],
+    ['5411', 'out_of_scope'],
+    ['5501', 'out_of_scope'],
+    ['7501', 'out_of_scope'],
+    ['1102', 'out_of_scope'],
+    ['2102', 'out_of_scope'],
+    ['3102', 'out_of_scope'],
+    ['5949', 'out_of_scope'],
+  ])('%s → %s', (code, kind) => {
+    expect(operationByCfop(cfop(code)).kind).toBe(kind)
   })
 
   it('sem CFOP assume venda', () => {
-    expect(operacaoPorCfop(undefined).tipo).toBe('venda')
+    expect(operationByCfop(undefined).kind).toBe('sale')
   })
 
   it('transferência e exportação trazem o dispositivo da lei', () => {
-    const t = operacaoPorCfop(cfop('5152'))
-    const e = operacaoPorCfop(cfop('7101'))
-    expect(t.tipo === 'propria' && t.dispositivo).toBe('LC 214/2025, art. 6º, II')
-    expect(e.tipo === 'propria' && e.cClassTrib).toBe('410004')
+    const t = operationByCfop(cfop('5152'))
+    const e = operationByCfop(cfop('7101'))
+    expect(t.kind === 'own' && t.provision).toBe('LC 214/2025, art. 6º, II')
+    expect(e.kind === 'own' && e.cClassTrib).toBe('410004')
   })
 })

@@ -6,98 +6,95 @@ import { type CClassTrib, type Cfop, cClassTrib } from '../types.ts'
  * classificação própria, ou sai do escopo com aviso, nunca com palpite.
  */
 
-export type Operacao =
-  | { readonly tipo: 'venda' }
+export type Operation =
+  | { readonly kind: 'sale' }
   | {
-      readonly tipo: 'propria'
+      readonly kind: 'own'
       readonly cClassTrib: CClassTrib
-      readonly dispositivo: string
-      readonly texto: string
-      readonly rotulo: string
+      readonly provision: string
+      readonly text: string
+      readonly label: string
     }
   | {
-      readonly tipo: 'pergunta'
-      readonly pergunta: string
-      readonly opcoes: readonly {
-        readonly rotulo: string
+      readonly kind: 'question'
+      readonly question: string
+      readonly options: readonly {
+        readonly label: string
         readonly cClassTrib: CClassTrib
-        readonly dispositivo: string
-        readonly texto: string
+        readonly provision: string
+        readonly text: string
       }[]
     }
-  | { readonly tipo: 'fora_do_escopo'; readonly motivo: string }
+  | { readonly kind: 'out_of_scope'; readonly reason: string }
 
-const EXPORTACAO = {
-  tipo: 'propria',
+const EXPORT = {
+  kind: 'own',
   cClassTrib: cClassTrib('410004'),
-  dispositivo: 'LC 214/2025, art. 8º',
-  rotulo: 'Exportação, imunidade',
-  texto:
-    'São imunes ao IBS e à CBS as exportações de bens e de serviços, nos termos do Capítulo V deste Título.',
-} as const satisfies Operacao
+  provision: 'LC 214/2025, art. 8º',
+  label: 'Exportação, imunidade',
+  text: 'São imunes ao IBS e à CBS as exportações de bens e de serviços, nos termos do Capítulo V deste Título.',
+} as const satisfies Operation
 
-const TRANSFERENCIA = {
-  tipo: 'propria',
+const TRANSFER = {
+  kind: 'own',
   cClassTrib: cClassTrib('410002'),
-  dispositivo: 'LC 214/2025, art. 6º, II',
-  rotulo: 'Transferência entre estabelecimentos do mesmo contribuinte',
-  texto:
-    'transferência de bens entre estabelecimentos pertencentes ao mesmo contribuinte, observada a obrigatoriedade de emissão de documento fiscal eletrônico, nos termos do inciso II do § 2º do art. 60 desta Lei Complementar;',
-} as const satisfies Operacao
+  provision: 'LC 214/2025, art. 6º, II',
+  label: 'Transferência entre estabelecimentos do mesmo contribuinte',
+  text: 'transferência de bens entre estabelecimentos pertencentes ao mesmo contribuinte, observada a obrigatoriedade de emissão de documento fiscal eletrônico, nos termos do inciso II do § 2º do art. 60 desta Lei Complementar;',
+} as const satisfies Operation
 
-const BONIFICACAO_OU_DOACAO = {
-  tipo: 'pergunta',
-  pergunta:
+const BONUS_OR_DONATION = {
+  kind: 'question',
+  question:
     'O CFOP indica bonificação, doação ou brinde. Qual é o caso? Brinde e bonificação que dependa de evento posterior seguem a tributação normal do produto.',
-  opcoes: [
+  options: [
     {
-      rotulo: 'Bonificação que consta no documento fiscal e não depende de evento posterior',
+      label: 'Bonificação que consta no documento fiscal e não depende de evento posterior',
       cClassTrib: cClassTrib('410001'),
-      dispositivo: 'LC 214/2025, art. 5º, § 1º, I',
-      texto:
-        'não se aplica às bonificações que constem do respectivo documento fiscal e que não dependam de evento posterior;',
+      provision: 'LC 214/2025, art. 5º, § 1º, I',
+      text: 'não se aplica às bonificações que constem do respectivo documento fiscal e que não dependam de evento posterior;',
     },
     {
-      rotulo: 'Doação sem contraprestação em benefício do doador',
+      label: 'Doação sem contraprestação em benefício do doador',
       cClassTrib: cClassTrib('410003'),
-      dispositivo: 'LC 214/2025, art. 6º, VIII',
-      texto: 'doações sem contraprestação em benefício do doador;',
+      provision: 'LC 214/2025, art. 6º, VIII',
+      text: 'doações sem contraprestação em benefício do doador;',
     },
   ],
-} as const satisfies Operacao
+} as const satisfies Operation
 
-const VENDA = { tipo: 'venda' } as const satisfies Operacao
+const SALE = { kind: 'sale' } as const satisfies Operation
 
 /** Grupos de CFOP (3 últimos dígitos) que são saída por venda ou revenda de mercadoria. */
-const SUFIXOS_VENDA = /^(10[1-9]|11[0-9]|12[0-5]|40[1-5]|65[1-6]|667)$/
-const SUFIXOS_TRANSFERENCIA = /^(15[1-5]|408|409|552|557|658|659)$/
+const SALE_SUFFIXES = /^(10[1-9]|11[0-9]|12[0-5]|40[1-5]|65[1-6]|667)$/
+const TRANSFER_SUFFIXES = /^(15[1-5]|408|409|552|557|658|659)$/
 
-export const operacaoPorCfop = (codigo: Cfop | undefined): Operacao => {
-  if (codigo === undefined) return VENDA
-  const origem = codigo[0]
-  const sufixo = codigo.slice(1)
-  if (origem === '1' || origem === '2' || origem === '3') {
-    return { tipo: 'fora_do_escopo', motivo: 'CFOP de entrada: o Enquadra classifica saídas.' }
+export const operationByCfop = (code: Cfop | undefined): Operation => {
+  if (code === undefined) return SALE
+  const origin = code[0]
+  const suffix = code.slice(1)
+  if (origin === '1' || origin === '2' || origin === '3') {
+    return { kind: 'out_of_scope', reason: 'CFOP de entrada: o Enquadra classifica saídas.' }
   }
-  if (origem === '7') {
-    return sufixo === '501' || sufixo === '949'
-      ? { tipo: 'fora_do_escopo', motivo: `CFOP ${codigo}: exportação indireta ou outra saída.` }
-      : EXPORTACAO
+  if (origin === '7') {
+    return suffix === '501' || suffix === '949'
+      ? { kind: 'out_of_scope', reason: `CFOP ${code}: exportação indireta ou outra saída.` }
+      : EXPORT
   }
-  if (SUFIXOS_VENDA.test(sufixo)) return VENDA
-  if (SUFIXOS_TRANSFERENCIA.test(sufixo)) return TRANSFERENCIA
-  if (sufixo === '910') return BONIFICACAO_OU_DOACAO
-  if (/^(20[1-9]|21[0-9]|41[0-1]|41[3-4]|50[3-4]|55[3-6]|66[0-2])$/.test(sufixo)) {
+  if (SALE_SUFFIXES.test(suffix)) return SALE
+  if (TRANSFER_SUFFIXES.test(suffix)) return TRANSFER
+  if (suffix === '910') return BONUS_OR_DONATION
+  if (/^(20[1-9]|21[0-9]|41[0-1]|41[3-4]|50[3-4]|55[3-6]|66[0-2])$/.test(suffix)) {
     return {
-      tipo: 'fora_do_escopo',
-      motivo: `CFOP ${codigo}: devolução segue a classificação da nota original.`,
+      kind: 'out_of_scope',
+      reason: `CFOP ${code}: devolução segue a classificação da nota original.`,
     }
   }
-  if (sufixo === '501' || sufixo === '502') {
+  if (suffix === '501' || suffix === '502') {
     return {
-      tipo: 'fora_do_escopo',
-      motivo: `CFOP ${codigo}: remessa com fim específico de exportação (suspensão do art. 82 depende de requisitos da exportadora).`,
+      kind: 'out_of_scope',
+      reason: `CFOP ${code}: remessa com fim específico de exportação (suspensão do art. 82 depende de requisitos da exportadora).`,
     }
   }
-  return { tipo: 'fora_do_escopo', motivo: `CFOP ${codigo}: operação sem regra no motor.` }
+  return { kind: 'out_of_scope', reason: `CFOP ${code}: operação sem regra no motor.` }
 }

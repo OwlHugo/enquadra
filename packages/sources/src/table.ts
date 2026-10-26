@@ -2,11 +2,11 @@ import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import {
   type CClassTrib,
-  type Classificacao,
+  type Classification,
   cClassTrib,
-  cstDe,
+  cstOf,
   type Ncm,
-  type TabelaOficial,
+  type OfficialTable,
 } from '@enquadra/domain'
 import { z } from 'zod'
 
@@ -17,7 +17,8 @@ import { z } from 'zod'
  * vira erro alto, não dado errado em silêncio.
  */
 
-const ClassificacaoApi = z.object({
+/** Formato da API oficial, com os nomes de campo dela. */
+const ApiClassification = z.object({
   codigo: z.string().regex(/^\d{6}$/),
   descricao: z.string(),
   nomenclatura: z.string(),
@@ -25,63 +26,63 @@ const ClassificacaoApi = z.object({
   percentualReducaoIbsUf: z.number(),
 })
 
-const Versao = z.object({
-  versaoDb: z.string(),
-  dataVersaoDb: z.string(),
-  consultadoEm: z.string(),
+const Version = z.object({
+  version: z.string(),
+  versionDate: z.string(),
+  fetchedOn: z.string(),
 })
 
-const Ncms = z.object({ ato: z.string(), itens: z.record(z.string(), z.string()) })
+const NcmFile = z.object({ act: z.string(), items: z.record(z.string(), z.string()) })
 
-const Aplicavel = z.object({
-  codigosRestritos: z.array(z.string()),
-  aceitos: z.record(z.string(), z.array(z.string())),
+const Applicable = z.object({
+  restrictedCodes: z.array(z.string()),
+  accepted: z.record(z.string(), z.array(z.string())),
 })
 
-export interface TabelaCarregada extends TabelaOficial {
-  readonly dataVersao: string
-  readonly consultadoEm: string
-  readonly atoNcm: string
-  readonly totalClassificacoes: number
+export interface LoadedTable extends OfficialTable {
+  readonly versionDate: string
+  readonly fetchedOn: string
+  readonly ncmAct: string
+  readonly totalClassifications: number
 }
 
-const ler = async <T>(pasta: string, arquivo: string, schema: z.ZodType<T>): Promise<T> =>
-  schema.parse(JSON.parse(await readFile(join(pasta, arquivo), 'utf8')))
+const read = async <T>(folder: string, file: string, schema: z.ZodType<T>): Promise<T> =>
+  schema.parse(JSON.parse(await readFile(join(folder, file), 'utf8')))
 
-export const carregarTabela = async (pasta: string): Promise<TabelaCarregada> => {
-  const [lista, versao, ncms, aplicavel] = await Promise.all([
-    ler(pasta, 'classifications.json', z.array(ClassificacaoApi)),
-    ler(pasta, 'version.json', Versao),
-    ler(pasta, 'ncm.json', Ncms),
-    ler(pasta, 'ncm-applicable.json', Aplicavel),
+export const loadTable = async (folder: string): Promise<LoadedTable> => {
+  const [list, version, ncms, applicable] = await Promise.all([
+    read(folder, 'classifications.json', z.array(ApiClassification)),
+    read(folder, 'version.json', Version),
+    read(folder, 'ncm.json', NcmFile),
+    read(folder, 'ncm-applicable.json', Applicable),
   ])
-  const restritos = new Set(aplicavel.codigosRestritos)
-  const porCodigo = new Map<CClassTrib, Classificacao>(
-    lista.map((c) => {
-      const codigo = cClassTrib(c.codigo)
+  const restricted = new Set(applicable.restrictedCodes)
+  const byCode = new Map<CClassTrib, Classification>(
+    list.map((c) => {
+      const code = cClassTrib(c.codigo)
       return [
-        codigo,
+        code,
         {
-          cst: cstDe(codigo),
-          cClassTrib: codigo,
-          descricao: c.descricao,
-          reducaoCbs: c.percentualReducaoCbs,
-          reducaoIbs: c.percentualReducaoIbsUf,
-          listaNcmRestrita: restritos.has(c.codigo),
+          cst: cstOf(code),
+          cClassTrib: code,
+          description: c.descricao,
+          cbsReduction: c.percentualReducaoCbs,
+          ibsReduction: c.percentualReducaoIbsUf,
+          restrictedNcmList: restricted.has(c.codigo),
         },
       ]
     }),
   )
-  const aceitos = new Map(Object.entries(aplicavel.aceitos))
+  const accepted = new Map(Object.entries(applicable.accepted))
 
   return {
-    versao: versao.versaoDb,
-    dataVersao: versao.dataVersaoDb,
-    consultadoEm: versao.consultadoEm,
-    atoNcm: ncms.ato,
-    totalClassificacoes: porCodigo.size,
-    classificacao: (codigo) => porCodigo.get(codigo),
-    nomeNcm: (codigo: Ncm) => ncms.itens[codigo],
-    restritosQueAceitam: (codigo: Ncm) => aceitos.get(codigo)?.map(cClassTrib),
+    version: version.version,
+    versionDate: version.versionDate,
+    fetchedOn: version.fetchedOn,
+    ncmAct: ncms.act,
+    totalClassifications: byCode.size,
+    classification: (code) => byCode.get(code),
+    ncmName: (code: Ncm) => ncms.items[code],
+    restrictedAccepting: (code: Ncm) => accepted.get(code)?.map(cClassTrib),
   }
 }

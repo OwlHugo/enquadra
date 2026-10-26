@@ -17,8 +17,8 @@ const BASE =
   'https://consumo.tributos.gov.br/servico/calcular-tributos-consumo/api/calculadora/dados-abertos'
 const NCM_SISCOMEX =
   'https://portalunico.siscomex.gov.br/classif/api/publico/nomenclatura/download/json?perfil=PUBLICO'
-const RAIZ = new URL('..', import.meta.url).pathname
-const hoje = new Date().toISOString().slice(0, 10)
+const ROOT = new URL('..', import.meta.url).pathname
+const today = new Date().toISOString().slice(0, 10)
 
 const { values } = parseArgs({ options: { check: { type: 'boolean', default: false } } })
 
@@ -26,66 +26,83 @@ const { values } = parseArgs({ options: { check: { type: 'boolean', default: fal
 const json = async <T>(url: string): Promise<T> => {
   for (let t = 1; ; t++) {
     const r = await fetch(url, { signal: AbortSignal.timeout(60_000) }).catch((e: unknown) => {
-      const rede =
+      const network =
         (e instanceof TypeError && e.cause !== undefined) ||
         (e instanceof DOMException && e.name === 'TimeoutError')
-      if (!rede || t >= 4) throw e
+      if (!network || t >= 4) throw e
       return null
     })
     if (r?.ok) return (await r.json()) as T
     if (r && r.status < 500 && r.status !== 429) {
-      throw new Error(`HTTP ${r.status} em ${url}: ${await r.text()}`)
+      throw new Error(`HTTP ${r.status} on ${url}: ${await r.text()}`)
     }
-    if (t >= 4) throw new Error(`HTTP ${r?.status} em ${url} após ${t} tentativas`)
+    if (t >= 4) throw new Error(`HTTP ${r?.status} on ${url} after ${t} attempts`)
     await new Promise((ok) => setTimeout(ok, 500 * 2 ** t))
   }
 }
 
-const emLotes = async <T, R>(itens: T[], n: number, f: (i: T) => Promise<R>): Promise<R[]> => {
-  const saida: R[] = new Array(itens.length)
-  let proximo = 0
+const inBatches = async <T, R>(items: T[], n: number, f: (i: T) => Promise<R>): Promise<R[]> => {
+  const output: R[] = new Array(items.length)
+  let nextIndex = 0
   await Promise.all(
     Array.from({ length: n }, async () => {
-      while (proximo < itens.length) {
-        const i = proximo++
-        saida[i] = await f(itens[i] as T)
+      while (nextIndex < items.length) {
+        const i = nextIndex++
+        output[i] = await f(items[i] as T)
       }
     }),
   )
-  return saida
+  return output
 }
 
-interface Versao {
+interface Version {
+  versaoApp: string
   versaoDb: string
+  descricaoVersaoDb: string
   dataVersaoDb: string
+  ambiente: string
 }
-interface Classificacao {
+interface Classification {
   codigo: string
   nomenclatura: string
 }
 
-const versao = await json<Versao>(`${BASE}/versao`)
-const pasta = join(RAIZ, 'data/sources', versao.versaoDb)
-const nova = !existsSync(pasta)
-console.log(`versão oficial: ${versao.versaoDb} (${versao.dataVersaoDb})${nova ? ' · NOVA' : ''}`)
-if (values.check) process.exit(nova ? 1 : 0)
+const version = await json<Version>(`${BASE}/versao`)
+const folder = join(ROOT, 'data/sources', version.versaoDb)
+const isNew = !existsSync(folder)
+console.log(
+  `official version: ${version.versaoDb} (${version.dataVersaoDb})${isNew ? ' · NEW' : ''}`,
+)
+if (values.check) process.exit(isNew ? 1 : 0)
 
-await mkdir(pasta, { recursive: true })
-const classificacoes = await json<Classificacao[]>(
-  `${BASE}/classificacoes-tributarias/cbs-ibs?data=${hoje}`,
+await mkdir(folder, { recursive: true })
+const classifications = await json<Classification[]>(
+  `${BASE}/classificacoes-tributarias/cbs-ibs?data=${today}`,
 )
 await writeFile(
-  join(pasta, 'version.json'),
-  JSON.stringify({ ...versao, consultadoEm: hoje, fonte: BASE }, null, 2),
+  join(folder, 'version.json'),
+  JSON.stringify(
+    {
+      version: version.versaoDb,
+      versionDate: version.dataVersaoDb,
+      versionNote: version.descricaoVersaoDb,
+      appVersion: version.versaoApp,
+      environment: version.ambiente,
+      fetchedOn: today,
+      source: BASE,
+    },
+    null,
+    2,
+  ),
 )
-await writeFile(join(pasta, 'classifications.json'), JSON.stringify(classificacoes, null, 1))
+await writeFile(join(folder, 'classifications.json'), JSON.stringify(classifications, null, 1))
 await writeFile(
-  join(pasta, 'situations.json'),
-  JSON.stringify(await json(`${BASE}/situacoes-tributarias/cbs-ibs?data=${hoje}`), null, 1),
+  join(folder, 'situations.json'),
+  JSON.stringify(await json(`${BASE}/situacoes-tributarias/cbs-ibs?data=${today}`), null, 1),
 )
 await writeFile(
-  join(pasta, 'legal-grounds.json'),
-  JSON.stringify(await json(`${BASE}/fundamentacoes-legais?data=${hoje}`), null, 1),
+  join(folder, 'legal-grounds.json'),
+  JSON.stringify(await json(`${BASE}/fundamentacoes-legais?data=${today}`), null, 1),
 )
 
 const siscomex = await json<{
@@ -93,46 +110,46 @@ const siscomex = await json<{
   Data_Ultima_Atualizacao_NCM: string
   Nomenclaturas: { Codigo: string; Descricao: string }[]
 }>(NCM_SISCOMEX)
-const itens: Record<string, string> = Object.fromEntries(
+const items: Record<string, string> = Object.fromEntries(
   siscomex.Nomenclaturas.map((n) => [n.Codigo.replaceAll('.', ''), n.Descricao] as const).filter(
     ([c]) => c.length === 8,
   ),
 )
 await writeFile(
-  join(pasta, 'ncm.json'),
-  JSON.stringify({ ato: siscomex.Ato, vigencia: siscomex.Data_Ultima_Atualizacao_NCM, itens }),
+  join(folder, 'ncm.json'),
+  JSON.stringify({ act: siscomex.Ato, effectiveDate: siscomex.Data_Ultima_Atualizacao_NCM, items }),
 )
 
 // Códigos com lista restrita: os que recusam dois NCM sem relação com anexo nenhum.
-const elegiveis = classificacoes.filter(
+const eligible = classifications.filter(
   (c) => c.nomenclatura === 'NCM' || c.nomenclatura === 'NBS ou NCM',
 )
-const aceita = async (ncm: string, codigo: string): Promise<boolean> =>
+const accepts = async (ncm: string, code: string): Promise<boolean> =>
   (
     await json<{ valido: boolean }>(
-      `${BASE}/classificacoes-tributarias/ncm-aplicavel?ncm=${ncm}&cClassTrib=${codigo}&dataOcorrenciaFatoGerador=${hoje}`,
+      `${BASE}/classificacoes-tributarias/ncm-aplicavel?ncm=${ncm}&cClassTrib=${code}&dataOcorrenciaFatoGerador=${today}`,
     )
   ).valido
-const testes = await emLotes(
-  elegiveis,
+const probes = await inBatches(
+  eligible,
   6,
-  async (c) => (await aceita('22021000', c.codigo)) || (await aceita('84713012', c.codigo)),
+  async (c) => (await accepts('22021000', c.codigo)) || (await accepts('84713012', c.codigo)),
 )
-const restritos = elegiveis.filter((_, i) => !testes[i]).map((c) => c.codigo)
-console.log(`${restritos.length} códigos com lista restrita de NCM`)
+const restricted = eligible.filter((_, i) => !probes[i]).map((c) => c.codigo)
+console.log(`${restricted.length} codes with a restricted NCM list`)
 
-const casos = (await readFile(join(RAIZ, 'evals/cases.jsonl'), 'utf8')).trim().split('\n')
-const ncms = [...new Set(casos.map((l) => (JSON.parse(l) as { ncm: string }).ncm))].filter(
-  (n) => itens[n],
+const cases = (await readFile(join(ROOT, 'evals/cases.jsonl'), 'utf8')).trim().split('\n')
+const ncms = [...new Set(cases.map((l) => (JSON.parse(l) as { ncm: string }).ncm))].filter(
+  (n) => items[n],
 )
-const pares = ncms.flatMap((n) => restritos.map((c) => [n, c] as const))
-const respostas = await emLotes(pares, 6, ([n, c]) => aceita(n, c))
-const aceitos: Record<string, string[]> = Object.fromEntries(ncms.map((n) => [n, []]))
-pares.forEach(([n, c], i) => {
-  if (respostas[i]) aceitos[n]?.push(c)
+const pairs = ncms.flatMap((n) => restricted.map((c) => [n, c] as const))
+const responses = await inBatches(pairs, 6, ([n, c]) => accepts(n, c))
+const accepted: Record<string, string[]> = Object.fromEntries(ncms.map((n) => [n, []]))
+pairs.forEach(([n, c], i) => {
+  if (responses[i]) accepted[n]?.push(c)
 })
 await writeFile(
-  join(pasta, 'ncm-applicable.json'),
-  JSON.stringify({ data: hoje, codigosRestritos: restritos, aceitos }, null, 1),
+  join(folder, 'ncm-applicable.json'),
+  JSON.stringify({ date: today, restrictedCodes: restricted, accepted }, null, 1),
 )
-console.log(`${ncms.length} NCM sondados (${pares.length} consultas) → ${pasta}`)
+console.log(`${ncms.length} NCMs probed (${pairs.length} queries) → ${folder}`)

@@ -49,7 +49,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: eval
-        run: pnpm eval --linha | tee eval.txt
+        run: pnpm eval --baseline | tee eval.txt
       - name: resumo no PR
         run: |
           {

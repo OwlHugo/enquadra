@@ -1,7 +1,7 @@
 {
   "name": "@enquadra/ai",
   "version": "0.1.0",
-  "description": "Desambiguação por LLM restrita a candidatos válidos, com citação literal verificada.",
+  "description": "LLM disambiguation restricted to valid candidates, with verified verbatim citation.",
   "type": "module",
   "license": "Apache-2.0",
   "repository": {

@@ -3,8 +3,8 @@
  * já validado e com tipo nominal, para que um NCM nunca seja confundido com um cClassTrib.
  */
 
-declare const marca: unique symbol
-type Nominal<T, M extends string> = T & { readonly [marca]: M }
+declare const brand: unique symbol
+type Nominal<T, M extends string> = T & { readonly [brand]: M }
 
 /** NCM com 8 dígitos, sem pontos. */
 export type Ncm = Nominal<string, 'Ncm'>
@@ -15,139 +15,139 @@ export type Cst = Nominal<string, 'Cst'>
 /** CFOP com 4 dígitos. */
 export type Cfop = Nominal<string, 'Cfop'>
 /** Data no formato AAAA-MM-DD. */
-export type DataIso = Nominal<string, 'DataIso'>
+export type IsoDate = Nominal<string, 'DataIso'>
 
-export const cClassTrib = (codigo: string): CClassTrib => {
-  if (!/^\d{6}$/.test(codigo)) throw new ErroDeDominio('cclasstrib_invalido', codigo)
-  return codigo as CClassTrib
+export const cClassTrib = (code: string): CClassTrib => {
+  if (!/^\d{6}$/.test(code)) throw new DomainError('invalid_cclasstrib', code)
+  return code as CClassTrib
 }
 
-export const cstDe = (c: CClassTrib): Cst => c.slice(0, 3) as Cst
+export const cstOf = (c: CClassTrib): Cst => c.slice(0, 3) as Cst
 
-export const dataIso = (valor: string): DataIso => {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(valor) || Number.isNaN(Date.parse(valor))) {
-    throw new ErroDeDominio('data_invalida', valor)
+export const isoDate = (value: string): IsoDate => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || Number.isNaN(Date.parse(value))) {
+    throw new DomainError('invalid_date', value)
   }
-  return valor as DataIso
+  return value as IsoDate
 }
 
-export class ErroDeDominio extends Error {
-  readonly codigo: string
-  constructor(codigo: string, detalhe: string) {
-    super(`${codigo}: ${detalhe}`)
-    this.codigo = codigo
+export class DomainError extends Error {
+  readonly code: string
+  constructor(code: string, detail: string) {
+    super(`${code}: ${detail}`)
+    this.code = code
     this.name = 'ErroDeDominio'
   }
 }
 
 /** Um item a classificar, como vem de um catálogo ou de um item de NF-e. */
-export interface ItemEntrada {
-  readonly descricao: string
+export interface InputItem {
+  readonly description: string
   readonly ncm: Ncm
   /** Sem CFOP o motor assume venda e registra a suposição na trilha. */
   readonly cfop?: Cfop
   /** Data do fato gerador. Sem ela, vale a data da classificação. */
-  readonly data?: DataIso
+  readonly date?: IsoDate
   /** Decisão travada por uma pessoa. Sempre vence e nunca é desfeita pelo motor. */
-  readonly decisaoManual?: DecisaoManual
+  readonly manualDecision?: ManualDecision
 }
 
-export interface DecisaoManual {
+export interface ManualDecision {
   readonly cClassTrib: CClassTrib
-  readonly motivo: string
-  readonly autor: string
-  readonly em: DataIso
+  readonly reason: string
+  readonly author: string
+  readonly decidedOn: IsoDate
 }
 
 /** Camada que decidiu o item, da mais forte para a mais fraca. */
-export type Camada = 'manual' | 'operacao' | 'anexo' | 'descricao' | 'ia' | 'padrao'
+export type Layer = 'manual' | 'operation' | 'annex' | 'description' | 'ai' | 'default'
 
 /**
  * Confiança é categoria calculada por regra, nunca um número devolvido por modelo.
  * alta: regra decidiu sem ambiguidade. media: houve escolha entre hipóteses válidas.
  * baixa: falta fato que só a pessoa sabe.
  */
-export type Confianca = 'alta' | 'media' | 'baixa'
+export type Confidence = 'high' | 'medium' | 'low'
 
-export type Status = 'resolvido' | 'revisar' | 'falta_informacao'
+export type Status = 'resolved' | 'review' | 'needs_info'
 
-export type ValidacaoOficial = 'aceito' | 'recusado' | 'indisponivel' | 'nao_consultado'
+export type OfficialValidation = 'accepted' | 'rejected' | 'unavailable' | 'not_checked'
 
-export interface Classificacao {
+export interface Classification {
   readonly cst: Cst
   readonly cClassTrib: CClassTrib
-  readonly descricao: string
-  readonly reducaoCbs: number
-  readonly reducaoIbs: number
+  readonly description: string
+  readonly cbsReduction: number
+  readonly ibsReduction: number
   /**
    * true quando a API oficial só aceita uma lista fechada de NCM para este código.
    * false (ex.: 200013) quer dizer que a validação oficial aceita qualquer NCM.
    */
-  readonly listaNcmRestrita: boolean
+  readonly restrictedNcmList: boolean
 }
 
-export interface Fundamento {
+export interface LegalBasis {
   /** Ex.: "LC 214/2025, art. 125, Anexo I, item 8". */
-  readonly dispositivo: string
+  readonly provision: string
   /** Texto literal da lei, sem paráfrase. */
-  readonly texto: string
+  readonly text: string
 }
 
-export interface Candidato {
+export interface Candidate {
   readonly cClassTrib: CClassTrib
-  readonly rotulo: string
-  readonly fundamento: Fundamento
+  readonly label: string
+  readonly legalBasis: LegalBasis
   /** Fato que precisa ser verdadeiro para o candidato valer. */
-  readonly condicao?: string
-  readonly descartadoPor?: string
+  readonly condition?: string
+  readonly discardedBy?: string
 }
 
-export interface Pergunta {
+export interface Question {
   readonly id: string
-  readonly texto: string
-  readonly opcoes: readonly { readonly rotulo: string; readonly cClassTrib: CClassTrib }[]
+  readonly text: string
+  readonly options: readonly { readonly label: string; readonly cClassTrib: CClassTrib }[]
 }
 
-export type CodigoAlerta =
-  | 'ncm_inexistente'
-  | 'ncm_multiplo'
-  | 'descricao_condicional'
-  | 'prioridade_entre_anexos'
-  | 'divergencia_oficial'
-  | 'beneficio_nao_mapeado'
-  | 'ncm_nao_sondado'
-  | 'outras_hipoteses_oficiais'
-  | 'validacao_oficial_fraca'
-  | 'operacao_fora_do_escopo'
-  | 'cfop_ausente'
-  | 'ia_descartada'
-  | 'decisao_manual_invalidada'
+export type AlertCode =
+  | 'unknown_ncm'
+  | 'multiple_hypotheses'
+  | 'description_condition'
+  | 'annex_priority'
+  | 'official_mismatch'
+  | 'unmapped_benefit'
+  | 'ncm_not_probed'
+  | 'other_official_hypotheses'
+  | 'weak_official_validation'
+  | 'operation_out_of_scope'
+  | 'missing_cfop'
+  | 'ai_discarded'
+  | 'manual_decision_invalidated'
 
-export interface Alerta {
-  readonly codigo: CodigoAlerta
-  readonly mensagem: string
-  readonly gravidade: 'info' | 'atencao' | 'bloqueio'
+export interface Alert {
+  readonly code: AlertCode
+  readonly message: string
+  readonly severity: 'info' | 'warning' | 'blocker'
 }
 
-export interface UsoDeIa {
-  readonly modelo: string
-  readonly custoUsd: number
+export interface AiUsage {
+  readonly model: string
+  readonly costUsd: number
   readonly ms: number
 }
 
-export interface Resultado {
-  readonly item: ItemEntrada
+export interface Result {
+  readonly item: InputItem
   readonly status: Status
-  readonly confianca: Confianca
-  readonly camada: Camada
-  readonly classificacao: Classificacao | null
-  readonly fundamento: Fundamento | null
-  readonly candidatos: readonly Candidato[]
-  readonly perguntas: readonly Pergunta[]
-  readonly alertas: readonly Alerta[]
-  readonly validacaoOficial: ValidacaoOficial
-  readonly tabela: { readonly versao: string; readonly data: DataIso }
+  readonly confidence: Confidence
+  readonly layer: Layer
+  readonly classification: Classification | null
+  readonly legalBasis: LegalBasis | null
+  readonly candidates: readonly Candidate[]
+  readonly questions: readonly Question[]
+  readonly alerts: readonly Alert[]
+  readonly officialValidation: OfficialValidation
+  readonly table: { readonly version: string; readonly date: IsoDate }
   /** Passo a passo legível de como a decisão foi tomada. */
-  readonly trilha: readonly string[]
-  readonly ia: UsoDeIa | null
+  readonly trail: readonly string[]
+  readonly ai: AiUsage | null
 }

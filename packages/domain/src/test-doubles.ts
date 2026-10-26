@@ -1,31 +1,36 @@
 import {
   type CClassTrib,
-  type Classificacao,
+  type Choice,
+  type Classification,
   cClassTrib,
-  cstDe,
-  type Desambiguador,
-  type Escolha,
+  cstOf,
+  type Disambiguator,
   type Ncm,
-  type TabelaOficial,
-  type ValidacaoOficial,
-  type ValidadorOficial,
+  type OfficialTable,
+  type OfficialValidation,
+  type OfficialValidator,
 } from './index.ts'
 
 /** Implementações em memória das portas, para teste. Nenhuma toca rede ou disco. */
 
-const cls = (codigo: string, descricao: string, reducao = 0, restrita = true): Classificacao => {
-  const c = cClassTrib(codigo)
+const cls = (
+  code: string,
+  description: string,
+  reduction = 0,
+  restricted = true,
+): Classification => {
+  const c = cClassTrib(code)
   return {
-    cst: cstDe(c),
+    cst: cstOf(c),
     cClassTrib: c,
-    descricao,
-    reducaoCbs: reducao,
-    reducaoIbs: reducao,
-    listaNcmRestrita: restrita,
+    description,
+    cbsReduction: reduction,
+    ibsReduction: reduction,
+    restrictedNcmList: restricted,
   }
 }
 
-const CLASSIFICACOES = [
+const CLASSIFICATIONS = [
   cls('000001', 'Situações tributadas integralmente pelo IBS e CBS.', 0, false),
   cls('200003', 'Vendas de produtos destinados à alimentação humana (Anexo I)', 100),
   cls('200013', 'Fornecimento de tampões higiênicos, absorventes...', 100, false),
@@ -40,40 +45,40 @@ const CLASSIFICACOES = [
   cls('410008', 'Livros', 0, false),
 ]
 
-export const tabelaFalsa = (
+export const fakeTable = (
   ncms: Record<string, string>,
-  aceitos: Record<string, string[]> = {},
-): TabelaOficial => {
-  const mapa = new Map(CLASSIFICACOES.map((c) => [c.cClassTrib, c]))
+  accepted: Record<string, string[]> = {},
+): OfficialTable => {
+  const byCode = new Map(CLASSIFICATIONS.map((c) => [c.cClassTrib, c]))
   return {
-    versao: 'TESTE',
-    classificacao: (c) => mapa.get(c),
-    nomeNcm: (n: Ncm) => ncms[n],
-    restritosQueAceitam: (n: Ncm) => aceitos[n]?.map(cClassTrib),
+    version: 'TESTE',
+    classification: (c) => byCode.get(c),
+    ncmName: (n: Ncm) => ncms[n],
+    restrictedAccepting: (n: Ncm) => accepted[n]?.map(cClassTrib),
   }
 }
 
-export const validadorFixo = (
-  resposta: ValidacaoOficial,
-): ValidadorOficial & { chamadas: number } => {
+export const fixedValidator = (
+  response: OfficialValidation,
+): OfficialValidator & { calls: number } => {
   const v = {
-    chamadas: 0,
-    validar: async () => {
-      v.chamadas++
-      return resposta
+    calls: 0,
+    validate: async () => {
+      v.calls++
+      return response
     },
   }
   return v
 }
 
-export const desambiguadorFixo = (
-  escolha: Escolha,
-): Desambiguador & { pedidos: CClassTrib[][] } => {
+export const fixedDisambiguator = (
+  choice: Choice,
+): Disambiguator & { requests: CClassTrib[][] } => {
   const d = {
-    pedidos: [] as CClassTrib[][],
-    escolher: async (p: { candidatos: readonly { cClassTrib: CClassTrib }[] }) => {
-      d.pedidos.push(p.candidatos.map((c) => c.cClassTrib))
-      return { escolha, uso: { modelo: 'falso', custoUsd: 0.0001, ms: 1 } }
+    requests: [] as CClassTrib[][],
+    choose: async (p: { candidates: readonly { cClassTrib: CClassTrib }[] }) => {
+      d.requests.push(p.candidates.map((c) => c.cClassTrib))
+      return { choice, usage: { model: 'falso', costUsd: 0.0001, ms: 1 } }
     },
   }
   return d

@@ -1,6 +1,6 @@
-import { type Avaliacao, avaliar, normalizarDescricao } from './description.ts'
-import { casaPrefixo } from './ncm.ts'
-import { REGRAS_PRODUTO, type RegraProduto } from './rules/products.ts'
+import { type Evaluation, evaluate, normalizeDescription } from './description.ts'
+import { matchesPrefix } from './ncm.ts'
+import { PRODUCT_RULES, type ProductRule } from './rules/products.ts'
 import type { Ncm } from './types.ts'
 
 /**
@@ -8,60 +8,60 @@ import type { Ncm } from './types.ts'
  * quais regras de produto podem valer e em que estado está cada condição.
  */
 
-export interface Hipotese {
-  readonly regra: RegraProduto
+export interface Hypothesis {
+  readonly rule: ProductRule
   /** 'atende' também quando a regra não tem condição. */
-  readonly avaliacao: Avaliacao
-  readonly temCondicao: boolean
+  readonly evaluation: Evaluation
+  readonly hasCondition: boolean
 }
 
-export interface Hipoteses {
-  readonly vivas: readonly Hipotese[]
-  readonly descartadas: readonly { readonly regra: RegraProduto; readonly motivo: string }[]
+export interface Hypotheses {
+  readonly alive: readonly Hypothesis[]
+  readonly discarded: readonly { readonly rule: ProductRule; readonly reason: string }[]
 }
 
-const casa = (regra: RegraProduto, codigo: Ncm): boolean =>
-  regra.incluir.some((p) => casaPrefixo(codigo, p)) &&
-  ![...(regra.excluir ?? []), ...(regra.afastadoPorRessalva?.prefixos ?? [])].some((p) =>
-    casaPrefixo(codigo, p),
+const matches = (rule: ProductRule, code: Ncm): boolean =>
+  rule.include.some((p) => matchesPrefix(code, p)) &&
+  ![...(rule.exclude ?? []), ...(rule.excludedByProviso?.prefixes ?? [])].some((p) =>
+    matchesPrefix(code, p),
   )
 
-export const levantarHipoteses = (
-  codigo: Ncm,
-  descricao: string,
-  regras: readonly RegraProduto[] = REGRAS_PRODUTO,
-): Hipoteses => {
-  const texto = normalizarDescricao(descricao)
-  const descartadas: { regra: RegraProduto; motivo: string }[] = []
-  const avaliadas: Hipotese[] = []
+export const collectHypotheses = (
+  code: Ncm,
+  description: string,
+  rules: readonly ProductRule[] = PRODUCT_RULES,
+): Hypotheses => {
+  const text = normalizeDescription(description)
+  const discarded: { rule: ProductRule; reason: string }[] = []
+  const evaluated: Hypothesis[] = []
 
-  for (const regra of regras.filter((r) => casa(r, codigo))) {
-    const avaliacao = regra.condicao ? avaliar(regra.condicao, texto) : 'atende'
-    if (avaliacao === 'nao_atende') {
-      descartadas.push({ regra, motivo: `a descrição não atende: ${regra.condicao?.pergunta}` })
+  for (const rule of rules.filter((r) => matches(r, code))) {
+    const evaluation = rule.condition ? evaluate(rule.condition, text) : 'meets'
+    if (evaluation === 'fails') {
+      discarded.push({ rule, reason: `a descrição não atende: ${rule.condition?.question}` })
     } else {
-      avaliadas.push({ regra, avaliacao, temCondicao: regra.condicao !== undefined })
+      evaluated.push({ rule, evaluation, hasCondition: rule.condition !== undefined })
     }
   }
 
   // Ressalva entre anexos ("ressalvados os produtos relacionados no Anexo I"):
   // só afasta quando a regra prioritária está confirmada, nunca por hipótese.
-  const vivas = avaliadas.filter((h) => {
-    const prioritaria = avaliadas.find(
-      (outra) =>
-        outra !== h &&
-        outra.avaliacao === 'atende' &&
-        (h.regra.ressalvadoPor ?? []).includes(outra.regra.origem),
+  const alive = evaluated.filter((h) => {
+    const priority = evaluated.find(
+      (other) =>
+        other !== h &&
+        other.evaluation === 'meets' &&
+        (h.rule.overriddenBy ?? []).includes(other.rule.origin),
     )
-    if (prioritaria) {
-      descartadas.push({
-        regra: h.regra,
-        motivo: `ressalvado pelo ${prioritaria.regra.dispositivo}`,
+    if (priority) {
+      discarded.push({
+        rule: h.rule,
+        reason: `ressalvado pelo ${priority.rule.provision}`,
       })
       return false
     }
     return true
   })
 
-  return { vivas, descartadas }
+  return { alive, discarded }
 }

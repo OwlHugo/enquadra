@@ -12,147 +12,161 @@
  */
 import { readFile, writeFile } from 'node:fs/promises'
 import { parseArgs } from 'node:util'
-import { desambiguadorDoAmbiente } from '@enquadra/ai'
-import { cfop, type Dependencias, dataIso, enquadrar, ncm, type Resultado } from '@enquadra/domain'
-import { carregarTabela, criarValidadorOficial, TABELA_PADRAO } from '@enquadra/sources'
+import { disambiguatorFromEnv } from '@enquadra/ai'
+import { cfop, classify, type Dependencies, isoDate, ncm, type Result } from '@enquadra/domain'
+import { createOfficialValidator, DEFAULT_TABLE, loadTable } from '@enquadra/sources'
 import { z } from 'zod'
 
-const Caso = z.object({
+const EvalCase = z.object({
   id: z.string(),
-  categoria: z.string(),
-  descricao: z.string(),
+  category: z.string(),
+  description: z.string(),
   ncm: z.string(),
   cfop: z.string().optional(),
-  esperado: z.object({
-    status: z.enum(['resolvido', 'revisar', 'falta_informacao']),
+  expected: z.object({
+    status: z.enum(['resolved', 'review', 'needs_info']),
     cClassTrib: z.string().optional(),
-    opcoes: z.array(z.string()).optional(),
-    alerta: z.string().optional(),
+    options: z.array(z.string()).optional(),
+    alert: z.string().optional(),
   }),
-  fonte: z.string(),
-  nota: z.string().optional(),
+  source: z.string(),
+  note: z.string().optional(),
 })
-type Caso = z.infer<typeof Caso>
+type EvalCase = z.infer<typeof EvalCase>
 
 const { values } = parseArgs({
   options: {
-    'sem-ia': { type: 'boolean', default: false },
+    'no-ai': { type: 'boolean', default: false },
     online: { type: 'boolean', default: false },
-    linha: { type: 'boolean', default: false },
+    baseline: { type: 'boolean', default: false },
   },
 })
-const modo = values['sem-ia'] ? 'sem-ia' : 'com-ia'
-const RAIZ = new URL('..', import.meta.url).pathname
+const mode = values['no-ai'] ? 'no-ai' : 'with-ai'
+const ROOT = new URL('..', import.meta.url).pathname
 
 /** Com IA, um caso ambíguo pode virar "revisar" com o código certo: conta como acerto. */
-const confere = (caso: Caso, r: Resultado): boolean => {
-  const e = caso.esperado
-  const codigo = r.classificacao?.cClassTrib
-  if (e.alerta && !r.alertas.some((a) => a.codigo === e.alerta)) return false
-  if (e.status === 'falta_informacao') {
-    const opcoes = new Set(r.perguntas.flatMap((p) => p.opcoes.map((o) => o.cClassTrib as string)))
-    const cobre = (e.opcoes ?? []).every((o) => opcoes.has(o))
-    if (r.status === 'falta_informacao') return cobre
-    return modo === 'com-ia' && r.camada === 'ia' && (e.opcoes ?? []).includes(codigo ?? '')
+const matchesExpected = (evalCase: EvalCase, r: Result): boolean => {
+  const e = evalCase.expected
+  const code = r.classification?.cClassTrib
+  if (e.alert && !r.alerts.some((a) => a.code === e.alert)) return false
+  if (e.status === 'needs_info') {
+    const options = new Set(
+      r.questions.flatMap((p) => p.options.map((o) => o.cClassTrib as string)),
+    )
+    const covers = (e.options ?? []).every((o) => options.has(o))
+    if (r.status === 'needs_info') return covers
+    return mode === 'with-ai' && r.layer === 'ai' && (e.options ?? []).includes(code ?? '')
   }
-  if (r.status !== e.status && !(modo === 'com-ia' && r.camada === 'ia')) return false
-  return e.cClassTrib === undefined || codigo === e.cClassTrib
+  if (r.status !== e.status && !(mode === 'with-ai' && r.layer === 'ai')) return false
+  return e.cClassTrib === undefined || code === e.cClassTrib
 }
 
-const erroGrave = (caso: Caso, r: Resultado): boolean =>
-  r.status === 'resolvido' &&
-  (caso.esperado.status !== 'resolvido' || r.classificacao?.cClassTrib !== caso.esperado.cClassTrib)
+const isSevereError = (evalCase: EvalCase, r: Result): boolean =>
+  r.status === 'resolved' &&
+  (evalCase.expected.status !== 'resolved' ||
+    r.classification?.cClassTrib !== evalCase.expected.cClassTrib)
 
-const casos = (await readFile(`${RAIZ}evals/cases.jsonl`, 'utf8'))
+const cases = (await readFile(`${ROOT}evals/cases.jsonl`, 'utf8'))
   .trim()
   .split('\n')
-  .map((l) => Caso.parse(JSON.parse(l)))
+  .map((l) => EvalCase.parse(JSON.parse(l)))
 
-const tabela = await carregarTabela(TABELA_PADRAO)
-const desambiguador = values['sem-ia'] ? undefined : desambiguadorDoAmbiente()
-const deps: Dependencias = {
-  tabela,
-  data: dataIso('2026-10-18'),
-  ...(values.online ? { validador: criarValidadorOficial() } : {}),
-  ...(desambiguador ? { desambiguador } : {}),
+const table = await loadTable(DEFAULT_TABLE)
+const disambiguator = values['no-ai'] ? undefined : disambiguatorFromEnv()
+const deps: Dependencies = {
+  table,
+  date: isoDate('2026-10-18'),
+  ...(values.online ? { validator: createOfficialValidator() } : {}),
+  ...(disambiguator ? { disambiguator } : {}),
 }
 
-const linhas: { caso: Caso; r: Resultado | null; ok: boolean; grave: boolean; erro?: string }[] = []
-for (const caso of casos) {
+const lines: {
+  evalCase: EvalCase
+  r: Result | null
+  ok: boolean
+  severe: boolean
+  error?: string
+}[] = []
+for (const evalCase of cases) {
   try {
-    const r = await enquadrar(
+    const r = await classify(
       {
-        descricao: caso.descricao,
-        ncm: ncm(caso.ncm),
-        ...(caso.cfop ? { cfop: cfop(caso.cfop) } : {}),
+        description: evalCase.description,
+        ncm: ncm(evalCase.ncm),
+        ...(evalCase.cfop ? { cfop: cfop(evalCase.cfop) } : {}),
       },
       deps,
     )
-    linhas.push({ caso, r, ok: confere(caso, r), grave: erroGrave(caso, r) })
+    lines.push({
+      evalCase,
+      r,
+      ok: matchesExpected(evalCase, r),
+      severe: isSevereError(evalCase, r),
+    })
   } catch (e) {
     if (!(e instanceof Error)) throw e
-    linhas.push({ caso, r: null, ok: false, grave: false, erro: e.stack ?? e.message })
+    lines.push({ evalCase, r: null, ok: false, severe: false, error: e.stack ?? e.message })
   }
 }
 
-const porCategoria = new Map<string, { total: number; ok: number }>()
-for (const l of linhas) {
-  const c = porCategoria.get(l.caso.categoria) ?? { total: 0, ok: 0 }
+const byCategory = new Map<string, { total: number; ok: number }>()
+for (const l of lines) {
+  const c = byCategory.get(l.evalCase.category) ?? { total: 0, ok: 0 }
   c.total++
   if (l.ok) c.ok++
-  porCategoria.set(l.caso.categoria, c)
+  byCategory.set(l.evalCase.category, c)
 }
-const ambiguos = linhas.filter((l) => l.caso.esperado.status === 'falta_informacao')
-const comIa = linhas.filter((l) => l.r?.ia)
-const relatorio = {
-  modo,
-  tabela: tabela.versao,
-  casos: linhas.length,
-  acerto: linhas.filter((l) => l.ok).length / linhas.length,
-  errosGraves: linhas.filter((l) => l.grave).length,
-  abstencaoCorreta: ambiguos.filter((l) => l.ok).length / Math.max(ambiguos.length, 1),
-  chamadasIa: comIa.length,
-  custoIaUsd: comIa.reduce((s, l) => s + (l.r?.ia?.custoUsd ?? 0), 0),
-  msMedioIa: comIa.length ? comIa.reduce((s, l) => s + (l.r?.ia?.ms ?? 0), 0) / comIa.length : 0,
-  porCategoria: Object.fromEntries(porCategoria),
-  falhas: linhas
+const ambiguous = lines.filter((l) => l.evalCase.expected.status === 'needs_info')
+const withAi = lines.filter((l) => l.r?.ai)
+const report = {
+  mode,
+  table: table.version,
+  cases: lines.length,
+  accuracy: lines.filter((l) => l.ok).length / lines.length,
+  severeErrors: lines.filter((l) => l.severe).length,
+  correctAbstention: ambiguous.filter((l) => l.ok).length / Math.max(ambiguous.length, 1),
+  aiCalls: withAi.length,
+  aiCostUsd: withAi.reduce((s, l) => s + (l.r?.ai?.costUsd ?? 0), 0),
+  avgAiMs: withAi.length ? withAi.reduce((s, l) => s + (l.r?.ai?.ms ?? 0), 0) / withAi.length : 0,
+  byCategory: Object.fromEntries(byCategory),
+  failures: lines
     .filter((l) => !l.ok)
     .map((l) => ({
-      id: l.caso.id,
-      descricao: l.caso.descricao,
-      esperado: l.caso.esperado,
-      obtido: l.r
+      id: l.evalCase.id,
+      description: l.evalCase.description,
+      expected: l.evalCase.expected,
+      actual: l.r
         ? {
             status: l.r.status,
-            cClassTrib: l.r.classificacao?.cClassTrib ?? null,
-            camada: l.r.camada,
+            cClassTrib: l.r.classification?.cClassTrib ?? null,
+            layer: l.r.layer,
           }
-        : l.erro,
+        : l.error,
     })),
 }
 
 const pct = (n: number) => `${(n * 100).toFixed(1)}%`
-console.log(`\nEnquadra · eval ${modo} · tabela ${relatorio.tabela} · ${relatorio.casos} casos\n`)
-for (const [cat, c] of porCategoria)
+console.log(`\nEnquadra · eval ${mode} · table ${report.table} · ${report.cases} cases\n`)
+for (const [cat, c] of byCategory)
   console.log(`  ${cat.padEnd(12)} ${String(c.ok).padStart(3)}/${c.total}`)
-console.log(`\n  acerto             ${pct(relatorio.acerto)}`)
-console.log(`  erros graves       ${relatorio.errosGraves}`)
-console.log(`  abstenção correta  ${pct(relatorio.abstencaoCorreta)}`)
-if (comIa.length) {
+console.log(`\n  accuracy            ${pct(report.accuracy)}`)
+console.log(`  severe errors       ${report.severeErrors}`)
+console.log(`  correct abstention  ${pct(report.correctAbstention)}`)
+if (withAi.length) {
   console.log(
-    `  chamadas de IA     ${comIa.length} · US$ ${relatorio.custoIaUsd.toFixed(5)} · ${Math.round(relatorio.msMedioIa)} ms em média`,
+    `  AI calls            ${withAi.length} · US$ ${report.aiCostUsd.toFixed(5)} · ${Math.round(report.avgAiMs)} ms average`,
   )
 }
-for (const f of relatorio.falhas)
-  console.log(`  ✗ ${f.id} ${f.descricao} → ${JSON.stringify(f.obtido)}`)
+for (const f of report.failures)
+  console.log(`  ✗ ${f.id} ${f.description} → ${JSON.stringify(f.actual)}`)
 
-const destino = `${RAIZ}evals/reports/${modo}.json`
-if (values.linha) await writeFile(destino, `${JSON.stringify(relatorio, null, 2)}\n`)
+const destination = `${ROOT}evals/reports/${mode}.json`
+if (values.baseline) await writeFile(destination, `${JSON.stringify(report, null, 2)}\n`)
 
 // Portão do CI: sem IA não pode haver falha nem erro grave. Com IA, nunca erro grave.
 // Caso que lança (API fora do contrato, caso mal escrito) reprova nos dois modos: não é abstenção.
-const excecoes = linhas.filter((l) => l.erro !== undefined).length
-if (excecoes > 0) console.log(`  casos com exceção  ${excecoes}`)
-const reprovado =
-  relatorio.errosGraves > 0 || excecoes > 0 || (modo === 'sem-ia' && relatorio.falhas.length > 0)
-process.exitCode = reprovado ? 1 : 0
+const exceptions = lines.filter((l) => l.error !== undefined).length
+if (exceptions > 0) console.log(`  cases that threw    ${exceptions}`)
+const failed =
+  report.severeErrors > 0 || exceptions > 0 || (mode === 'no-ai' && report.failures.length > 0)
+process.exitCode = failed ? 1 : 0
