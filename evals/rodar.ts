@@ -90,7 +90,8 @@ for (const caso of casos) {
     )
     linhas.push({ caso, r, ok: confere(caso, r), grave: erroGrave(caso, r) })
   } catch (e) {
-    linhas.push({ caso, r: null, ok: false, grave: false, erro: (e as Error).message })
+    if (!(e instanceof Error)) throw e
+    linhas.push({ caso, r: null, ok: false, grave: false, erro: e.stack ?? e.message })
   }
 }
 
