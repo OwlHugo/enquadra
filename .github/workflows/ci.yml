@@ -13,8 +13,8 @@ permissions:
   contents: read
 
 jobs:
-  qualidade:
-    name: lint · tipos · arquitetura · testes · eval sem IA
+  quality:
+    name: lint · types · architecture · tests · eval without AI
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -26,16 +26,16 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm typecheck
-      - run: pnpm arquitetura
+      - run: pnpm architecture
       - run: pnpm knip
-      - run: pnpm test:cobertura
+      - run: pnpm test:coverage
       # Portão central: sem IA, nenhum caso pode falhar e nenhum erro grave é aceito.
       - run: pnpm eval:sem-ia
       - run: pnpm build
 
-  eval-com-ia:
-    name: eval com IA (custo e acerto reais)
-    needs: qualidade
+  eval-with-ai:
+    name: eval with AI (real cost and accuracy)
+    needs: quality
     if: github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'eval-ia')
     runs-on: ubuntu-latest
     env:
@@ -49,11 +49,11 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: eval
-        run: pnpm eval --linha | tee eval.txt
-      - name: resumo no PR
+        run: pnpm eval --baseline | tee eval.txt
+      - name: summary
         run: |
           {
-            echo '### Eval com IA'
+            echo '### Eval with AI'
             echo '```'
             cat eval.txt
             echo '```'

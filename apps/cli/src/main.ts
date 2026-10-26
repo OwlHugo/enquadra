@@ -2,24 +2,25 @@
 import { readdir, readFile, stat, writeFile } from 'node:fs/promises'
 import { extname, join } from 'node:path'
 import { parseArgs } from 'node:util'
+import { disambiguatorFromEnv } from '@enquadra/ai'
 import {
   cfop,
-  type Dependencias,
-  dataIso,
-  ErroDeDominio,
-  enquadrar,
-  type ItemEntrada,
+  classify,
+  type Dependencies,
+  DomainError,
+  type InputItem,
+  isoDate,
   ncm,
-  type Resultado,
-  resumir,
-} from '@enquadra/dominio'
-import { carregarTabela, criarValidadorOficial, TABELA_PADRAO } from '@enquadra/fontes'
-import { desambiguadorDoAmbiente } from '@enquadra/ia'
-import { relatorioHtml } from './relatorio.ts'
-import { cor, linhaFalha, linhaResultado } from './saida.ts'
-import { type Falha, lerXmls } from './xmls.ts'
+  type Result,
+  summarize,
+} from '@enquadra/domain'
+import { createOfficialValidator, DEFAULT_TABLE, loadTable } from '@enquadra/sources'
+import { errorText } from './labels.ts'
+import { color, failureLine, resultLine } from './output.ts'
+import { htmlReport } from './report.ts'
+import { type Failure, readXmls } from './xmls.ts'
 
-const AJUDA = `enquadra: CST e cClassTrib de IBS/CBS com fundamento na LC 214/2025
+const HELP = `enquadra: CST e cClassTrib de IBS/CBS com fundamento na LC 214/2025
 
 Uso:
   enquadra item "<descrição>" <ncm> [--cfop 5102]
@@ -38,6 +39,7 @@ const { values, positionals } = parseArgs({
   allowPositionals: true,
   options: {
     cfop: { type: 'string' },
+    // As flags são interface com quem usa a CLI (público BR): ficam em português.
     data: { type: 'string' },
     html: { type: 'string' },
     tabela: { type: 'string' },
@@ -49,101 +51,97 @@ const { values, positionals } = parseArgs({
   },
 })
 
-const listarXmls = async (alvo: string): Promise<string[]> => {
-  if ((await stat(alvo)).isFile()) return [alvo]
-  const entradas = await readdir(alvo, { recursive: true, withFileTypes: true })
+const listXmls = async (target: string): Promise<string[]> => {
+  if ((await stat(target)).isFile()) return [target]
+  const entries = await readdir(target, { recursive: true, withFileTypes: true })
   // Link simbólico entra na lista: se apontar para nada, a leitura falha e aparece como falha.
-  const arquivos = entradas
+  const files = entries
     .filter((e) => (e.isFile() || e.isSymbolicLink()) && extname(e.name).toLowerCase() === '.xml')
     .map((e) => join(e.parentPath, e.name))
-  if (arquivos.length === 0) throw new ErroDeDominio('sem_xml', `nenhum arquivo .xml em ${alvo}`)
-  return arquivos.sort()
+  if (files.length === 0) throw new DomainError('no_xml', `nenhum arquivo .xml em ${target}`)
+  return files.sort()
 }
 
-const dependencias = async (): Promise<Dependencias & { versaoTexto: string }> => {
-  const tabela = await carregarTabela(values.tabela ?? TABELA_PADRAO)
-  const desambiguador = values['sem-ia'] ? undefined : desambiguadorDoAmbiente()
+const dependencies = async (): Promise<Dependencies & { versionText: string }> => {
+  const table = await loadTable(values['tabela'] ?? DEFAULT_TABLE)
+  const disambiguator = values['sem-ia'] ? undefined : disambiguatorFromEnv()
   return {
-    tabela,
-    data: dataIso(values.data ?? new Date().toISOString().slice(0, 10)),
-    ...(values.offline ? {} : { validador: criarValidadorOficial() }),
-    ...(desambiguador ? { desambiguador } : {}),
-    versaoTexto: `tabela ${tabela.versao} (${tabela.dataVersao})`,
+    table,
+    date: isoDate(values['data'] ?? new Date().toISOString().slice(0, 10)),
+    ...(values.offline ? {} : { validator: createOfficialValidator() }),
+    ...(disambiguator ? { disambiguator } : {}),
+    versionText: `tabela ${table.version} (${table.versionDate})`,
   }
 }
 
-const imprimirJson = (dado: unknown): void => {
-  process.stdout.write(`${JSON.stringify(dado, null, 2)}\n`)
+const printJson = (value: unknown): void => {
+  process.stdout.write(`${JSON.stringify(value, null, 2)}\n`)
 }
 
-const plural = (n: number, um: string, varios: string): string => `${n} ${n === 1 ? um : varios}`
+const plural = (n: number, one: string, many: string): string => `${n} ${n === 1 ? one : many}`
 
-const imprimir = (
-  resultados: readonly Resultado[],
-  cabecalho: string,
-  falhas: readonly Falha[],
-): void => {
-  const r = resumir(resultados)
-  console.log(cabecalho)
+const print = (results: readonly Result[], header: string, failures: readonly Failure[]): void => {
+  const r = summarize(results)
+  console.log(header)
   console.log(
-    `  ${cor.verde(`${r.resolvidos} resolvidos`)}   ${cor.ambar(`${r.revisar} revisar`)}   ${cor.azul(`${r.faltaInformacao} falta informação`)}`,
+    `  ${color.green(`${r.resolved} resolvidos`)}   ${color.amber(`${r.review} revisar`)}   ${color.blue(`${r.needsInfo} falta informação`)}`,
   )
-  if (r.comReducao > 0) console.log(`  ${r.comReducao} com redução de alíquota`)
-  if (r.custoIaUsd > 0) console.log(cor.cinza(`  custo de IA: US$ ${r.custoIaUsd.toFixed(5)}`))
+  if (r.withReduction > 0) console.log(`  ${r.withReduction} com redução de alíquota`)
+  if (r.aiCostUsd > 0) console.log(color.gray(`  custo de IA: US$ ${r.aiCostUsd.toFixed(5)}`))
   console.log('')
-  for (const res of resultados)
-    if (res.status !== 'resolvido' || resultados.length <= 20) console.log(linhaResultado(res))
-  if (falhas.length > 0) {
-    console.log(cor.vermelho(`\n${plural(falhas.length, 'arquivo falhou', 'arquivos falharam')}:`))
-    for (const f of falhas) console.log(linhaFalha(f))
+  for (const res of results)
+    if (res.status !== 'resolved' || results.length <= 20) console.log(resultLine(res))
+  if (failures.length > 0) {
+    console.log(color.red(`\n${plural(failures.length, 'arquivo falhou', 'arquivos falharam')}:`))
+    for (const f of failures) console.log(failureLine(f))
   }
 }
 
-const comandoItem = async (): Promise<void> => {
-  const [descricao, codigo] = positionals.slice(1)
-  if (!descricao || !codigo) throw new ErroDeDominio('uso', 'enquadra item "<descrição>" <ncm>')
-  const deps = await dependencias()
-  const { cfop: cfopTexto } = values
-  const item: ItemEntrada = {
-    descricao,
-    ncm: ncm(codigo),
-    ...(cfopTexto ? { cfop: cfop(cfopTexto) } : {}),
+const itemCommand = async (): Promise<void> => {
+  const [description, code] = positionals.slice(1)
+  if (!description || !code) throw new DomainError('usage', 'enquadra item "<descrição>" <ncm>')
+  const deps = await dependencies()
+  const { cfop: cfopText } = values
+  const item: InputItem = {
+    description,
+    ncm: ncm(code),
+    ...(cfopText ? { cfop: cfop(cfopText) } : {}),
   }
-  const resultado = await enquadrar(item, deps)
-  if (values.json) return imprimirJson([resultado])
-  console.log(linhaResultado(resultado, true))
+  const result = await classify(item, deps)
+  if (values.json) return printJson([result])
+  console.log(resultLine(result, true))
 }
 
-const comandoXmls = async (): Promise<void> => {
-  const alvo = positionals[1]
-  if (!alvo) throw new ErroDeDominio('uso', 'enquadra xmls <pasta-ou-arquivo>')
-  const deps = await dependencias()
-  const lidos = await lerXmls(await listarXmls(alvo), (arquivo) => readFile(arquivo, 'utf8'))
-  const resultados = await Promise.all(lidos.itens.map((i) => enquadrar(i, deps)))
+const xmlsCommand = async (): Promise<void> => {
+  const target = positionals[1]
+  if (!target) throw new DomainError('usage', 'enquadra xmls <pasta-ou-arquivo>')
+  const deps = await dependencies()
+  const parsed = await readXmls(await listXmls(target), (file) => readFile(file, 'utf8'))
+  const results = await Promise.all(parsed.items.map((i) => classify(i, deps)))
   if (values.json) {
-    imprimirJson({ resultados, falhas: lidos.falhas })
+    printJson({ results, failures: parsed.failures })
   } else {
-    const cabecalho = `${plural(lidos.itens.length, 'item distinto', 'itens distintos')} em ${plural(lidos.notas, 'nota', 'notas')} · ${deps.versaoTexto}`
-    imprimir(resultados, cabecalho, lidos.falhas)
+    const header = `${plural(parsed.items.length, 'item distinto', 'itens distintos')} em ${plural(parsed.invoices, 'nota', 'notas')} · ${deps.versionText}`
+    print(results, header, parsed.failures)
   }
   if (values.html) {
-    await writeFile(values.html, relatorioHtml(resultados, deps.versaoTexto, lidos.falhas))
-    if (!values.json) console.log(cor.cinza(`relatório: ${values.html}`))
+    await writeFile(values.html, htmlReport(results, deps.versionText, parsed.failures))
+    if (!values.json) console.log(color.gray(`relatório: ${values.html}`))
   }
-  if (lidos.falhas.length > 0 && !values['ignorar-invalidos']) process.exitCode = 1
+  if (parsed.failures.length > 0 && !values['ignorar-invalidos']) process.exitCode = 1
 }
 
-const principal = async (): Promise<void> => {
-  const comando = positionals[0]
-  if (values.ajuda || !comando) return console.log(AJUDA)
-  if (comando === 'item') return comandoItem()
-  if (comando === 'xmls') return comandoXmls()
-  throw new ErroDeDominio('comando_desconhecido', comando)
+const main = async (): Promise<void> => {
+  const command = positionals[0]
+  if (values['ajuda'] || !command) return console.log(HELP)
+  if (command === 'item') return itemCommand()
+  if (command === 'xmls') return xmlsCommand()
+  throw new DomainError('unknown_command', command)
 }
 
 // Erro de domínio é mensagem para a pessoa; qualquer outro é bug e sai com stack e causa.
-principal().catch((erro: unknown) => {
-  if (erro instanceof ErroDeDominio) console.error(cor.vermelho(erro.message))
-  else console.error(erro)
+main().catch((error: unknown) => {
+  if (error instanceof DomainError) console.error(color.red(errorText(error.code, error.detail)))
+  else console.error(error)
   process.exitCode = 1
 })

@@ -1,7 +1,7 @@
 {
   "name": "@enquadra/nfe",
   "version": "0.1.0",
-  "description": "Leitura de NF-e/NFC-e: extrai itens e contexto de operação, descarta dado pessoal.",
+  "description": "NF-e/NFC-e reader: extracts items and operation context, drops personal data.",
   "type": "module",
   "license": "Apache-2.0",
   "repository": {
@@ -24,7 +24,7 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@enquadra/dominio": "workspace:*",
+    "@enquadra/domain": "workspace:*",
     "fast-xml-parser": "5.11.2"
   }
 }

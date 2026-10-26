@@ -177,7 +177,7 @@ R: Em três lugares, e só neles:
 2. **Escolher entre as alternativas que a regra já filtrou** (nunca entre os 161 códigos; no máximo entre 2 a 5 candidatos válidos para aquele NCM).
 3. **Escrever a explicação** a partir dos trechos recuperados.
 
-**REGRA:** o LLM recebe a lista fechada de candidatos e só pode devolver um deles ou `preciso_perguntar`. A saída é validada com zod; qualquer coisa fora da lista é rejeitada.
+**REGRA:** o LLM recebe a lista fechada de candidatos e só pode devolver um deles ou `preciso_perguntar` (hoje `need_to_ask`, ADR 0006). A saída é validada com zod; qualquer coisa fora da lista é rejeitada.
 
 **P: Qual modelo?**
 R: O mais barato que passar no conjunto de avaliação. A ideia é começar com um modelo pequeno e rápido (Gemini Flash Lite, Claude Haiku) e só subir o caso para um modelo maior quando o pequeno pedir pergunta ou discordar da regra. Embedding: modelo forte em português no MTEB-BR (Qwen3-Embedding ou embeddinggemma, que roda local).

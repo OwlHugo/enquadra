@@ -1,6 +1,6 @@
 # ADR 0005: Domain code in Portuguese
 
-Date: 2026-10-18 · Status: accepted
+Date: 2026-10-18 · Status: superseded by [ADR 0006](0006-english-code-portuguese-law.md)
 
 ## Context
 

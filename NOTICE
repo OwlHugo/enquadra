@@ -2,7 +2,7 @@ Enquadra
 Copyright 2026 Hugo Adriano de Oliveira
 
 This product includes data from public Brazilian government sources, redistributed
-unmodified in data/fontes/ for reproducibility:
+unmodified in data/sources/ for reproducibility:
 
 - Classificações tributárias, situações tributárias e fundamentações legais do IBS e da CBS:
   API de dados abertos da Calculadora de Tributos sobre Consumo, Receita Federal do Brasil

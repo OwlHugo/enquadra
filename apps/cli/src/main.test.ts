@@ -10,9 +10,9 @@ import { beforeAll, describe, expect, it } from 'vitest'
  */
 
 const MAIN = new URL('./main.ts', import.meta.url).pathname
-const EXEMPLO = new URL('../../../exemplos/nfe-mercado.xml', import.meta.url)
+const EXAMPLE = new URL('../../../examples/nfe-mercado.xml', import.meta.url)
 
-const rodar = (...args: string[]) =>
+const run = (...args: string[]) =>
   spawnSync(
     process.execPath,
     ['--conditions=development', MAIN, ...args, '--sem-ia', '--offline'],
@@ -22,55 +22,56 @@ const rodar = (...args: string[]) =>
     },
   )
 
-let pasta: string
-let soValidos: string
+let folder: string
+let onlyValid: string
 
 beforeAll(async () => {
-  const xml = await readFile(EXEMPLO, 'utf8')
-  pasta = await mkdtemp(join(tmpdir(), 'enquadra-cli-'))
-  await symlink(join(pasta, 'nao-existe'), join(pasta, 'd-link-quebrado.xml'))
-  await writeFile(join(pasta, 'a-boa.xml'), xml)
-  await writeFile(join(pasta, 'b-cortada.xml'), xml.slice(0, xml.indexOf('<det nItem="3">')))
-  await writeFile(join(pasta, 'c-cte.xml'), '<cteProc><CTe><infCte/></CTe></cteProc>')
-  soValidos = await mkdtemp(join(tmpdir(), 'enquadra-cli-ok-'))
-  await writeFile(join(soValidos, 'boa.xml'), xml)
+  const xml = await readFile(EXAMPLE, 'utf8')
+  folder = await mkdtemp(join(tmpdir(), 'enquadra-cli-'))
+  await symlink(join(folder, 'nao-existe'), join(folder, 'd-link-quebrado.xml'))
+  await writeFile(join(folder, 'a-boa.xml'), xml)
+  await writeFile(join(folder, 'b-cortada.xml'), xml.slice(0, xml.indexOf('<det nItem="3">')))
+  await writeFile(join(folder, 'c-cte.xml'), '<cteProc><CTe><infCte/></CTe></cteProc>')
+  onlyValid = await mkdtemp(join(tmpdir(), 'enquadra-cli-ok-'))
+  await writeFile(join(onlyValid, 'boa.xml'), xml)
 })
 
-describe('enquadra xmls', () => {
+// Cada caso sobe um processo node de verdade; o padrão de 5 s estoura em máquina carregada.
+describe('enquadra xmls', { timeout: 30_000 }, () => {
   it('processa os válidos, lista cada falha com arquivo e motivo e sai com 1', () => {
-    const r = rodar('xmls', pasta)
+    const r = run('xmls', folder)
     expect(r.status).toBe(1)
     expect(r.stdout).toContain('5 itens distintos em 1 nota ·')
     expect(r.stdout).toContain('3 arquivos falharam')
-    expect(r.stdout).toMatch(/b-cortada\.xml: xml_malformado/)
-    expect(r.stdout).toMatch(/c-cte\.xml: xml_nao_e_nfe/)
-    expect(r.stdout).toMatch(/d-link-quebrado\.xml: ENOENT/)
+    expect(r.stdout).toMatch(/b-cortada\.xml: XML malformado \(linha 1/)
+    expect(r.stdout).toMatch(/c-cte\.xml: não é NF-e nem NFC-e \(infNFe ausente\)/)
+    expect(r.stdout).toMatch(/d-link-quebrado\.xml: arquivo não encontrado/)
     expect(r.stdout).toContain('ARROZ TIPO 1 TIO JOAO 5KG')
   })
 
   it('com --ignorar-invalidos sai com 0, mas o resumo continua mostrando as falhas', () => {
-    const r = rodar('xmls', pasta, '--ignorar-invalidos')
+    const r = run('xmls', folder, '--ignorar-invalidos')
     expect(r.status).toBe(0)
     expect(r.stdout).toContain('3 arquivos falharam')
     expect(r.stdout).toContain('b-cortada.xml')
   })
 
   it('o relatório HTML mostra as falhas', async () => {
-    const html = join(pasta, 'relatorio.html')
-    const r = rodar('xmls', pasta, '--html', html)
+    const html = join(folder, 'relatorio.html')
+    const r = run('xmls', folder, '--html', html)
     expect(r.status).toBe(1)
-    const conteudo = await readFile(html, 'utf8')
-    expect(conteudo).toContain('3 arquivos não puderam ser lidos')
-    expect(conteudo).toContain('b-cortada.xml')
-    expect(conteudo).toContain('xml_malformado')
+    const content = await readFile(html, 'utf8')
+    expect(content).toContain('3 arquivos não puderam ser lidos')
+    expect(content).toContain('b-cortada.xml')
+    expect(content).toContain('XML malformado')
   })
 
   it('no modo --json as falhas vêm junto dos resultados', () => {
-    const r = rodar('xmls', pasta, '--json')
+    const r = run('xmls', folder, '--json')
     expect(r.status).toBe(1)
-    const saida = JSON.parse(r.stdout) as { resultados: unknown[]; falhas: { arquivo: string }[] }
-    expect(saida.resultados).toHaveLength(5)
-    expect(saida.falhas.map((f) => f.arquivo.split('/').at(-1))).toEqual([
+    const output = JSON.parse(r.stdout) as { results: unknown[]; failures: { file: string }[] }
+    expect(output.results).toHaveLength(5)
+    expect(output.failures.map((f) => f.file.split('/').at(-1))).toEqual([
       'b-cortada.xml',
       'c-cte.xml',
       'd-link-quebrado.xml',
@@ -78,25 +79,25 @@ describe('enquadra xmls', () => {
   })
 
   it('uma falha só aparece no singular', async () => {
-    const umaFalha = await mkdtemp(join(tmpdir(), 'enquadra-cli-uma-'))
-    await writeFile(join(umaFalha, 'boa.xml'), await readFile(EXEMPLO, 'utf8'))
-    await writeFile(join(umaFalha, 'ruim.xml'), '<x')
-    const html = join(umaFalha, 'r.html')
-    const r = rodar('xmls', umaFalha, '--html', html)
+    const oneFailure = await mkdtemp(join(tmpdir(), 'enquadra-cli-uma-'))
+    await writeFile(join(oneFailure, 'boa.xml'), await readFile(EXAMPLE, 'utf8'))
+    await writeFile(join(oneFailure, 'ruim.xml'), '<x')
+    const html = join(oneFailure, 'r.html')
+    const r = run('xmls', oneFailure, '--html', html)
     expect(r.stdout).toContain('1 arquivo falhou:')
     expect(await readFile(html, 'utf8')).toContain('1 arquivo não pôde ser lido')
   })
 
   it('sem falha nenhuma, sai com 0 e não fala de falha', () => {
-    const r = rodar('xmls', soValidos)
+    const r = run('xmls', onlyValid)
     expect(r.status).toBe(0)
     expect(r.stdout).not.toMatch(/arquivos? falh(ou|aram)/)
   })
 
   it('pasta sem XML é erro, não um relatório vazio', async () => {
-    const vazia = await mkdtemp(join(tmpdir(), 'enquadra-cli-vazia-'))
-    const r = rodar('xmls', vazia)
+    const empty = await mkdtemp(join(tmpdir(), 'enquadra-cli-vazia-'))
+    const r = run('xmls', empty)
     expect(r.status).toBe(1)
-    expect(r.stderr).toContain('sem_xml')
+    expect(r.stderr).toContain('nenhum XML encontrado (nenhum arquivo .xml em')
   })
 })

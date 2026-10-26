@@ -1,7 +1,7 @@
 {
   "name": "enquadra",
   "version": "0.1.0",
-  "description": "Classifica catálogo e XML de NF-e em CST e cClassTrib de IBS/CBS, com fundamento legal.",
+  "description": "Classifies a catalog or NF-e XML into IBS/CBS CST and cClassTrib, with the legal basis.",
   "type": "module",
   "license": "Apache-2.0",
   "repository": {
@@ -17,10 +17,10 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@enquadra/dominio": "workspace:*",
-    "@enquadra/fontes": "workspace:*",
+    "@enquadra/domain": "workspace:*",
+    "@enquadra/sources": "workspace:*",
     "@enquadra/nfe": "workspace:*",
-    "@enquadra/ia": "workspace:*"
+    "@enquadra/ai": "workspace:*"
   },
   "bin": {
     "enquadra": "./dist/main.mjs"

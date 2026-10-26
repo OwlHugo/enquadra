@@ -1,75 +1,80 @@
 #!/usr/bin/env node
-import { cfop, type Dependencias, dataIso, enquadrar, ncm, REGRAS_PRODUTO } from '@enquadra/dominio'
-import { carregarTabela, criarValidadorOficial, TABELA_PADRAO } from '@enquadra/fontes'
-import { desambiguadorDoAmbiente } from '@enquadra/ia'
+import { disambiguatorFromEnv } from '@enquadra/ai'
+import { cfop, classify, type Dependencies, isoDate, ncm, PRODUCT_RULES } from '@enquadra/domain'
+import { createOfficialValidator, DEFAULT_TABLE, loadTable } from '@enquadra/sources'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod'
 
 /**
- * Servidor MCP. Mesmo motor da CLI; o agente que chama recebe o Resultado completo,
+ * Servidor MCP. Mesmo motor da CLI; o agente que chama recebe o Result completo,
  * com fundamento, trilha e perguntas pendentes, para decidir se pergunta ao usuário.
  */
 
-const tabela = await carregarTabela(process.env['ENQUADRA_TABELA'] ?? TABELA_PADRAO)
-const desambiguador = desambiguadorDoAmbiente()
-const deps = (data?: string): Dependencias => ({
-  tabela,
-  data: dataIso(data ?? new Date().toISOString().slice(0, 10)),
-  validador: criarValidadorOficial(),
-  ...(desambiguador ? { desambiguador } : {}),
+const table = await loadTable(process.env['ENQUADRA_TABELA'] ?? DEFAULT_TABLE)
+const disambiguator = disambiguatorFromEnv()
+const deps = (date?: string): Dependencies => ({
+  table,
+  date: isoDate(date ?? new Date().toISOString().slice(0, 10)),
+  validator: createOfficialValidator(),
+  ...(disambiguator ? { disambiguator } : {}),
 })
 
-const servidor = new McpServer({ name: 'enquadra', version: '0.1.0' })
+const server = new McpServer({ name: 'enquadra', version: '0.1.0' })
 
-servidor.registerTool(
-  'classificar_item',
+server.registerTool(
+  'classify_item',
   {
     title: 'Classificar item (IBS/CBS)',
     description:
-      'Sugere CST e cClassTrib de IBS/CBS para um item de NF-e, com o artigo da LC 214/2025, confiança e perguntas pendentes. Não calcula imposto.',
+      'Suggests the IBS/CBS CST and cClassTrib for an NF-e line item, with the article of LC 214/2025, confidence and open questions. Does not compute tax. Human-facing texts in the result are in Brazilian Portuguese.',
     inputSchema: {
-      descricao: z.string().min(2).describe('Descrição do produto como está no cadastro'),
-      ncm: z.string().describe('NCM com 8 dígitos, com ou sem pontos'),
-      cfop: z.string().optional().describe('CFOP da operação; sem ele assume venda'),
-      data: z.string().optional().describe('Data do fato gerador, AAAA-MM-DD'),
+      description: z.string().min(2).describe('Product description as it is in the catalog'),
+      ncm: z.string().describe('8-digit NCM, with or without dots'),
+      cfop: z
+        .string()
+        .optional()
+        .describe('CFOP of the operation; without it the engine assumes a sale'),
+      date: z.string().optional().describe('Taxable event date, YYYY-MM-DD'),
     },
   },
   async (e) => {
-    const resultado = await enquadrar(
-      { descricao: e.descricao, ncm: ncm(e.ncm), ...(e.cfop ? { cfop: cfop(e.cfop) } : {}) },
-      deps(e.data),
+    const result = await classify(
+      { description: e.description, ncm: ncm(e.ncm), ...(e.cfop ? { cfop: cfop(e.cfop) } : {}) },
+      deps(e.date),
     )
-    return { content: [{ type: 'text', text: JSON.stringify(resultado, null, 2) }] }
+    return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] }
   },
 )
 
-servidor.registerTool(
-  'regras_cobertas',
+server.registerTool(
+  'covered_rules',
   {
     title: 'Regras cobertas',
-    description: 'Lista as regras da LC 214/2025 que o motor aplica, com o texto literal da lei.',
-    inputSchema: { origem: z.enum(['I', 'VII', 'VIII', 'XV', 'art147', 'art9']).optional() },
+    description:
+      'Lists the LC 214/2025 rules the engine applies, with the verbatim text of the law (in Portuguese).',
+    inputSchema: { origin: z.enum(['I', 'VII', 'VIII', 'XV', 'art147', 'art9']).optional() },
   },
-  async ({ origem }) => {
-    const regras = REGRAS_PRODUTO.filter((r) => !origem || r.origem === origem).map((r) => ({
+  async ({ origin }) => {
+    const rules = PRODUCT_RULES.filter((r) => !origin || r.origin === origin).map((r) => ({
       id: r.id,
       cClassTrib: r.cClassTrib,
-      dispositivo: r.dispositivo,
-      texto: r.texto,
-      ncm: r.incluir,
-      excecoes: r.excluir ?? [],
-      condicao: r.condicao?.pergunta ?? null,
+      provision: r.provision,
+      text: r.text,
+      ncm: r.include,
+      exceptions: r.exclude ?? [],
+      condition: r.condition?.question ?? null,
     }))
-    return { content: [{ type: 'text', text: JSON.stringify(regras, null, 2) }] }
+    return { content: [{ type: 'text', text: JSON.stringify(rules, null, 2) }] }
   },
 )
 
-servidor.registerTool(
-  'versao_tabela',
+server.registerTool(
+  'table_version',
   {
     title: 'Versão da tabela oficial',
-    description: 'Versão do banco da Calculadora RTC usada pelo motor e data da consulta.',
+    description:
+      'Version of the RTC Calculator database used by the engine and the date it was fetched.',
     inputSchema: {},
   },
   async () => ({
@@ -77,14 +82,14 @@ servidor.registerTool(
       {
         type: 'text',
         text: JSON.stringify({
-          versao: tabela.versao,
-          dataVersao: tabela.dataVersao,
-          consultadoEm: tabela.consultadoEm,
-          ncm: tabela.atoNcm,
+          version: table.version,
+          versionDate: table.versionDate,
+          fetchedOn: table.fetchedOn,
+          ncm: table.ncmAct,
         }),
       },
     ],
   }),
 )
 
-await servidor.connect(new StdioServerTransport())
+await server.connect(new StdioServerTransport())

@@ -8,7 +8,7 @@ Classifying an item into `cClassTrib` is a legal statement. A wrong "resolved" a
 
 ## Decision
 
-The engine is a deterministic pipeline of layers (manual → operation → annex → description → AI → default). The LLM is called only when rules leave two or more valid hypotheses, or a legal condition the description does not settle. It receives the closed list of candidates and must return one of them or `preciso_perguntar`. Its quoted citation is checked verbatim against the law text. Its answer becomes `revisar`, never `resolvido`.
+The engine is a deterministic pipeline of layers (manual → operation → annex → description → AI → default). The LLM is called only when rules leave two or more valid hypotheses, or a legal condition the description does not settle. It receives the closed list of candidates and must return one of them or `need_to_ask`. Its quoted citation is checked verbatim against the law text. Its answer becomes `review`, never `resolved`.
 
 ## Rejected alternatives
 

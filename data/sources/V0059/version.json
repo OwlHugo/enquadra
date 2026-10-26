@@ -1,0 +1,9 @@
+{
+  "version": "V0059",
+  "versionDate": "2026-09-30",
+  "versionNote": "Habilitação de 820 para NFSe.",
+  "appVersion": "1.5.4-082a5001",
+  "environment": "pro",
+  "fetchedOn": "2026-10-19",
+  "source": "https://consumo.tributos.gov.br/servico/calcular-tributos-consumo/api/calculadora/dados-abertos"
+}

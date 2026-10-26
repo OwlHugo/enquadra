@@ -10,9 +10,9 @@ Probing `ncm-aplicavel` showed that only 17 of 161 codes restrict NCM. For the r
 
 ## Decision
 
-- `scripts/atualizar-fontes.ts` downloads classifications, CST, legal grounds, the NCM nomenclature (Siscomex) and probes which codes restrict NCM, into `data/fontes/<version>/`. Each file is validated with `zod` on load.
-- The engine classifies offline from that snapshot. The live API is an optional second opinion: `recusado` downgrades to review; `indisponivel` changes nothing; `aceito` on a non-restricted code raises `validacao_oficial_fraca`.
-- If the snapshot says the official table accepts an NCM under a benefit the engine does not cover, the engine refuses to state "full tax" and asks for review (`beneficio_nao_mapeado`).
+- `scripts/update-sources.ts` downloads classifications, CST, legal grounds, the NCM nomenclature (Siscomex) and probes which codes restrict NCM, into `data/sources/<version>/`. Each file is validated with `zod` on load.
+- The engine classifies offline from that snapshot. The live API is an optional second opinion: `rejected` downgrades to review; `unavailable` changes nothing; `accepted` on a non-restricted code raises `weak_official_validation`.
+- If the snapshot says the official table accepts an NCM under a benefit the engine does not cover, the engine refuses to state "full tax" and asks for review (`unmapped_benefit`).
 - A daily workflow checks `/versao` and opens a PR with the new folder and the eval result.
 
 ## Consequences

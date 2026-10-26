@@ -4,4 +4,4 @@ coverage/
 .turbo/
 *.log
 .env
-evals/relatorios/*.local.*
+evals/reports/*.local.*

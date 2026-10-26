@@ -1,0 +1,50 @@
+{
+  "mode": "no-ai",
+  "table": "V0059",
+  "cases": 80,
+  "accuracy": 1,
+  "severeErrors": 0,
+  "correctAbstention": 1,
+  "aiCalls": 0,
+  "aiCostUsd": 0,
+  "avgAiMs": 0,
+  "byCategory": {
+    "direct": {
+      "total": 29,
+      "ok": 29
+    },
+    "default": {
+      "total": 7,
+      "ok": 7
+    },
+    "exception": {
+      "total": 4,
+      "ok": 4
+    },
+    "priority": {
+      "total": 4,
+      "ok": 4
+    },
+    "conditional": {
+      "total": 17,
+      "ok": 17
+    },
+    "ambiguous": {
+      "total": 7,
+      "ok": 7
+    },
+    "operation": {
+      "total": 6,
+      "ok": 6
+    },
+    "adversarial": {
+      "total": 4,
+      "ok": 4
+    },
+    "unmapped": {
+      "total": 2,
+      "ok": 2
+    }
+  },
+  "failures": []
+}

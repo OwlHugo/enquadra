@@ -1,7 +1,7 @@
 {
   "name": "@enquadra/mcp",
   "version": "0.1.0",
-  "description": "Servidor MCP do Enquadra.",
+  "description": "Enquadra MCP server.",
   "type": "module",
   "license": "Apache-2.0",
   "repository": {
@@ -17,9 +17,9 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@enquadra/dominio": "workspace:*",
-    "@enquadra/fontes": "workspace:*",
-    "@enquadra/ia": "workspace:*",
+    "@enquadra/domain": "workspace:*",
+    "@enquadra/sources": "workspace:*",
+    "@enquadra/ai": "workspace:*",
     "@modelcontextprotocol/sdk": "1.32.1",
     "zod": "4.6.7"
   },
