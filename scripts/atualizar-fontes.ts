@@ -26,7 +26,10 @@ const { values } = parseArgs({ options: { checar: { type: 'boolean', default: fa
 const json = async <T>(url: string): Promise<T> => {
   for (let t = 1; ; t++) {
     const r = await fetch(url, { signal: AbortSignal.timeout(60_000) }).catch((e: unknown) => {
-      if (t >= 4) throw e
+      const rede =
+        (e instanceof TypeError && e.cause !== undefined) ||
+        (e instanceof DOMException && e.name === 'TimeoutError')
+      if (!rede || t >= 4) throw e
       return null
     })
     if (r?.ok) return (await r.json()) as T
