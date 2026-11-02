@@ -1,6 +1,8 @@
 #!/usr/bin/env node
+import { existsSync } from 'node:fs'
 import { readdir, readFile, stat, writeFile } from 'node:fs/promises'
-import { extname, join } from 'node:path'
+import { basename, extname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 import { disambiguatorFromEnv } from '@enquadra/ai'
 import {
@@ -62,8 +64,12 @@ const listXmls = async (target: string): Promise<string[]> => {
   return files.sort()
 }
 
+// No pacote do npm a tabela vai junto em data/ (scripts/bundle-table.ts); no monorepo, vem de data/sources.
+const BUNDLED_TABLE = fileURLToPath(new URL(`../data/${basename(DEFAULT_TABLE)}`, import.meta.url))
+const defaultTable = (): string => (existsSync(BUNDLED_TABLE) ? BUNDLED_TABLE : DEFAULT_TABLE)
+
 const dependencies = async (): Promise<Dependencies & { versionText: string }> => {
-  const table = await loadTable(values['tabela'] ?? DEFAULT_TABLE)
+  const table = await loadTable(values['tabela'] ?? defaultTable())
   const disambiguator = values['sem-ia'] ? undefined : disambiguatorFromEnv()
   return {
     table,

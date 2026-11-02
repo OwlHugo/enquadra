@@ -97,7 +97,24 @@ On the truly ambiguous items the model abstained or suggested one of the codes t
 
 ## Quick start
 
-Requires Node 24+ and pnpm 10.
+Requires Node 24+. No install, no API key: the official table ships inside the package.
+
+```bash
+npx enquadra item "ARROZ TIPO 1 TIO JOAO 5KG" 1006.30.21 --sem-ia --offline
+npx enquadra xmls ./notas-outubro --html relatorio.html
+```
+
+Real output of the first command (no AI, no network):
+
+```
+200 200003 −100%  1006.30.21  ARROZ TIPO 1 TIO JOAO 5KG  resolvido
+  LC 214/2025, art. 125 e Anexo I, item 1
+  "Arroz das subposições 1006.20 e 1006.30 e do código 1006.40.00 da NCM/SH"
+  · Sem CFOP: considerado como venda de mercadoria.
+  · O NCM também aparece em outro anexo, afastado pela ressalva da própria lei.
+```
+
+From the repo (Node 24+ and pnpm 10):
 
 ```bash
 pnpm install

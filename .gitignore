@@ -5,3 +5,4 @@ coverage/
 *.log
 .env
 evals/reports/*.local.*
+apps/cli/data/

@@ -32,7 +32,17 @@ const json = async <T>(url: string): Promise<T> => {
       if (!network || t >= 4) throw e
       return null
     })
-    if (r?.ok) return (await r.json()) as T
+    if (r?.ok) {
+      const type = r.headers.get('content-type') ?? ''
+      if (!type.includes('json')) {
+        throw new Error(
+          `${url} answered ${type || 'no content-type'} instead of JSON. Seen on GitHub runners ` +
+            'since V0066 while the same call works from a Brazilian IP: run ' +
+            '`pnpm sources:update` from a Brazilian network and commit data/sources/<version>.',
+        )
+      }
+      return (await r.json()) as T
+    }
     if (r && r.status < 500 && r.status !== 429) {
       throw new Error(`HTTP ${r.status} on ${url}: ${await r.text()}`)
     }
