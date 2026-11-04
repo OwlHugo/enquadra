@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process'
 import { mkdtemp, readFile, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { DEFAULT_TABLE } from '@enquadra/sources'
 import { beforeAll, describe, expect, it } from 'vitest'
 
 /**
@@ -99,5 +100,29 @@ describe('enquadra xmls', { timeout: 30_000 }, () => {
     const r = run('xmls', empty)
     expect(r.status).toBe(1)
     expect(r.stderr).toContain('nenhum XML encontrado (nenhum arquivo .xml em')
+  })
+})
+
+describe('opções da CLI', { timeout: 30_000 }, () => {
+  it('--versao e -v mostram a versão do pacote e a da tabela oficial', async () => {
+    const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))
+    const table = JSON.parse(await readFile(join(DEFAULT_TABLE, 'version.json'), 'utf8'))
+    const expected = `enquadra ${pkg.version} · tabela ${table.version} (${table.versionDate})\n`
+    for (const flag of ['--versao', '-v']) {
+      const r = run(flag)
+      expect(r.status).toBe(0)
+      expect(r.stdout).toBe(expected)
+    }
+  })
+
+  it('opção desconhecida mostra uma linha em português e a ajuda, sem stack, e sai com 2', () => {
+    const r = run('--version')
+    expect(r.status).toBe(2)
+    expect(r.stdout).toBe('')
+    expect(r.stderr).toMatch(/^opção desconhecida: --version\n/)
+    expect(r.stderr).toContain('Uso:')
+    expect(r.stderr).toContain('--versao')
+    expect(r.stderr).not.toContain('ERR_PARSE_ARGS_UNKNOWN_OPTION')
+    expect(r.stderr).not.toMatch(/\n\s+at /)
   })
 })
