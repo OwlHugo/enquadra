@@ -35,23 +35,39 @@ Opções:
   --offline      não consulta a API da Receita
   --data AAAA-MM-DD  data do fato gerador (padrão: hoje, ou a emissão do XML)
   --json         saída em JSON, para máquina
-  --tabela <dir> pasta da tabela oficial versionada`
+  --tabela <dir> pasta da tabela oficial versionada
+  -v, --versao   versão do enquadra e da tabela oficial
+  -h, --ajuda    mostra esta ajuda`
 
-const { values, positionals } = parseArgs({
-  allowPositionals: true,
-  options: {
-    cfop: { type: 'string' },
-    // As flags são interface com quem usa a CLI (público BR): ficam em português.
-    data: { type: 'string' },
-    html: { type: 'string' },
-    tabela: { type: 'string' },
-    'sem-ia': { type: 'boolean', default: false },
-    'ignorar-invalidos': { type: 'boolean', default: false },
-    offline: { type: 'boolean', default: false },
-    json: { type: 'boolean', default: false },
-    ajuda: { type: 'boolean', short: 'h', default: false },
-  },
-})
+const parse = () => {
+  try {
+    return parseArgs({
+      allowPositionals: true,
+      options: {
+        cfop: { type: 'string' },
+        // As flags são interface com quem usa a CLI (público BR): ficam em português.
+        data: { type: 'string' },
+        html: { type: 'string' },
+        tabela: { type: 'string' },
+        'sem-ia': { type: 'boolean', default: false },
+        'ignorar-invalidos': { type: 'boolean', default: false },
+        offline: { type: 'boolean', default: false },
+        json: { type: 'boolean', default: false },
+        versao: { type: 'boolean', short: 'v', default: false },
+        ajuda: { type: 'boolean', short: 'h', default: false },
+      },
+    })
+  } catch (error: unknown) {
+    // Opção que não existe é erro de quem digitou, não bug: uma linha e a ajuda, sem stack.
+    if ((error as { code?: unknown }).code !== 'ERR_PARSE_ARGS_UNKNOWN_OPTION') throw error
+    const option = /'([^']+)'/.exec((error as Error).message)?.[1]
+    console.error(color.red(option ? `opção desconhecida: ${option}` : 'opção desconhecida'))
+    console.error(`\n${HELP}`)
+    process.exit(2)
+  }
+}
+
+const { values, positionals } = parse()
 
 const listXmls = async (target: string): Promise<string[]> => {
   if ((await stat(target)).isFile()) return [target]
@@ -68,6 +84,23 @@ const listXmls = async (target: string): Promise<string[]> => {
 const BUNDLED_TABLE = fileURLToPath(new URL(`../data/${basename(DEFAULT_TABLE)}`, import.meta.url))
 const defaultTable = (): string => (existsSync(BUNDLED_TABLE) ? BUNDLED_TABLE : DEFAULT_TABLE)
 
+const tableText = (table: { version: string; versionDate: string }): string =>
+  `tabela ${table.version} (${table.versionDate})`
+
+// package.json fica um nível acima tanto de src/main.ts quanto de dist/main.mjs no pacote do npm.
+const packageVersion = async (): Promise<string> => {
+  const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))
+  return (pkg as { version: string }).version
+}
+
+const versionCommand = async (): Promise<void> => {
+  const [version, table] = await Promise.all([
+    packageVersion(),
+    loadTable(values['tabela'] ?? defaultTable()),
+  ])
+  console.log(`enquadra ${version} · ${tableText(table)}`)
+}
+
 const dependencies = async (): Promise<Dependencies & { versionText: string }> => {
   const table = await loadTable(values['tabela'] ?? defaultTable())
   const disambiguator = values['sem-ia'] ? undefined : disambiguatorFromEnv()
@@ -76,7 +109,7 @@ const dependencies = async (): Promise<Dependencies & { versionText: string }> =
     date: isoDate(values['data'] ?? new Date().toISOString().slice(0, 10)),
     ...(values.offline ? {} : { validator: createOfficialValidator() }),
     ...(disambiguator ? { disambiguator } : {}),
-    versionText: `tabela ${table.version} (${table.versionDate})`,
+    versionText: tableText(table),
   }
 }
 
@@ -139,6 +172,7 @@ const xmlsCommand = async (): Promise<void> => {
 
 const main = async (): Promise<void> => {
   const command = positionals[0]
+  if (values['versao']) return versionCommand()
   if (values['ajuda'] || !command) return console.log(HELP)
   if (command === 'item') return itemCommand()
   if (command === 'xmls') return xmlsCommand()
