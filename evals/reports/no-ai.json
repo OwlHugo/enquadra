@@ -1,7 +1,7 @@
 {
   "development": {
     "mode": "no-ai",
-    "table": "V0059",
+    "table": "V0066",
     "cases": 88,
     "accuracy": 1,
     "severeErrors": 0,
@@ -52,7 +52,7 @@
   },
   "heldOut": {
     "mode": "no-ai",
-    "table": "V0059",
+    "table": "V0066",
     "cases": 330,
     "accuracy": 0.7393939393939394,
     "severeErrors": 0,

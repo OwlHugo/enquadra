@@ -4,4 +4,4 @@ export { CALCULATOR_BASE, type ClientOptions, createOfficialValidator } from './
 export { type LoadedTable, loadTable } from './table.ts'
 
 /** Pasta da tabela versionada que acompanha o repositório. */
-export const DEFAULT_TABLE = fileURLToPath(new URL('../../../data/sources/V0059', import.meta.url))
+export const DEFAULT_TABLE = fileURLToPath(new URL('../../../data/sources/V0066', import.meta.url))
