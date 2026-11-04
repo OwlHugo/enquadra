@@ -89,8 +89,8 @@ const temPrioritaria = (r: Rule, leaf: string): boolean =>
 describe('tabela versionada', () => {
   it('carrega a versão que acompanha o repositório', async () => {
     const t = await loadTable(DEFAULT_TABLE)
-    expect(t.version).toBe('V0059')
-    expect(t.totalClassifications).toBe(161)
+    expect(t.version).toBe('V0066')
+    expect(t.totalClassifications).toBe(170)
     expect(t.classification(cClassTrib('200034'))).toMatchObject({
       cbsReduction: 60,
       restrictedNcmList: true,

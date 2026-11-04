@@ -5,11 +5,11 @@ import { COVERAGE } from './products.ts'
 const read = (path: string): string =>
   readFileSync(new URL(`../../../../${path}`, import.meta.url), 'utf8')
 
-/** Linhas da tabela "Todos os 161 códigos" de docs/coverage.md: código → situação. */
+/** Linhas da tabela "Todos os 170 códigos" de docs/coverage.md: código → situação. */
 const documented = (): Map<string, string> => {
   const doc = read('docs/coverage.md')
   const rows = doc
-    .slice(doc.indexOf('## Todos os 161 códigos'))
+    .slice(doc.indexOf('## Todos os 170 códigos'))
     .split('\n')
     .map((l) => l.split('|').map((c) => c.trim()))
     .filter((c) => /^\d{6}$/.test(c[1] ?? ''))
@@ -28,7 +28,7 @@ describe('COVERAGE, docs/coverage.md e README dizem a mesma coisa', () => {
     expect([...COVERAGE.resolves]).toEqual(bySituation('resolve'))
     expect([...COVERAGE.asks]).toEqual(bySituation('pergunta'))
     expect([...COVERAGE.alertsOnly]).toEqual(bySituation('aviso'))
-    expect(docs.size).toBe(161)
+    expect(docs.size).toBe(170)
   })
 
   it('o resumo e a tabela dos 17 de docs/coverage.md batem com COVERAGE', () => {
@@ -38,7 +38,7 @@ describe('COVERAGE, docs/coverage.md e README dizem a mesma coisa', () => {
     expect(count('pergunta')).toBe(String(COVERAGE.asks.length))
     expect(count('aviso')).toBe(String(COVERAGE.alertsOnly.length))
     expect(count('não coberto')).toBe(
-      String(161 - COVERAGE.resolves.length - COVERAGE.asks.length - COVERAGE.alertsOnly.length),
+      String(170 - COVERAGE.resolves.length - COVERAGE.asks.length - COVERAGE.alertsOnly.length),
     )
     const restricted = doc.slice(doc.indexOf('## Os 17'), doc.indexOf('## Operações'))
     const situation = (c: string) =>
@@ -63,7 +63,7 @@ describe('COVERAGE, docs/coverage.md e README dizem a mesma coisa', () => {
   it('o README repete os mesmos totais', () => {
     const readme = read('README.md')
     expect(readme).toContain(
-      `${COVERAGE.resolves.length} codes decided by rule, ${COVERAGE.asks.length} that ask, ${COVERAGE.alertsOnly.length} that only warn, of 161`,
+      `${COVERAGE.resolves.length} codes decided by rule, ${COVERAGE.asks.length} that ask, ${COVERAGE.alertsOnly.length} that only warn, of 170`,
     )
   })
 })

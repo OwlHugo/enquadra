@@ -12,7 +12,7 @@ import { z } from 'zod'
 
 /**
  * Tabela oficial congelada em disco, uma pasta por versão do banco da Calculadora RTC
- * (`data/sources/V0059/`). Nada é atualizado no lugar: versão nova é pasta nova.
+ * (`data/sources/V0066/`). Nada é atualizado no lugar: versão nova é pasta nova.
  * O formato de cada arquivo é validado com zod ao carregar; mudança de contrato na API
  * vira erro alto, não dado errado em silêncio.
  */

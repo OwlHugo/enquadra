@@ -13,7 +13,7 @@
 
 ```
 $ npx enquadra xmls ./notas-outubro --html relatorio.html
-5 itens distintos em 1 nota · tabela V0059 (2026-09-30)
+5 itens distintos em 1 nota · tabela V0066 (2026-10-28)
   3 resolvidos   0 revisar   2 falta informação
   2 com redução de alíquota
   custo de IA: US$ 0.00008
@@ -29,7 +29,7 @@ $ npx enquadra xmls ./notas-outubro --html relatorio.html
 
 Brazil is replacing five consumption taxes with a dual VAT (IBS + CBS, Complementary Law 214/2025). Since **3 Aug 2026** an NF-e from a regular-regime company without the IBS/CBS group is **rejected** by the tax authority. In **January 2027** the same applies to the *Simples Nacional* regime, which covers most small businesses in the country.
 
-Every invoice line now needs a `cClassTrib`: one of 161 codes that encode *why* an item is taxed the way it is. The government publishes the table and a calculator that **receives** the code. Nobody official tells you which code goes on `PAO KG` or `FRALDA PAMPERS G`. That gap is filled by hand, in spreadsheets, line by line.
+Every invoice line now needs a `cClassTrib`: one of 170 codes that encode *why* an item is taxed the way it is. The government publishes the table and a calculator that **receives** the code. Nobody official tells you which code goes on `PAO KG` or `FRALDA PAMPERS G`. That gap is filled by hand, in spreadsheets, line by line.
 
 It is harder than a lookup because **the NCM product code does not decide alone**:
 
@@ -70,12 +70,12 @@ flowchart LR
 Design rules, each enforced by a test or a CI gate:
 
 1. **Rules decide, the model assists.** With AI off, every case that has enough data is still classified correctly. CI runs both sets without AI: the development set must be 100%, the held-out set must have no severe error (its accuracy is reported, with no target).
-2. **The LLM never sees 161 codes.** It chooses among the 2 to 5 candidates the rules left, or answers `need_to_ask`. Output is a closed `zod` enum.
+2. **The LLM never sees 170 codes.** It chooses among the 2 to 5 candidates the rules left, or answers `need_to_ask`. Output is a closed `zod` enum.
 3. **Citations are verified, not trusted.** The quoted passage must exist verbatim in the law text; otherwise the answer is discarded.
 4. **Confidence is computed by rule, never returned by the model.** `high` (the rule decided), `medium` (a choice between valid hypotheses), `low` (a fact is missing); the CLI shows them in Portuguese.
 5. **Abstaining is a correct answer.** Ambiguous items become questions whose options are the ones the law allows.
 6. **A manual decision always wins** and is never undone by the engine. If a new table invalidates it, the engine flags it and leaves it in place.
-7. **Everything is dated and versioned.** Official tables are frozen per version (`data/sources/V0059/`); a new version becomes a new folder and a PR, never an in-place update.
+7. **Everything is dated and versioned.** Official tables are frozen per version (`data/sources/V0066/`); a new version becomes a new folder and a PR, never an in-place update.
 8. **Personal data never leaves the parser.** From the recipient the parser keeps only the type (PF/PJ/foreign) and the state. Names, tax IDs, addresses and amounts are dropped while the XML is read. A test enforces this.
 
 ## Results
@@ -97,7 +97,7 @@ On the truly ambiguous items the model abstained or suggested one of the codes t
 
 **Held-out.** The development set was written together with the rules. [`evals/held-out/`](evals/held-out/README.md) has 330 items written by separate AI sessions that never saw the rules: 258 synthetic retail descriptions and 72 from Open Food Facts (Brazil, ODbL). On its first run the rules scored **72.1% (238/330) with 16 severe errors**, i.e. items resolved with the wrong code: disinfectant and alcohol gel taken for water bleach, a vaccine as normal tax, an incontinence pad as a menstrual product, bird seed and corn grain as human food, canned corn and chickpeas as "no salt", juice as "no preservative", a kit with a toy as a book. The rules were then fixed (not the cases): **73.9% (244/330), 0 severe**. So the held-out set caught 16 severe errors the 88 development cases never would. Part of the fixes are general conditions, part are signals taken from the failing items, so after the fix the set is no longer blind: treat 73.9% as optimistic until a new batch is written. Most remaining misses are the engine asking or marking `review` where the author expected a decision (medicines by active ingredient, animal vaccines, agricultural inputs), not wrong codes.
 
-**What the numbers still do not show.** No real invoice or customer catalog is in the repo. Coverage is partial on purpose: 14 codes decided by rule, 8 that ask, 3 that only warn, of 161 official `cClassTrib` (the rest, and why, in [`docs/coverage.md`](docs/coverage.md); the code side is [`COVERAGE`](packages/domain/src/rules/products.ts), and a test keeps the three in sync).
+**What the numbers still do not show.** No real invoice or customer catalog is in the repo. Coverage is partial on purpose: 14 codes decided by rule, 8 that ask, 3 that only warn, of 170 official `cClassTrib` (the rest, and why, in [`docs/coverage.md`](docs/coverage.md); the code side is [`COVERAGE`](packages/domain/src/rules/products.ts), and a test keeps the three in sync).
 
 ## Quick start
 
@@ -149,7 +149,7 @@ apps/
   cli/       `enquadra` command + static HTML triage report
   mcp/       MCP server, same engine
 evals/       88 cases, runner, CI gate, reports
-data/sources/ official snapshots per version (V0059 = 30 Sep 2026)
+data/sources/ official snapshots per version (V0066 = 28 Oct 2026)
 ```
 
 | | |

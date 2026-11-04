@@ -1,13 +1,13 @@
 # Cobertura da LC 214/2025
 
-Levantamento dos 161 `cClassTrib` da tabela oficial `V0059` (30/09/2026) contra as regras do motor. Um teste confere este arquivo contra `COVERAGE` em `packages/domain/src/rules/products.ts` e contra o README.
+Levantamento dos 170 `cClassTrib` da tabela oficial `V0066` (28/10/2026) contra as regras do motor. Um teste confere este arquivo contra `COVERAGE` em `packages/domain/src/rules/products.ts` e contra o README.
 
 - **resolve**: a regra decide sozinha quando NCM, descrição e CFOP bastam.
 - **pergunta**: a regra existe, mas depende de fato que a nota não traz (destinação, adquirente, habilitação); o motor nunca devolve o código em silêncio, devolve a pergunta.
 - **aviso**: código do mesmo produto para outro adquirente; o motor emite o alerta `buyer_dependent_code`.
 - **não coberto**: o motor não tem regra própria. Se a tabela oficial aceita o NCM nesse código e nenhuma regra o explica, o item sai como `review` com `unmapped_benefit`, nunca como tributação integral. Quando o item cai numa pergunta de outro código (ex.: 200038), o código não coberto só aparece no texto da pergunta.
 
-A coluna *Lista de NCM* diz se a API oficial restringe os NCM aceitos no código (17 de 161). Para os 17, todo NCM folha coberto por regra foi conferido na API, e um teste (`packages/sources/src/sources.test.ts`) falha se algum for recusado.
+A coluna *Lista de NCM* diz se a API oficial restringe os NCM aceitos no código (17 de 170). Para os 17, todo NCM folha coberto por regra foi conferido na API, e um teste (`packages/sources/src/sources.test.ts`) falha se algum for recusado.
 
 ## Resumo
 
@@ -16,7 +16,7 @@ A coluna *Lista de NCM* diz se a API oficial restringe os NCM aceitos no código
 | resolve | 14 |
 | pergunta | 8 |
 | aviso | 3 |
-| não coberto | 136 |
+| não coberto | 145 |
 
 ## Os 17 códigos com lista restrita de NCM
 
@@ -55,7 +55,7 @@ Itens de anexo sem efeito: os de serviço (NBS) dos Anexos II, III, IX (22 a 34)
 | devoluções (5.201 a 5.219, 5.411, 5.413, 5.414, 5.503, 5.504, 5.553 a 5.556, 5.660 a 5.662) | fora do escopo: segue a nota original | alerta |
 | demais (comodato, demonstração, consignação, conserto, brinde 5.911, amostra grátis 5.912...) | **não coberto**: `out_of_scope` com alerta | alerta |
 
-## Todos os 161 códigos
+## Todos os 170 códigos
 
 | Código | Situação | Lista de NCM | Nomenclatura | Descrição oficial | Por quê |
 |---|---|---|---|---|---|
@@ -64,6 +64,7 @@ Itens de anexo sem efeito: os de serviço (NBS) dos Anexos II, III, IX (22 a 34)
 | 000003 | não coberto | não | NCM | Regime automotivo - projetos incentivados (art. 311) | Regime automotivo: projeto incentivado do contribuinte. |
 | 000004 | não coberto | não | NCM | Regime automotivo - projetos incentivados (art. 312) | Regime automotivo: projeto incentivado do contribuinte. |
 | 000005 | não coberto | não | NCM | Operação com EAC destinado à mistura com gasolina A, mas com saída do biocombust | Mistura de etanol com gasolina: operação do contribuinte. |
+| 000006 | não coberto | não | NBS ou NCM | Situações tributadas integralmente pelo IBS e CBS realizadas por autônomo | Prestação por autônomo, só em NFS-e: serviço e fato do emitente; o Enquadra classifica mercadoria (NCM) na NF-e. |
 | 010001 | não coberto | não | NBS | Operações do FGTS não realizadas pela Caixa Econômica Federal | Serviço (NBS): fora do escopo; o Enquadra classifica mercadoria (NCM). |
 | 010002 | não coberto | não | NBS | Operações do serviço financeiro | Serviço (NBS): fora do escopo; o Enquadra classifica mercadoria (NCM). |
 | 011001 | não coberto | não | NBS | Planos de assistência funerária. | Serviço (NBS): fora do escopo; o Enquadra classifica mercadoria (NCM). |
@@ -125,6 +126,8 @@ Itens de anexo sem efeito: os de serviço (NBS) dos Anexos II, III, IX (22 a 34)
 | 200052 | não coberto | não | NBS ou NCM | Prestação de serviços de profissões intelectuais | Serviço, locação ou imóvel: fora do escopo (mercadoria). |
 | 200053 | resolve | não | NCM | Fornecimento de medicamentos registrados na Anvisa, quando  classificados como s | Art. 146, § 1º, III: vacinas de uso humano (3002.41); a API aceita o NCM. |
 | 200054 | não coberto | não | NCM | Fornecimento de bem material pela cooperativa de produção agropecuária a associa | Cooperativa agropecuária fornecendo a associado: fato do vendedor e do adquirente. |
+| 200055 | não coberto | não | NBS ou NCM | Fornecimento dos serviços com redução de alíquota de 60% realizado por autônomo | Prestação por autônomo, só em NFS-e: serviço e fato do emitente; o Enquadra classifica mercadoria (NCM) na NF-e. |
+| 200056 | não coberto | não | NBS ou NCM | Fornecimento dos serviços com redução de alíquota de 30% realizado por autônomo | Prestação por autônomo, só em NFS-e: serviço e fato do emitente; o Enquadra classifica mercadoria (NCM) na NF-e. |
 | 221001 | não coberto | não | NBS ou NCM | Locação, cessão onerosa ou arrendamento de bem imóvel com alíquota sobre a recei | Imóveis (locação, incorporação, alienação): fora do escopo (mercadoria). |
 | 221002 | não coberto | não | NBS ou NCM | Incorporação imobiliária submetida ao regime especial de tributação | Imóveis (locação, incorporação, alienação): fora do escopo (mercadoria). |
 | 221003 | não coberto | não | NBS ou NCM | Incorporação imobiliária submetida ao regime especial de tributação | Imóveis (locação, incorporação, alienação): fora do escopo (mercadoria). |
@@ -132,6 +135,8 @@ Itens de anexo sem efeito: os de serviço (NBS) dos Anexos II, III, IX (22 a 34)
 | 222001 | não coberto | não | NBS | Transporte internacional de passageiros, caso os trechos de ida e volta sejam ve | Serviço (NBS): fora do escopo; o Enquadra classifica mercadoria (NCM). |
 | 400001 | não coberto | não | NBS ou NCM | Fornecimento de serviços de transporte público coletivo de passageiros rodoviári | Transporte público coletivo de passageiros: serviço. |
 | 400002 | não coberto | não | NBS ou NCM | Fornecimento de serviços de transporte público coletivo de passageiros rodoviári | Transporte público coletivo de passageiros: serviço. |
+| 400003 | não coberto | não | NCM | Bagagens | Importação (DIR/Duimp, art. 94): fora do escopo; o Enquadra classifica saídas em NF-e. |
+| 400004 | não coberto | não | NCM | Remessas internacionais | Importação (DIR/Duimp, art. 94): fora do escopo; o Enquadra classifica saídas em NF-e. |
 | 410001 | pergunta | não | NBS ou NCM | Fornecimento de bonificações quando constem no documento fiscal e que não depend | CFOP 5910/6910: bonificação no documento, sem evento posterior. Pergunta. |
 | 410002 | resolve | não | NCM | Transferências entre estabelecimentos pertencentes ao mesmo contribuinte | CFOP de transferência (art. 6º, II). |
 | 410003 | pergunta | não | NBS ou NCM | Doações sem contraprestação em benefício do doador | CFOP 5910/6910: doação. Pergunta. |
@@ -167,7 +172,7 @@ Itens de anexo sem efeito: os de serviço (NBS) dos Anexos II, III, IX (22 a 34)
 | 410033 | não coberto | não | NBS ou NCM | Operações de Fundos de Investimento Imobiliário (FII) e Fundos de Investimento n | Ajuste de base de cálculo, garantia, crédito, fundo ou operação não onerosa: não é classificação de produto. |
 | 410034 | não coberto | não | NBS ou NCM | Operações de fundos de investimento | Ajuste de base de cálculo, garantia, crédito, fundo ou operação não onerosa: não é classificação de produto. |
 | 410035 | não coberto | não | NBS ou NCM | Fornecimento realizado por nanoempreendedor | Ajuste de base de cálculo, garantia, crédito, fundo ou operação não onerosa: não é classificação de produto. |
-| 410036 | não coberto | não | NBS ou NCM | Descontos incondicionais | Ajuste de base de cálculo, garantia, crédito, fundo ou operação não onerosa: não é classificação de produto. |
+| 410036 | não coberto | não | NBS ou NCM | Descontos financeiros em nota fatura | Ajuste de base de cálculo, garantia, crédito, fundo ou operação não onerosa: não é classificação de produto. |
 | 410037 | não coberto | não | NBS ou NCM | Importação os bens materiais sem incidência de IBS e CBS | Ajuste de base de cálculo, garantia, crédito, fundo ou operação não onerosa: não é classificação de produto. |
 | 410999 | não coberto | não | NBS ou NCM | Operações não onerosas sem previsão de tributação, não especificadas anteriormen | Ajuste de base de cálculo, garantia, crédito, fundo ou operação não onerosa: não é classificação de produto. |
 | 510001 | não coberto | não | NCM | Operações, sujeitas a diferimento, com energia elétrica, relativas à importação, | Diferimento, suspensão ou regime aduaneiro/incentivado (Repetro, ZPE, Renaval...): depende de habilitação do contribuinte, que a nota não traz. |
@@ -177,8 +182,8 @@ Itens de anexo sem efeito: os de serviço (NBS) dos Anexos II, III, IX (22 a 34)
 | 550003 | não coberto | não | NCM | Regimes de Depósito (art. 85) | Diferimento, suspensão ou regime aduaneiro/incentivado (Repetro, ZPE, Renaval...): depende de habilitação do contribuinte, que a nota não traz. |
 | 550004 | não coberto | não | NCM | Regimes de Depósito (art. 87) | Diferimento, suspensão ou regime aduaneiro/incentivado (Repetro, ZPE, Renaval...): depende de habilitação do contribuinte, que a nota não traz. |
 | 550005 | não coberto | não | NCM | Regimes de Depósito (art. 87, Parágrafo único) | Diferimento, suspensão ou regime aduaneiro/incentivado (Repetro, ZPE, Renaval...): depende de habilitação do contribuinte, que a nota não traz. |
-| 550006 | não coberto | não | NCM | Regimes de Permanência Temporária | Diferimento, suspensão ou regime aduaneiro/incentivado (Repetro, ZPE, Renaval...): depende de habilitação do contribuinte, que a nota não traz. |
-| 550007 | não coberto | não | NCM | Regimes de Aperfeiçoamento | Diferimento, suspensão ou regime aduaneiro/incentivado (Repetro, ZPE, Renaval...): depende de habilitação do contribuinte, que a nota não traz. |
+| 550006 | não coberto | não | NCM | Regimes de Permanência Temporária com suspensão total | Diferimento, suspensão ou regime aduaneiro/incentivado (Repetro, ZPE, Renaval...): depende de habilitação do contribuinte, que a nota não traz. |
+| 550007 | não coberto | não | NCM | Regimes de Aperfeiçoamento (Recof) | Diferimento, suspensão ou regime aduaneiro/incentivado (Repetro, ZPE, Renaval...): depende de habilitação do contribuinte, que a nota não traz. |
 | 550008 | não coberto | não | NCM | Importação de bens para o Regime de Repetro-Temporário | Diferimento, suspensão ou regime aduaneiro/incentivado (Repetro, ZPE, Renaval...): depende de habilitação do contribuinte, que a nota não traz. |
 | 550009 | não coberto | não | NCM | GNL-Temporário | Diferimento, suspensão ou regime aduaneiro/incentivado (Repetro, ZPE, Renaval...): depende de habilitação do contribuinte, que a nota não traz. |
 | 550010 | não coberto | não | NCM | Repetro-Permanente | Diferimento, suspensão ou regime aduaneiro/incentivado (Repetro, ZPE, Renaval...): depende de habilitação do contribuinte, que a nota não traz. |
@@ -197,6 +202,10 @@ Itens de anexo sem efeito: os de serviço (NBS) dos Anexos II, III, IX (22 a 34)
 | 550023 | não coberto | não | NBS ou NCM | Operações com hidrocarbonetos líquidos derivados de petróleo não combustíveis ou | Diferimento, suspensão ou regime aduaneiro/incentivado (Repetro, ZPE, Renaval...): depende de habilitação do contribuinte, que a nota não traz. |
 | 550024 | não coberto | não | NBS ou NCM | Regime Tributário para Incentivo à Atividade Naval - Renaval (Art. 107, II) | Diferimento, suspensão ou regime aduaneiro/incentivado (Repetro, ZPE, Renaval...): depende de habilitação do contribuinte, que a nota não traz. |
 | 550025 | não coberto | não | NBS ou NCM | Regime Tributário para Incentivo à Atividade Naval - Renaval (Art. 107, III) | Diferimento, suspensão ou regime aduaneiro/incentivado (Repetro, ZPE, Renaval...): depende de habilitação do contribuinte, que a nota não traz. |
+| 550026 | não coberto | não | NCM | Regimes de admissão temporária com suspensão total do pagamento dos tributos (ZF | Diferimento, suspensão ou regime aduaneiro/incentivado (Repetro, ZPE, Renaval...): depende de habilitação do contribuinte, que a nota não traz. |
+| 550027 | não coberto | não | NCM | Regimes de Aperfeiçoamento (Drawback) | Diferimento, suspensão ou regime aduaneiro/incentivado (Repetro, ZPE, Renaval...): depende de habilitação do contribuinte, que a nota não traz. |
+| 550028 | não coberto | não | NCM | Regimes de Aperfeiçoamento (Admissão temporária) | Diferimento, suspensão ou regime aduaneiro/incentivado (Repetro, ZPE, Renaval...): depende de habilitação do contribuinte, que a nota não traz. |
+| 550029 | não coberto | não | NCM | Zona de Processamento de Exportação | Diferimento, suspensão ou regime aduaneiro/incentivado (Repetro, ZPE, Renaval...): depende de habilitação do contribuinte, que a nota não traz. |
 | 620001 | não coberto | não | NCM | Tributação monofásica sobre combustíveis | Combustíveis (monofásico, art. 172 e seguintes): pede dados de retenção e regime que não estão na nota. |
 | 620002 | não coberto | não | NCM | Tributação monofásica com responsabilidade pela retenção sobre combustíveis | Combustíveis (monofásico, art. 172 e seguintes): pede dados de retenção e regime que não estão na nota. |
 | 620003 | não coberto | não | NCM | Tributação monofásica com responsabilidade de retenção de tributos por terceiros | Combustíveis (monofásico, art. 172 e seguintes): pede dados de retenção e regime que não estão na nota. |
@@ -218,5 +227,5 @@ Itens de anexo sem efeito: os de serviço (NBS) dos Anexos II, III, IX (22 a 34)
 | 820006 | não coberto | não | NBS | Documento com informações de fornecimento de serviços de exploração de via | Serviço (NBS): fora do escopo; o Enquadra classifica mercadoria (NCM). |
 | 820007 | não coberto | não | NBS | Documento com informações de fornecimento de serviços financeiros | Serviço (NBS): fora do escopo; o Enquadra classifica mercadoria (NCM). |
 | 820008 | não coberto | não | NBS ou NCM | Documento com informações de fornecimento de serviço continuado, mas com tributa | Documento de ajuste, transferência de crédito ou informativo: não é item de venda. |
-| 820009 | não coberto | não | NBS ou NCM | Cobrança relativa a fornecimentos declarados em outro documento | Documento de ajuste, transferência de crédito ou informativo: não é item de venda. |
+| 820009 | não coberto | não | NBS ou NCM | Fornecimentos declarados e tributados em outro documento | Documento de ajuste, transferência de crédito ou informativo: não é item de venda. |
 | 830001 | não coberto | não | NCM | Documento com exclusão da BC da CBS e do IBS de energia elétrica fornecida pela  | Documento de ajuste, transferência de crédito ou informativo: não é item de venda. |
