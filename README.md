@@ -7,6 +7,10 @@
 ![severe errors](https://img.shields.io/badge/severe%20errors-0-2f7d4f)
 ![license](https://img.shields.io/badge/license-Apache--2.0-lightgrey)
 
+<img src="docs/demo.gif" width="860" alt="Terminal running enquadra xmls on the example NF-e: 5 items, 3 resolved with CST and cClassTrib, 2 flagged as missing information, HTML report written; then enquadra item for French bread resolving to 200003 with the quoted text of LC 214/2025, Annex I, item 16">
+
+<sub>Real CLI run on <code>examples/nfe-mercado.xml</code> (sample data) with <code>--sem-ia --offline</code>: no AI, no network.</sub>
+
 ```
 $ npx enquadra xmls ./notas-outubro --html relatorio.html
 5 itens distintos em 1 nota · tabela V0059 (2026-09-30)
