@@ -3,7 +3,7 @@
 **Open-source classifier for Brazil's new consumption taxes (IBS/CBS).** Give it a product catalog or a folder of NF-e invoices; it returns, item by item, the `CST` and `cClassTrib` codes required on every invoice since August 2026, the exact article of law behind each one, how sure it is, and what a human still needs to decide.
 
 [![ci](https://github.com/OwlHugo/enquadra/actions/workflows/ci.yml/badge.svg)](https://github.com/OwlHugo/enquadra/actions/workflows/ci.yml)
-![eval](https://img.shields.io/badge/eval%20(no%20AI)-95%2F95-2f7d4f)
+![eval](https://img.shields.io/badge/eval%20(no%20AI)-96%2F96-2f7d4f)
 ![severe errors](https://img.shields.io/badge/severe%20errors-0-2f7d4f)
 ![license](https://img.shields.io/badge/license-Apache--2.0-lightgrey)
 
@@ -80,11 +80,11 @@ Design rules, each enforced by a test or a CI gate:
 
 ## Results
 
-95 hand-written cases in [`evals/cases.jsonl`](evals/cases.jsonl), each with the legal source. Every expected code was cross-checked against the official API (none is rejected there). Categories: direct annex hits, exceptions inside annexes, priority between annexes, description-dependent conditions, genuinely ambiguous items, CFOP-driven operations, prompt injection and invalid input.
+96 hand-written cases in [`evals/cases.jsonl`](evals/cases.jsonl), each with the legal source. Every expected code was cross-checked against the official API (none is rejected there). Categories: direct annex hits, exceptions inside annexes, priority between annexes, description-dependent conditions, genuinely ambiguous items, CFOP-driven operations, prompt injection and invalid input.
 
 | Set / mode | Cases | Accuracy | Severe errors¹ | Correct abstention | resolved / review / needs info | LLM calls | Cost |
 |---|---|---|---|---|---|---|---|
-| Development, rules only (`--sem-ia`) | 95 | **100%** (95/95) | **0** | 100% | 72 / 5 / 18 | 0 | 0 |
+| Development, rules only (`--sem-ia`) | 96 | **100%** (96/96) | **0** | 100% | 72 / 5 / 19 | 0 | 0 |
 | Development, rules + Gemini 3.5 Flash Lite³ | 88 | **100%** (88/88) | **0** | 100% | 69 / 8 / 11 | 14 | US$ 0.0013 |
 | **Held-out**, rules only | 330 | **74.8%** (247/330) | **0** | 76.2% | 231 / 19 / 80 | 0 | 0 |
 | **Held-out batch 2**, rules only, first run⁴ | 120 | **75.0%** (90/120) | **2** | n/a | n/a | 0 | 0 |
@@ -105,7 +105,7 @@ On the truly ambiguous items the model abstained or suggested one of the codes t
 
 ⁴ First and only blind run, kept in [`evals/held-out/README.md`](evals/held-out/README.md). Every later number on this batch is contaminated.
 
-**What the numbers still do not show.** No real invoice or customer catalog is in the repo. Coverage is partial on purpose: 14 codes decided by rule, 10 that ask, 3 that only warn, of 170 official `cClassTrib` (the rest, and why, in [`docs/coverage.md`](docs/coverage.md); the code side is [`COVERAGE`](packages/domain/src/rules/products.ts), and a test keeps the three in sync).
+**What the numbers still do not show.** No real invoice or customer catalog is in the repo. Coverage is partial on purpose: 14 codes decided by rule, 11 that ask, 3 that only warn, of 170 official `cClassTrib` (the rest, and why, in [`docs/coverage.md`](docs/coverage.md); the code side is [`COVERAGE`](packages/domain/src/rules/products.ts), and a test keeps the three in sync).
 
 ## Quick start
 
@@ -156,7 +156,7 @@ packages/
 apps/
   cli/       `enquadra` command + static HTML triage report
   mcp/       MCP server, same engine
-evals/       95 cases, runner, CI gate, reports
+evals/       96 cases, runner, CI gate, reports
 data/sources/ official snapshots per version (V0066 = 28 Oct 2026)
 ```
 

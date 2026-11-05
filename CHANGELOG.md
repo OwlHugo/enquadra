@@ -11,6 +11,7 @@ Versions of the `enquadra` CLI on npm. `enquadra-mcp` follows the same engine.
 - CFOPs for remessas (5.901, 5.908/5.909, 5.911, 5.912/5.913, 5.915/5.916, 5.917 to 5.919) stay out of scope, each with its own reason.
 - MCP server published as `enquadra-mcp` (`npx -y enquadra-mcp`), with the official table inside the package.
 - `pnpm sources:update` validates every API response with zod and keeps every NCM already probed.
+- Gold in bulk or powder (71.08) asks whether it is a financial asset (art. 9º, VII, `410011`); jewelry stays out. Questions that depend only on a fact outside the invoice now also offer full tax as the "no" answer.
 - Signals that came from failing held-out items (`calopsita`, `glicemia`, `pelucia`, `ao vivo`) swapped for generic words.
 - Second blind held-out batch (`evals/held-out/batch-2.jsonl`, 120 items): first run 75.0% with 2 severe errors, after fixes 78.3% with 0.
 
