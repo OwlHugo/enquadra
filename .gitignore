@@ -7,3 +7,5 @@ coverage/
 evals/reports/*.local.*
 apps/cli/data/
 apps/mcp/data/
+apps/cli/README.md
+apps/mcp/README.md
