@@ -1,6 +1,6 @@
 import { normalizeDescription } from './description.ts'
 import { collectHypotheses, type Discarded, type Hypothesis } from './hypotheses.ts'
-import { descriptionNcmMismatch } from './mismatch.ts'
+import { descriptionNcmMismatch, isBlankDescription } from './mismatch.ts'
 import { formatNcm } from './ncm.ts'
 import type { Disambiguator, OfficialTable, OfficialValidator } from './ports.ts'
 import { operationByCfop } from './rules/operations.ts'
@@ -141,8 +141,34 @@ export const classify = async (item: InputItem, deps: Dependencies): Promise<Res
     await addProductOptions(item, ncmName, r, deps)
   }
 
+  holdBenefitOnDoubtfulDescription(item, r, Boolean(mismatch))
   const validation = await validate(item, r, deps, date)
   return build(item, r, deps, date, validation)
+}
+
+/**
+ * Benefício (alíquota reduzida ou zero) só sai decidido quando a descrição sustenta o NCM. Se a
+ * descrição contradiz o NCM ("CAMISETA" com NCM de arroz) ou não diz nada ("."), o motor não sabe
+ * qual dos dois está errado: devolve para revisão com o código como candidato, sem decidir.
+ */
+const holdBenefitOnDoubtfulDescription = (item: InputItem, r: Draft, mismatch: boolean): void => {
+  if (r.status !== 'resolved' || !r.code || r.code === FULL_TAX) return
+  const blank = isBlankDescription(item.description)
+  if (!mismatch && !blank) return
+  r.status = 'review'
+  r.confidence = 'low'
+  r.trail.push(
+    blank
+      ? 'Descrição vazia: o benefício não sai decidido só pelo NCM.'
+      : 'Descrição e NCM não combinam: o benefício não sai decidido até conferir o cadastro.',
+  )
+  if (blank) {
+    r.alerts.push({
+      code: 'blank_description',
+      severity: 'warning',
+      message: 'A descrição não diz qual é o produto: confira o cadastro antes de usar o código.',
+    })
+  }
 }
 
 /**

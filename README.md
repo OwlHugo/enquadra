@@ -3,7 +3,7 @@
 **Open-source classifier for Brazil's new consumption taxes (IBS/CBS).** Give it a product catalog or a folder of NF-e invoices; it returns, item by item, the `CST` and `cClassTrib` codes required on every invoice since August 2026, the exact article of law behind each one, how sure it is, and what a human still needs to decide.
 
 [![ci](https://github.com/OwlHugo/enquadra/actions/workflows/ci.yml/badge.svg)](https://github.com/OwlHugo/enquadra/actions/workflows/ci.yml)
-![eval](https://img.shields.io/badge/eval%20(no%20AI)-92%2F92-2f7d4f)
+![eval](https://img.shields.io/badge/eval%20(no%20AI)-95%2F95-2f7d4f)
 ![severe errors](https://img.shields.io/badge/severe%20errors-0-2f7d4f)
 ![license](https://img.shields.io/badge/license-Apache--2.0-lightgrey)
 
@@ -80,13 +80,15 @@ Design rules, each enforced by a test or a CI gate:
 
 ## Results
 
-92 hand-written cases in [`evals/cases.jsonl`](evals/cases.jsonl), each with the legal source. Every expected code was cross-checked against the official API (none is rejected there). Categories: direct annex hits, exceptions inside annexes, priority between annexes, description-dependent conditions, genuinely ambiguous items, CFOP-driven operations, prompt injection and invalid input.
+95 hand-written cases in [`evals/cases.jsonl`](evals/cases.jsonl), each with the legal source. Every expected code was cross-checked against the official API (none is rejected there). Categories: direct annex hits, exceptions inside annexes, priority between annexes, description-dependent conditions, genuinely ambiguous items, CFOP-driven operations, prompt injection and invalid input.
 
 | Set / mode | Cases | Accuracy | Severe errors¹ | Correct abstention | resolved / review / needs info | LLM calls | Cost |
 |---|---|---|---|---|---|---|---|
-| Development, rules only (`--sem-ia`) | 92 | **100%** (92/92) | **0** | 100% | 71 / 3 / 18 | 0 | 0 |
+| Development, rules only (`--sem-ia`) | 95 | **100%** (95/95) | **0** | 100% | 72 / 5 / 18 | 0 | 0 |
 | Development, rules + Gemini 3.5 Flash Lite³ | 88 | **100%** (88/88) | **0** | 100% | 69 / 8 / 11 | 14 | US$ 0.0013 |
 | **Held-out**, rules only | 330 | **75.2%** (248/330) | **0** | 76.2% | 232 / 18 / 80 | 0 | 0 |
+| **Held-out batch 2**, rules only, first run⁴ | 120 | **75.0%** (90/120) | **2** | n/a | n/a | 0 | 0 |
+| **Held-out batch 2**, rules only, after fixes | 120 | **79.2%** (95/120) | **0** | 100% | 69 / 16 / 34 | 0 | 0 |
 | **Held-out**, rules + Gemini 3.5 Flash Lite² | 330 | **85.5%** (282/330) | **0** | 71.4% | 231 / 76 / 23 | 64 | US$ 0.0059 |
 
 ¹ *Severe error* = marked "resolved" with the wrong code. It is the only mistake that costs a business money without anyone noticing, so CI fails on any severe error in both modes.
@@ -97,7 +99,11 @@ On the truly ambiguous items the model abstained or suggested one of the codes t
 
 ³ Measured on the 88 cases that existed before the 4 added for condoms, medicines, dried fruit and an NCM that does not match the description; not re-run with the model since.
 
-**Held-out.** The development set was written together with the rules. [`evals/held-out/`](evals/held-out/README.md) has 330 items written by separate AI sessions that never saw the rules: 258 synthetic retail descriptions and 72 from Open Food Facts (Brazil, ODbL). On its first run the rules scored **72.1% (238/330) with 16 severe errors**, i.e. items resolved with the wrong code: disinfectant and alcohol gel taken for water bleach, a vaccine as normal tax, an incontinence pad as a menstrual product, bird seed and corn grain as human food, canned corn and chickpeas as "no salt", juice as "no preservative", a kit with a toy as a book. The rules were then fixed (not the cases): **73.9% (244/330), 0 severe**. So the held-out set caught 16 severe errors the 88 development cases never would. Part of the fixes are general conditions, part are signals taken from the failing items, so after the fix the set is no longer blind: treat 73.9% as optimistic until a new batch is written. Most remaining misses are the engine asking or marking `review` where the author expected a decision (medicines by active ingredient, animal vaccines, agricultural inputs), not wrong codes.
+**Held-out.** The development set was written together with the rules. [`evals/held-out/`](evals/held-out/README.md) has 330 items written by separate AI sessions that never saw the rules: 258 synthetic retail descriptions and 72 from Open Food Facts (Brazil, ODbL). On its first run the rules scored **72.1% (238/330) with 16 severe errors**, i.e. items resolved with the wrong code: disinfectant and alcohol gel taken for water bleach, a vaccine as normal tax, an incontinence pad as a menstrual product, bird seed and corn grain as human food, canned corn and chickpeas as "no salt", juice as "no preservative", a kit with a toy as a book. The rules were then fixed (not the cases): **73.9% (244/330), 0 severe**. So the held-out set caught 16 severe errors the 88 development cases never would. Part of the fixes are general conditions, part are signals taken from the failing items, so after the fix the set is no longer blind: treat 73.9% as optimistic. Most remaining misses are the engine asking or marking `review` where the author expected a decision (medicines by active ingredient, animal vaccines, agricultural inputs), not wrong codes.
+
+**Held-out batch 2.** A third session, with no access to the repository, wrote 120 new items (pharmacy, produce, pet and farm, supermarket, cleaning, non-sale CFOPs, bad data) and checked each expected pair on the official API. The rules were run on it **once, before any change: 75.0% (90/120), 2 severe errors, 1 crash**. The two severe errors were a T-shirt and a blank description, both with the rice NCM, resolved as zero rate; the crash was an NCM typed with the letter O. After the fixes (a benefit is never decided when the description contradicts the NCM or says nothing; antisera in 3002.12.1 as art. 146 serums; `PRESERV` read as condom): **79.2%, 0 severe**. The 75.0% is the honest number for unseen catalogs; the rest of the misses are questions where the author expected a decision (agricultural inputs, medical devices with a general-use NCM).
+
+⁴ First and only blind run, kept in [`evals/held-out/README.md`](evals/held-out/README.md). Every later number on this batch is contaminated.
 
 **What the numbers still do not show.** No real invoice or customer catalog is in the repo. Coverage is partial on purpose: 14 codes decided by rule, 10 that ask, 3 that only warn, of 170 official `cClassTrib` (the rest, and why, in [`docs/coverage.md`](docs/coverage.md); the code side is [`COVERAGE`](packages/domain/src/rules/products.ts), and a test keeps the three in sync).
 
@@ -150,7 +156,7 @@ packages/
 apps/
   cli/       `enquadra` command + static HTML triage report
   mcp/       MCP server, same engine
-evals/       92 cases, runner, CI gate, reports
+evals/       95 cases, runner, CI gate, reports
 data/sources/ official snapshots per version (V0066 = 28 Oct 2026)
 ```
 
@@ -172,6 +178,7 @@ Decisions with the alternatives I rejected are in [`docs/adr/`](docs/adr/). Code
 - [x] NF-e parser, CLI, HTML report, MCP server
 - [x] 88-case eval, CI gate, real-LLM run with cost
 - [x] Held-out eval written without access to the rules (330 items)
+- [x] Second blind batch, measured once before any rule change (120 items)
 - [ ] Held-out eval from real anonymized catalogs (e-commerce and ERP partners)
 - [ ] Recipient-based rules (public administration, ZFM) and medicines (art. 133 and 146 depend on an official list)
 - [ ] NBS and NFS-e (services: Annexes II, III, X, XI)

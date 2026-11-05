@@ -9,9 +9,18 @@
  * o cliente do que mudou. A sondagem é limitada (concorrência 6) para não martelar uma API pública.
  */
 import { existsSync } from 'node:fs'
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { parseArgs } from 'node:util'
+import {
+  ApiClassifications,
+  ApiNcmApplicable,
+  ApiRawList,
+  ApiVersion,
+  checkResponse,
+  type Schema,
+  SiscomexNomenclature,
+} from '../packages/sources/src/index.ts'
 
 const BASE =
   'https://consumo.tributos.gov.br/servico/calcular-tributos-consumo/api/calculadora/dados-abertos'
@@ -22,8 +31,11 @@ const today = new Date().toISOString().slice(0, 10)
 
 const { values } = parseArgs({ options: { check: { type: 'boolean', default: false } } })
 
-/** Repete só rede, timeout, 5xx e 429; 4xx é pedido errado e para na hora. */
-const json = async <T>(url: string): Promise<T> => {
+/**
+ * Repete só rede, timeout, 5xx e 429; 4xx é pedido errado e para na hora. A resposta passa pelo
+ * schema antes de ir para o disco: mudança de contrato da API para aqui, não depois em `loadTable`.
+ */
+const json = async <T>(url: string, schema: Schema<T>): Promise<T> => {
   for (let t = 1; ; t++) {
     const r = await fetch(url, { signal: AbortSignal.timeout(60_000) }).catch((e: unknown) => {
       const network =
@@ -41,7 +53,7 @@ const json = async <T>(url: string): Promise<T> => {
             '`pnpm sources:update` from a Brazilian network and commit data/sources/<version>.',
         )
       }
-      return (await r.json()) as T
+      return checkResponse(url, schema, await r.json())
     }
     if (r && r.status < 500 && r.status !== 429) {
       throw new Error(`HTTP ${r.status} on ${url}: ${await r.text()}`)
@@ -65,19 +77,7 @@ const inBatches = async <T, R>(items: T[], n: number, f: (i: T) => Promise<R>): 
   return output
 }
 
-interface Version {
-  versaoApp: string
-  versaoDb: string
-  descricaoVersaoDb: string
-  dataVersaoDb: string
-  ambiente: string
-}
-interface Classification {
-  codigo: string
-  nomenclatura: string
-}
-
-const version = await json<Version>(`${BASE}/versao`)
+const version = await json(`${BASE}/versao`, ApiVersion)
 const folder = join(ROOT, 'data/sources', version.versaoDb)
 const isNew = !existsSync(folder)
 console.log(
@@ -86,8 +86,10 @@ console.log(
 if (values.check) process.exit(isNew ? 1 : 0)
 
 await mkdir(folder, { recursive: true })
-const classifications = await json<Classification[]>(
+// passthrough: o arquivo guarda a resposta inteira; o schema só exige os campos que o motor lê.
+const classifications = await json(
   `${BASE}/classificacoes-tributarias/cbs-ibs?data=${today}`,
+  ApiClassifications,
 )
 await writeFile(
   join(folder, 'version.json'),
@@ -108,18 +110,18 @@ await writeFile(
 await writeFile(join(folder, 'classifications.json'), JSON.stringify(classifications, null, 1))
 await writeFile(
   join(folder, 'situations.json'),
-  JSON.stringify(await json(`${BASE}/situacoes-tributarias/cbs-ibs?data=${today}`), null, 1),
+  JSON.stringify(
+    await json(`${BASE}/situacoes-tributarias/cbs-ibs?data=${today}`, ApiRawList),
+    null,
+    1,
+  ),
 )
 await writeFile(
   join(folder, 'legal-grounds.json'),
-  JSON.stringify(await json(`${BASE}/fundamentacoes-legais?data=${today}`), null, 1),
+  JSON.stringify(await json(`${BASE}/fundamentacoes-legais?data=${today}`, ApiRawList), null, 1),
 )
 
-const siscomex = await json<{
-  Ato: string
-  Data_Ultima_Atualizacao_NCM: string
-  Nomenclaturas: { Codigo: string; Descricao: string }[]
-}>(NCM_SISCOMEX)
+const siscomex = await json(NCM_SISCOMEX, SiscomexNomenclature)
 const items: Record<string, string> = Object.fromEntries(
   siscomex.Nomenclaturas.map((n) => [n.Codigo.replaceAll('.', ''), n.Descricao] as const).filter(
     ([c]) => c.length === 8,
@@ -140,8 +142,9 @@ const eligible = classifications.filter(
 )
 const accepts = async (ncm: string, code: string): Promise<boolean> =>
   (
-    await json<{ valido: boolean }>(
+    await json(
       `${BASE}/classificacoes-tributarias/ncm-aplicavel?ncm=${ncm}&cClassTrib=${code}&dataOcorrenciaFatoGerador=${today}`,
+      ApiNcmApplicable,
     )
   ).valido
 const probes = await inBatches(
@@ -152,10 +155,31 @@ const probes = await inBatches(
 const restricted = eligible.filter((_, i) => !probes[i]).map((c) => c.codigo)
 console.log(`${restricted.length} codes with a restricted NCM list`)
 
-const cases = (await readFile(join(ROOT, 'evals/cases.jsonl'), 'utf8')).trim().split('\n')
-const ncms = [...new Set(cases.map((l) => (JSON.parse(l) as { ncm: string }).ncm))].filter(
-  (n) => items[n],
+// Sonda os NCM dos dois conjuntos de eval e os que os snapshots anteriores já sondavam: sem a
+// união, rodar o script de novo apagaria do snapshot os NCM que vieram de versões passadas.
+const evalLines = (
+  await Promise.all(
+    ['evals/cases.jsonl', 'evals/held-out/cases.jsonl'].map((f) => readFile(join(ROOT, f), 'utf8')),
+  )
 )
+  .flatMap((text) => text.trim().split('\n'))
+  .filter((l) => l.length > 0)
+const previouslyProbed = (
+  await Promise.all(
+    (
+      await readdir(join(ROOT, 'data/sources'))
+    )
+      .map((v) => join(ROOT, 'data/sources', v, 'ncm-applicable.json'))
+      .filter((f) => existsSync(f))
+      .map(async (f) => Object.keys(JSON.parse(await readFile(f, 'utf8')).accepted ?? {})),
+  )
+).flat()
+const ncms = [
+  ...new Set([
+    ...evalLines.map((l) => (JSON.parse(l) as { ncm: string }).ncm),
+    ...previouslyProbed,
+  ]),
+].filter((n) => items[n])
 const pairs = ncms.flatMap((n) => restricted.map((c) => [n, c] as const))
 const responses = await inBatches(pairs, 6, ([n, c]) => accepts(n, c))
 const accepted: Record<string, string[]> = Object.fromEntries(ncms.map((n) => [n, []]))
