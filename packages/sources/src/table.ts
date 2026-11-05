@@ -17,13 +17,51 @@ import { z } from 'zod'
  * vira erro alto, não dado errado em silêncio.
  */
 
-/** Formato da API oficial, com os nomes de campo dela. */
+/** Formato da API oficial, com os nomes de campo dela. Também valida a resposta em `pnpm sources:update`. */
 const ApiClassification = z.object({
   codigo: z.string().regex(/^\d{6}$/),
   descricao: z.string(),
   nomenclatura: z.string(),
   percentualReducaoCbs: z.number(),
   percentualReducaoIbsUf: z.number(),
+})
+
+/** Resposta de `/versao` da API oficial. */
+export const ApiVersion = z.object({
+  versaoApp: z.string(),
+  versaoDb: z.string().regex(/^V\d{4}$/),
+  descricaoVersaoDb: z.string(),
+  dataVersaoDb: z.string(),
+  ambiente: z.string(),
+})
+
+/** Lista de classificações como a API devolve: guarda todos os campos, exige os que o motor lê. */
+export const ApiClassifications = z.array(ApiClassification.passthrough()).min(1)
+
+/** Listas gravadas sem leitura pelo motor (situações, fundamentações): só não podem vir vazias. */
+export const ApiRawList = z.array(z.unknown()).min(1)
+
+export type Schema<T> = z.ZodType<T>
+
+/** Valida a resposta antes de gravar: contrato mudado na API vira erro com o caminho do campo. */
+export const checkResponse = <T>(url: string, schema: Schema<T>, body: unknown): T => {
+  const parsed = schema.safeParse(body)
+  if (!parsed.success) {
+    throw new Error(
+      `${url} answered a format the schema does not accept:\n${z.prettifyError(parsed.error)}`,
+    )
+  }
+  return parsed.data
+}
+
+/** Resposta de `ncm-aplicavel`. */
+export const ApiNcmApplicable = z.object({ valido: z.boolean() })
+
+/** Download da nomenclatura no Portal Único Siscomex. */
+export const SiscomexNomenclature = z.object({
+  Ato: z.string(),
+  Data_Ultima_Atualizacao_NCM: z.string(),
+  Nomenclaturas: z.array(z.object({ Codigo: z.string(), Descricao: z.string() })).min(1),
 })
 
 const Version = z.object({
