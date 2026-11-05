@@ -197,7 +197,7 @@ export const BOOK: Condition = {
   question: 'O item é livro (e não kit, brinquedo ou álbum de atividades)?',
   yes: [],
   minMatches: 0,
-  no: [/\bcolorir/, /\bkit\b/, /\bpelucia/, /\bbrinquedo/, /\bbrinde/],
+  no: [/\bkit\b/, /\bbrinquedo/, /\bbrinde/, /\batividades?\b/, /\bcolorir/],
 }
 
 /**
@@ -225,7 +225,7 @@ export const VETERINARY_USE = {
 export const PHONOGRAM: Condition = {
   id: 'phonogram',
   question: 'O item é fonograma musical gravado (CD, DVD musical ou disco de vinil)?',
-  yes: [/\bcd\b/, /\bdvd\b/, /\bvinil\b/, /\blp\b/, /\bao vivo\b/],
+  yes: [/\bcd\b/, /\bdvd\b/, /\bvinil\b/, /\blp\b/],
   no: [/\bvirgem\b/, /\bregravavel/, /\bcd-?r\b/, /\bjogos?\b/, /\bsoftware\b/],
   requirePositive: true,
 }

@@ -550,7 +550,7 @@ const MANUAL_RULES: readonly ProductRule[] = [
 const ANIMAL_USE: readonly RegExp[] = [
   /\bracao\b/,
   /\banimais\b/,
-  /\bcalopsita/,
+  /\bpet\b/,
   /\bcaes?\b/,
   /\bcachorro/,
   /\bgatos?\b/,
