@@ -2,13 +2,13 @@
   "development": {
     "mode": "no-ai",
     "table": "V0066",
-    "cases": 96,
+    "cases": 98,
     "accuracy": 1,
     "severeErrors": 0,
     "correctAbstention": 1,
     "outcome": {
       "resolved": 72,
-      "review": 5,
+      "review": 7,
       "needsInfo": 19
     },
     "aiCalls": 0,
@@ -44,8 +44,8 @@
         "ok": 7
       },
       "adversarial": {
-        "total": 7,
-        "ok": 7
+        "total": 9,
+        "ok": 9
       }
     },
     "failures": []

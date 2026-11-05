@@ -81,6 +81,15 @@ const candidateOf = (h: Hypothesis): Candidate => ({
 })
 
 /**
+ * Nome do item para a pergunta quando a regra não tem um: o começo do texto da lei, até a primeira
+ * vírgula ("Fórmulas infantis"). O id ("I.4") não diz nada para quem responde.
+ */
+const subjectOf = (text: string): string => {
+  const head = (text.split(/[,;(]/)[0] ?? text).trim()
+  return head.length <= 60 ? head : `${head.slice(0, 60).replace(/\s\S*$/, '')}...`
+}
+
+/**
  * Vários itens do mesmo anexo compartilham NCM (ex.: 9018.90.99). Para a pessoa, são uma
  * opção só: o código é o mesmo. A pergunta lista os itens possíveis em vez de escolher um.
  */
@@ -91,7 +100,7 @@ const candidatesOf = (alive: readonly Hypothesis[]): Candidate[] => {
   return [...byCode.values()].map(([first, ...rest]) => {
     const head = first as Hypothesis
     if (rest.length === 0) return candidateOf(head)
-    const subjects = [head, ...rest].map((h) => h.rule.subject ?? h.rule.id).join('; ')
+    const subjects = [head, ...rest].map((h) => h.rule.subject ?? subjectOf(h.rule.text)).join('; ')
     // O fato de fora da nota (destinação, adquirente) continua na pergunta junto da lista de itens.
     const external = head.rule.unconfirmed ? ` ${head.rule.unconfirmed}` : ''
     return {

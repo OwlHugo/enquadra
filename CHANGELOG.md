@@ -2,6 +2,11 @@
 
 Versions of the `enquadra` CLI on npm. `enquadra-mcp` follows the same engine.
 
+## Unreleased
+
+- Tested on 3,287 real NFC-e lines (Nota Paraná): benefits decided on a record with the wrong NCM went from 25 to 1. The description/NCM check now covers milk, flour, candy, broth, toilet paper, seasoning, noodles, snacks, bread, soap, vinegar, biscuits and chocolate.
+- Questions name the annex item ("Fórmulas infantis") instead of its id ("I.4").
+
 ## enquadra 0.1.4 · enquadra-mcp 0.1.0 (2026-11-05)
 
 - Dried fruit (0813) asks whether sugar was added before giving the Annex VII reduction. Raisins (0806.20) stay in Annex XV.
