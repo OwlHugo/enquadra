@@ -1,6 +1,6 @@
 {
   "name": "enquadra",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Classifies a catalog or NF-e XML into IBS/CBS CST and cClassTrib, with the legal basis.",
   "type": "module",
   "license": "Apache-2.0",
@@ -16,7 +16,7 @@
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc -p tsconfig.json",
-    "prepack": "pnpm build && node ../../scripts/bundle-table.ts cli"
+    "prepack": "pnpm --filter \"enquadra...\" build && node ../../scripts/bundle-table.ts cli"
   },
   "dependencies": {
     "ai": "7.0.143",
