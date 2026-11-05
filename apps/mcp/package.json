@@ -32,7 +32,7 @@
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc -p tsconfig.json",
-    "prepack": "pnpm build && node ../../scripts/bundle-table.ts mcp"
+    "prepack": "pnpm --filter \"enquadra-mcp...\" build && node ../../scripts/bundle-table.ts mcp"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.1",
