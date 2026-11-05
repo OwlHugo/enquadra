@@ -119,6 +119,12 @@ const AGRO_CONTEXT: readonly RegExp[] = [
 /** Capítulos em que o NCM do anexo é de uso geral e o produto pode não ser da saúde. */
 const GENERAL_USE_CHAPTERS = ['39', '40', '84', '85', '94']
 
+/**
+ * Itens de NCM de uso geral cujo nome já identifica o produto de saúde: o código 4014.10.00 é só
+ * de preservativos, então "preservativo" na descrição basta, sem palavra de contexto hospitalar.
+ */
+const SELF_EVIDENT: ReadonlySet<string> = new Set(['IV.91'])
+
 /** Primeiro trecho do item até a vírgula ou ponto e vírgula, em no máximo 80 caracteres. */
 const shorten = (text: string): string => {
   const head = text.split(/[;,]/)[0] ?? text
@@ -154,7 +160,8 @@ const build = (spec: AnnexSpec): ProductRule[] => {
       ...(spec.requirePositive ? { requirePositive: true } : {}),
       ...(spec.context
         ? { context: spec.context }
-        : include.some((p) => GENERAL_USE_CHAPTERS.some((c) => p.startsWith(c)))
+        : include.some((p) => GENERAL_USE_CHAPTERS.some((c) => p.startsWith(c))) &&
+            !SELF_EVIDENT.has(`${spec.origin}.${number}`)
           ? { context: HEALTH_CONTEXT }
           : {}),
     }

@@ -68,6 +68,8 @@ server.registerTool(
           'XII',
           'XIII',
           'XV',
+          'art133',
+          'art146',
           'art147',
           'art9',
         ])
