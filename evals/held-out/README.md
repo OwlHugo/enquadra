@@ -58,9 +58,10 @@ With the Gemini disambiguator, see the main README.
 - The held-out set is **no longer blind** for the rules changed after the first run. Some of the
   fixes are general (a condition now needs a second signal; accessibility items with a general-use
   NCM become a question; animal use vetoes human food; a rule for art. 146 § 1º III vaccines). Others
-  are signals taken from the failing items (`ração`, `calopsita`, `procedimento`, `esteril`,
-  `glicemia`, `ultrassom`, `colorir`, `pelucia`, `ao vivo`, ...). Treat the post-fix number as
-  contaminated until a new, never-seen batch is written.
+  were signals taken from the failing items. Those without a basis in the annex text (`calopsita`,
+  `glicemia`, `pelucia`, `ao vivo`) were swapped for generic words (`pet`, `diabet`, `atividades`);
+  those that are words of the annexes themselves (`procedimento`, `esteril`, `ultrassom`) stay. Treat
+  the post-fix number as contaminated; batch 2 is the newer blind measure.
 - With the AI, `accuracy` counts a `review` that carries the right code as a hit (see
   `evals/run.ts`). The AI does not resolve more items: `resolved` is the same in both modes.
 - The expected code is the author's reading of the law, checked against the API where the API has a
@@ -84,7 +85,7 @@ one refused pair, raisins in `200034`, was replaced). The full brief it received
 - Fixes, in the rules and the runner (no case changed): a benefit is held for review when the
   description contradicts the NCM or is blank; antisera (3002.12.1) join art. 146, § 1º, III with a
   veterinary veto; `PRESERV` is read as `preservativo`; the runner counts an NCM rejected at input as
-  `review`. After: **79.2% (95/120), 0 severe**.
+  `review`. After: **79.2% (95/120), 0 severe**. After the generic-signal swap below: **78.3% (94/120), 0 severe**.
 - Not changed on purpose: medical devices with a general-use NCM (glucose strips, gloves, thermometer,
   crutch, hearing aid, cane) and Annex IX inputs (feed, fertilizer, seeds, cattle vaccine) still ask
   instead of deciding. The author expected `resolved`; the engine needs the destination or the

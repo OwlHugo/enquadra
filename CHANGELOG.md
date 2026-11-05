@@ -11,7 +11,8 @@ Versions of the `enquadra` CLI on npm. `enquadra-mcp` follows the same engine.
 - CFOPs for remessas (5.901, 5.908/5.909, 5.911, 5.912/5.913, 5.915/5.916, 5.917 to 5.919) stay out of scope, each with its own reason.
 - MCP server published as `enquadra-mcp` (`npx -y enquadra-mcp`), with the official table inside the package.
 - `pnpm sources:update` validates every API response with zod and keeps every NCM already probed.
-- Second blind held-out batch (`evals/held-out/batch-2.jsonl`, 120 items): first run 75.0% with 2 severe errors, after fixes 79.2% with 0.
+- Signals that came from failing held-out items (`calopsita`, `glicemia`, `pelucia`, `ao vivo`) swapped for generic words.
+- Second blind held-out batch (`evals/held-out/batch-2.jsonl`, 120 items): first run 75.0% with 2 severe errors, after fixes 78.3% with 0.
 
 ## enquadra 0.1.3 (2026-11-04)
 
