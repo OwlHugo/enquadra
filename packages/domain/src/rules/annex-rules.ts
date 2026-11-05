@@ -291,7 +291,13 @@ export const ANNEX_RULES: readonly ProductRule[] = [
     }),
   }).map((r) =>
     /domésticos/.test(r.text)
-      ? { ...r, condition: { ...r.condition, veto: NOT_PET } as Condition }
+      ? {
+          ...r,
+          veto: {
+            signals: NOT_PET,
+            reason: 'o item exclui animais domésticos e a descrição indica uso em pet',
+          },
+        }
       : r,
   ),
   ...build({

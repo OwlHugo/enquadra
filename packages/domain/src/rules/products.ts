@@ -12,23 +12,32 @@ import * as c from './conditions.ts'
  * subposição ("2101.1" → "21011") ou código ("0405.10.00" → "04051000").
  */
 
-export type Origin =
-  | 'I'
-  | 'IV'
-  | 'V'
-  | 'VI'
-  | 'VII'
-  | 'VIII'
-  | 'IX'
-  | 'X'
-  | 'XI'
-  | 'XII'
-  | 'XIII'
-  | 'XV'
-  | 'art133'
-  | 'art146'
-  | 'art147'
-  | 'art9'
+/** Origem da regra: o anexo ou o artigo da LC 214/2025. Fonte única do tipo e do enum do MCP. */
+export const ORIGINS = [
+  'I',
+  'IV',
+  'V',
+  'VI',
+  'VII',
+  'VIII',
+  'IX',
+  'X',
+  'XI',
+  'XII',
+  'XIII',
+  'XV',
+  'art133',
+  'art146',
+  'art147',
+  'art9',
+] as const
+
+export type Origin = (typeof ORIGINS)[number]
+
+interface Veto {
+  readonly signals: readonly RegExp[]
+  readonly reason: string
+}
 
 export interface ProductRule {
   readonly id: string
@@ -51,8 +60,11 @@ export interface ProductRule {
    * confirmar, a regra nunca decide sozinha; vira a pergunta. O texto é a pergunta.
    */
   readonly unconfirmed?: string
-  /** Descrição que afasta a regra mesmo sem condição própria (ex.: ração de animal doméstico no Anexo VII). */
-  readonly veto?: readonly RegExp[]
+  /**
+   * Descrição que afasta a regra antes de qualquer condição (ex.: ração no Anexo VII, remédio
+   * veterinário no art. 133). Único mecanismo de veto do motor; `reason` vai para a trilha.
+   */
+  readonly veto?: Veto
   /**
    * Autoridade cujo registro a lei exige (Anvisa, MAPA, norma de órgão competente). Não está na
    * nota: a regra decide pelo NCM e pela descrição, mas com confiança média e alerta.
@@ -498,7 +510,7 @@ const MANUAL_RULES: readonly ProductRule[] = [
     include: ['3003', '3004'],
     derivedInclusion:
       'A lei não cita NCM para medicamento: as posições 30.03 e 30.04 da NCM/SH são as de medicamentos (Capítulo 30, Nota 1 e textos das posições). A API oficial aceita qualquer NCM neste código.',
-    veto: c.VETERINARY,
+    veto: c.VETERINARY_USE,
     registration: 'Anvisa',
     unconfirmed:
       'O medicamento é registrado na Anvisa e fica fora da lista de alíquota zero do art. 146?',
@@ -513,7 +525,7 @@ const MANUAL_RULES: readonly ProductRule[] = [
     include: ['3003', '3004'],
     derivedInclusion:
       'A lei não cita NCM para medicamento: as posições 30.03 e 30.04 da NCM/SH são as de medicamentos (Capítulo 30, Nota 1 e textos das posições). A API oficial aceita qualquer NCM neste código.',
-    veto: c.VETERINARY,
+    veto: c.VETERINARY_USE,
     registration: 'Anvisa',
     unconfirmed:
       'O medicamento está na lista de alíquota zero do ato conjunto (art. 146, § 3º): doenças raras, negligenciadas, oncologia, diabetes, HIV/IST, cardiovasculares ou Farmácia Popular?',
@@ -541,7 +553,15 @@ const ALL_RULES = [...MANUAL_RULES, ...ANNEX_RULES]
  */
 export const PRODUCT_RULES: readonly ProductRule[] = ALL_RULES.flatMap((r) => {
   if (r.origin === 'I' || r.origin === 'VII' || r.origin === 'XV')
-    return [{ ...r, veto: ANIMAL_USE }]
+    return [
+      {
+        ...r,
+        veto: {
+          signals: ANIMAL_USE,
+          reason: 'a descrição indica ração ou uso animal, fora do consumo humano',
+        },
+      },
+    ]
   if (r.id === 'IX.19' && r.condition) {
     const { requirePositive: _, context: __, ...rest } = r.condition
     // Capítulo 11 (farinhas, amidos): é alimento processado, o Anexo VII confirmado prevalece.

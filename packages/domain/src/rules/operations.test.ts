@@ -28,6 +28,15 @@ describe('operação pelo CFOP', () => {
     expect(operationByCfop(cfop(code)).kind).toBe(kind)
   })
 
+  it.each(['5901', '5908', '5911', '5912', '5915', '5917', '6917'])(
+    'remessa %s sai do escopo com o motivo próprio, não com o genérico',
+    (code) => {
+      const op = operationByCfop(cfop(code))
+      expect(op.kind).toBe('out_of_scope')
+      expect(op.kind === 'out_of_scope' && op.reason).not.toContain('sem regra no motor')
+    },
+  )
+
   it('sem CFOP assume venda', () => {
     expect(operationByCfop(undefined).kind).toBe('sale')
   })
