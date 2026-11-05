@@ -1,5 +1,6 @@
 import { normalizeDescription } from './description.ts'
 import { collectHypotheses, type Discarded, type Hypothesis } from './hypotheses.ts'
+import { descriptionNcmMismatch } from './mismatch.ts'
 import { formatNcm } from './ncm.ts'
 import type { Disambiguator, OfficialTable, OfficialValidator } from './ports.ts'
 import { operationByCfop } from './rules/operations.ts'
@@ -122,6 +123,15 @@ export const classify = async (item: InputItem, deps: Dependencies): Promise<Res
     return build(item, r, deps, date, 'not_checked')
   }
   r.trail.push(`NCM ${formatNcm(item.ncm)}: ${ncmName}`)
+  const mismatch = descriptionNcmMismatch(item.description, item.ncm)
+  if (mismatch) {
+    r.alerts.push({
+      code: 'ncm_description_mismatch',
+      severity: 'warning',
+      message: `A descrição começa com "${mismatch}", que não costuma ser do capítulo ${item.ncm.slice(0, 2)} da NCM: confira o NCM do cadastro antes de usar o código.`,
+    })
+    r.trail.push(`Descrição ("${mismatch}") e NCM ${formatNcm(item.ncm)} não combinam.`)
+  }
 
   if (item.manualDecision) {
     decideManual(item, r, deps)
