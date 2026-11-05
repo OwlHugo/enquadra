@@ -2,14 +2,14 @@
   "development": {
     "mode": "no-ai",
     "table": "V0066",
-    "cases": 95,
+    "cases": 96,
     "accuracy": 1,
     "severeErrors": 0,
     "correctAbstention": 1,
     "outcome": {
       "resolved": 72,
       "review": 5,
-      "needsInfo": 18
+      "needsInfo": 19
     },
     "aiCalls": 0,
     "aiCostUsd": 0,
@@ -32,8 +32,8 @@
         "ok": 4
       },
       "conditional": {
-        "total": 18,
-        "ok": 18
+        "total": 19,
+        "ok": 19
       },
       "ambiguous": {
         "total": 12,

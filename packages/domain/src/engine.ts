@@ -339,7 +339,8 @@ const decideProduct = async (
   // Ambiguidade: mais de uma hipótese viva, ou condição que a descrição não resolve.
   r.layer = 'description'
   r.candidates = candidatesOf(alive)
-  if (alive.every((h) => h.hasCondition)) {
+  // Condição na descrição ou fato de fora da nota: a resposta "não" a todas leva à regra geral.
+  if (alive.every((h) => h.hasCondition || h.rule.unconfirmed !== undefined)) {
     r.candidates.push(fullTaxCandidate('Nenhuma condição acima é verdadeira.'))
   }
   r.alerts.push({

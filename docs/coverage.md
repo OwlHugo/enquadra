@@ -14,9 +14,9 @@ A coluna *Lista de NCM* diz se a API oficial restringe os NCM aceitos no código
 | Situação | Códigos |
 |---|---|
 | resolve | 14 |
-| pergunta | 10 |
+| pergunta | 11 |
 | aviso | 3 |
-| não coberto | 143 |
+| não coberto | 142 |
 
 ## Os 17 códigos com lista restrita de NCM
 
@@ -149,7 +149,7 @@ Itens de anexo sem efeito: os de serviço (NBS) dos Anexos II, III, IX (22 a 34)
 | 410008 | resolve | não | NBS ou NCM | Fornecimentos de livros, jornais, periódicos e do papel destinado a sua impressã | Art. 9º, IV, NCM 4901 a 4903. |
 | 410009 | pergunta | não | NBS ou NCM | Fornecimentos de fonogramas e videofonogramas musicais produzidos no Brasil | Art. 9º, V: mídia musical gravada; produção no Brasil e autor brasileiro não estão na nota, sai como pergunta. |
 | 410010 | não coberto | não | NBS ou NCM | Fornecimentos de serviço de comunicação nas modalidades de radiodifusão sonora e | Fato do emitente ou do adquirente (produtor rural, transportador autônomo, condomínio, rádio, resíduos) ou operação sem lista de NCM. |
-| 410011 | não coberto | não | NCM | Fornecimentos de ouro, quando definido em lei como ativo financeiro ou instrumen | Art. 9º, VII: ouro só quando definido em lei como ativo financeiro; depende da operação. |
+| 410011 | pergunta | não | NCM | Fornecimentos de ouro, quando definido em lei como ativo financeiro ou instrumen | Art. 9º, VII: ouro em bruto ou em pó (71.08); se é ativo financeiro (Lei 7.766/1989) depende da operação, que a nota não traz: sai como pergunta. Joia (71.13) fica de fora. |
 | 410012 | não coberto | não | NBS ou NCM | Fornecimento de condomínio edilício não optante pelo regime regular | Fato do emitente ou do adquirente (produtor rural, transportador autônomo, condomínio, rádio, resíduos) ou operação sem lista de NCM. |
 | 410013 | não coberto | não | NCM | Exportações de combustíveis | Fato do emitente ou do adquirente (produtor rural, transportador autônomo, condomínio, rádio, resíduos) ou operação sem lista de NCM. |
 | 410014 | não coberto | não | NBS ou NCM | Fornecimento de produtor rural não contribuinte | Fato do emitente ou do adquirente (produtor rural, transportador autônomo, condomínio, rádio, resíduos) ou operação sem lista de NCM. |
