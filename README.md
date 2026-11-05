@@ -3,7 +3,7 @@
 **Open-source classifier for Brazil's new consumption taxes (IBS/CBS).** Give it a product catalog or a folder of NF-e invoices; it returns, item by item, the `CST` and `cClassTrib` codes required on every invoice since August 2026, the exact article of law behind each one, how sure it is, and what a human still needs to decide.
 
 [![ci](https://github.com/OwlHugo/enquadra/actions/workflows/ci.yml/badge.svg)](https://github.com/OwlHugo/enquadra/actions/workflows/ci.yml)
-![eval](https://img.shields.io/badge/eval%20(no%20AI)-96%2F96-2f7d4f)
+![eval](https://img.shields.io/badge/eval%20(no%20AI)-98%2F98-2f7d4f)
 ![severe errors](https://img.shields.io/badge/severe%20errors-0-2f7d4f)
 ![license](https://img.shields.io/badge/license-Apache--2.0-lightgrey)
 
@@ -80,11 +80,11 @@ Design rules, each enforced by a test or a CI gate:
 
 ## Results
 
-96 hand-written cases in [`evals/cases.jsonl`](evals/cases.jsonl), each with the legal source. Every expected code was cross-checked against the official API (none is rejected there). Categories: direct annex hits, exceptions inside annexes, priority between annexes, description-dependent conditions, genuinely ambiguous items, CFOP-driven operations, prompt injection and invalid input.
+98 hand-written cases in [`evals/cases.jsonl`](evals/cases.jsonl), each with the legal source. Every expected code was cross-checked against the official API (none is rejected there). Categories: direct annex hits, exceptions inside annexes, priority between annexes, description-dependent conditions, genuinely ambiguous items, CFOP-driven operations, prompt injection and invalid input.
 
 | Set / mode | Cases | Accuracy | Severe errors¹ | Correct abstention | resolved / review / needs info | LLM calls | Cost |
 |---|---|---|---|---|---|---|---|
-| Development, rules only (`--sem-ia`) | 96 | **100%** (96/96) | **0** | 100% | 72 / 5 / 19 | 0 | 0 |
+| Development, rules only (`--sem-ia`) | 98 | **100%** (98/98) | **0** | 100% | 72 / 7 / 19 | 0 | 0 |
 | Development, rules + Gemini 3.5 Flash Lite³ | 88 | **100%** (88/88) | **0** | 100% | 69 / 8 / 11 | 14 | US$ 0.0013 |
 | **Held-out**, rules only | 330 | **74.8%** (247/330) | **0** | 76.2% | 231 / 19 / 80 | 0 | 0 |
 | **Held-out batch 2**, rules only, first run⁴ | 120 | **75.0%** (90/120) | **2** | n/a | n/a | 0 | 0 |
@@ -104,6 +104,8 @@ On the truly ambiguous items the model abstained or suggested one of the codes t
 **Held-out batch 2.** A third session, with no access to the repository, wrote 120 new items (pharmacy, produce, pet and farm, supermarket, cleaning, non-sale CFOPs, bad data) and checked each expected pair on the official API. The rules were run on it **once, before any change: 75.0% (90/120), 2 severe errors, 1 crash**. The two severe errors were a T-shirt and a blank description, both with the rice NCM, resolved as zero rate; the crash was an NCM typed with the letter O. After the fixes (a benefit is never decided when the description contradicts the NCM or says nothing; antisera in 3002.12.1 as art. 146 serums; `PRESERV` read as condom): **78.3% (94/120), 0 severe**. The 75.0% is the honest number for unseen catalogs; the rest of the misses are questions where the author expected a decision (agricultural inputs, medical devices with a general-use NCM).
 
 ⁴ First and only blind run, kept in [`evals/held-out/README.md`](evals/held-out/README.md). Every later number on this batch is contaminated.
+
+**Real invoice lines.** 3,287 distinct lines from real consumer invoices (NFC-e) published by the Paraná state program Menor Preço / Nota Paraná: supermarket, pharmacy and cleaning, from 5 cities, with the description and NCM exactly as the store issued them. No answer key exists for these, so two checks were made. Every reduced or zero rate the engine decided in an NCM with a restricted list was checked on the official API: 59 pairs, all accepted. Then every decided benefit was read by hand, grouped by NCM and first word: **25 of 1,178 (2.1%) were wrong**, all from store records with the wrong NCM (candy with the beef NCM, toilet paper with the chicken NCM, seasoning with the rice NCM). After extending the description/NCM check to those products: **1 of 1,154**. On these lines the engine decides 86% of supermarket items, 94% of cleaning and 29% of pharmacy (medicines wait for the art. 146 list).
 
 **What the numbers still do not show.** No real invoice or customer catalog is in the repo. Coverage is partial on purpose: 14 codes decided by rule, 11 that ask, 3 that only warn, of 170 official `cClassTrib` (the rest, and why, in [`docs/coverage.md`](docs/coverage.md); the code side is [`COVERAGE`](packages/domain/src/rules/products.ts), and a test keeps the three in sync).
 
@@ -156,7 +158,7 @@ packages/
 apps/
   cli/       `enquadra` command + static HTML triage report
   mcp/       MCP server, same engine
-evals/       96 cases, runner, CI gate, reports
+evals/       98 cases, runner, CI gate, reports
 data/sources/ official snapshots per version (V0066 = 28 Oct 2026)
 ```
 
