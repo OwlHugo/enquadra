@@ -6,3 +6,4 @@ coverage/
 .env
 evals/reports/*.local.*
 apps/cli/data/
+apps/mcp/data/

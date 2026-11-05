@@ -9,6 +9,9 @@
     },
     "apps/cli": {
       "ignoreDependencies": ["ai", "@ai-sdk/google", "zod", "fast-xml-parser"]
+    },
+    "apps/mcp": {
+      "ignoreDependencies": ["ai", "@ai-sdk/google"]
     }
   }
 }

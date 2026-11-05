@@ -398,9 +398,20 @@ const MANUAL_RULES: readonly ProductRule[] = [
       id: 'VII.14',
       exclude: ['0711', '0812', '08140000'],
       excludedByProviso: {
-        prefixes: ['0801', '0802', '0811'],
-        why: 'Cocos e castanhas (0801, 0802) seguem a regra de casca rija regional (VII.14.hard_shell); frutas congeladas (0811) estão no Anexo XV, item 3, e com açúcar não atendem "sem adição de açúcar".',
+        prefixes: ['0801', '0802', '0811', '0813'],
+        why: 'Cocos e castanhas (0801, 0802) seguem a regra de casca rija regional (VII.14.hard_shell); frutas congeladas (0811) estão no Anexo XV, item 3, e com açúcar não atendem "sem adição de açúcar". Frutas secas (0813) podem levar xarope de glicose (Nota 3 do Capítulo 8) e seguem a regra VII.14.dried, que pergunta.',
       },
+    },
+  ),
+  VII(
+    '14',
+    'Frutas, produtos hortícolas e demais produtos vegetais, sem adição de açúcar ou de outros edulcorantes, classificados nos capítulos 7 e 8 da NCM/SH, ressalvados as frutas de casca rija não regionais e os produtos relacionados nos Anexos I e XV e excetuadas as posições 07.11, 08.12 e 0814.00.00',
+    ['0813'],
+    {
+      id: 'VII.14.dried',
+      condition: c.NO_ADDED_SUGAR,
+      derivedInclusion:
+        'Frutas secas (0813) estão no capítulo 8, mas a Nota 3 do Capítulo 8 admite fruta seca com pequena quantidade de xarope de glicose; a lei só dá a redução "sem adição de açúcar ou de outros edulcorantes", então a descrição precisa confirmar.',
     },
   ),
   VII(
