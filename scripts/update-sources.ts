@@ -9,7 +9,7 @@
  * o cliente do que mudou. A sondagem é limitada (concorrência 6) para não martelar uma API pública.
  */
 import { existsSync } from 'node:fs'
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { parseArgs } from 'node:util'
 import {
@@ -155,10 +155,31 @@ const probes = await inBatches(
 const restricted = eligible.filter((_, i) => !probes[i]).map((c) => c.codigo)
 console.log(`${restricted.length} codes with a restricted NCM list`)
 
-const cases = (await readFile(join(ROOT, 'evals/cases.jsonl'), 'utf8')).trim().split('\n')
-const ncms = [...new Set(cases.map((l) => (JSON.parse(l) as { ncm: string }).ncm))].filter(
-  (n) => items[n],
+// Sonda os NCM dos dois conjuntos de eval e os que os snapshots anteriores já sondavam: sem a
+// união, rodar o script de novo apagaria do snapshot os NCM que vieram de versões passadas.
+const evalLines = (
+  await Promise.all(
+    ['evals/cases.jsonl', 'evals/held-out/cases.jsonl'].map((f) => readFile(join(ROOT, f), 'utf8')),
+  )
 )
+  .flatMap((text) => text.trim().split('\n'))
+  .filter((l) => l.length > 0)
+const previouslyProbed = (
+  await Promise.all(
+    (
+      await readdir(join(ROOT, 'data/sources'))
+    )
+      .map((v) => join(ROOT, 'data/sources', v, 'ncm-applicable.json'))
+      .filter((f) => existsSync(f))
+      .map(async (f) => Object.keys(JSON.parse(await readFile(f, 'utf8')).accepted ?? {})),
+  )
+).flat()
+const ncms = [
+  ...new Set([
+    ...evalLines.map((l) => (JSON.parse(l) as { ncm: string }).ncm),
+    ...previouslyProbed,
+  ]),
+].filter((n) => items[n])
 const pairs = ncms.flatMap((n) => restricted.map((c) => [n, c] as const))
 const responses = await inBatches(pairs, 6, ([n, c]) => accepts(n, c))
 const accepted: Record<string, string[]> = Object.fromEntries(ncms.map((n) => [n, []]))

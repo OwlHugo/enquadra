@@ -1,6 +1,6 @@
 # Held-out eval
 
-330 items written **without looking at the rules**. The development set (`evals/cases.jsonl`) was
+Two batches written **without looking at the rules**: `cases.jsonl` (330 items) and `batch-2.jsonl` (120 items). The development set (`evals/cases.jsonl`) was
 written together with the rules, so it only shows that the rules match the law as transcribed. This
 set is the check that they generalize to messy catalog descriptions.
 
@@ -10,6 +10,7 @@ set is the check that they generalize to messy catalog descriptions.
 |---|---|---|
 | `cases.jsonl`, ids `ho-*` | 258 | A Claude Opus session in a separate folder |
 | `cases.jsonl`, ids `off-*` | 72 | A Claude Sonnet session in a separate folder |
+| `batch-2.jsonl`, ids `h2-*` | 120 | A Claude Opus session in a separate folder, 2026-11-04 |
 
 Both sessions had access only to: the text of LC 214/2025 and its annexes (Planalto), the official
 `cClassTrib` table (version V0059), the official Receita API, and (Sonnet) the Open Food Facts API.
@@ -66,3 +67,25 @@ With the Gemini disambiguator, see the main README.
   restricted list. A few `needs_info` items are debatable.
 - Most remaining misses are conservative: the engine asks or marks `review` where the author expected
   a decision (medicines by active ingredient, animal vaccines, agricultural inputs). They are not wrong codes.
+
+## Batch 2
+
+Written on 2026-11-04 by a session that was told not to open `~/personal/` or the GitHub repository,
+and says in its notes that it did not. Its sources: the current text of LC 214/2025 at Planalto (with
+the LC 227/2026 changes), the Siscomex NCM table and the official `ncm-aplicavel` API (146 queries; the
+one refused pair, raisins in `200034`, was replaced). The full brief it received is in
+[`BRIEF-batch-2.md`](BRIEF-batch-2.md).
+
+- 120 items: 25 pharmacy, 20 produce, 20 pet and farm, 25 supermarket, 10 cleaning, 10 non-sale CFOPs,
+  10 bad data. Expected: 94 resolved, 16 needs_info, 10 review.
+- **First run, before any rule change (rules only): 75.0% (90/120), 2 severe errors, 1 case that threw.**
+  Severe: `h2-114` (T-shirt with the rice NCM) and `h2-118` (description `.` with the rice NCM), both
+  resolved as `200003`. Threw: `h2-117`, NCM `10063O21` with a letter O.
+- Fixes, in the rules and the runner (no case changed): a benefit is held for review when the
+  description contradicts the NCM or is blank; antisera (3002.12.1) join art. 146, § 1º, III with a
+  veterinary veto; `PRESERV` is read as `preservativo`; the runner counts an NCM rejected at input as
+  `review`. After: **79.2% (95/120), 0 severe**.
+- Not changed on purpose: medical devices with a general-use NCM (glucose strips, gloves, thermometer,
+  crutch, hearing aid, cane) and Annex IX inputs (feed, fertilizer, seeds, cattle vaccine) still ask
+  instead of deciding. The author expected `resolved`; the engine needs the destination or the
+  registration that the invoice line does not carry. These are the bulk of the 25 misses.

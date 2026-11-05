@@ -11,6 +11,7 @@ const ABBREVIATIONS: ReadonlyArray<readonly [RegExp, string]> = [
   [/\babsorv\b/g, 'absorvente'],
   [/\bfrald\b/g, 'fralda'],
   [/\bacuc\b/g, 'acucar'],
+  [/\bpreserv\b/g, 'preservativo'],
 ]
 
 export const normalizeDescription = (text: string): string => {

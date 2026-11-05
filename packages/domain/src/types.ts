@@ -132,6 +132,7 @@ export interface Question {
 export type AlertCode =
   | 'unknown_ncm'
   | 'ncm_description_mismatch'
+  | 'blank_description'
   | 'multiple_hypotheses'
   | 'description_condition'
   | 'annex_priority'

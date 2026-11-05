@@ -77,6 +77,7 @@ const isSevereError = (evalCase: EvalCase, r: Result): boolean =>
 const SETS = [
   { key: 'development', label: 'conjunto de desenvolvimento', file: 'evals/cases.jsonl' },
   { key: 'heldOut', label: 'held-out', file: 'evals/held-out/cases.jsonl' },
+  { key: 'heldOut2', label: 'held-out, lote 2', file: 'evals/held-out/batch-2.jsonl' },
 ] as const
 
 const table = await loadTable(DEFAULT_TABLE)
@@ -116,6 +117,12 @@ const runCase = async (evalCase: EvalCase, attempt = 1): Promise<Line> => {
     return { evalCase, r, ok: matchesExpected(evalCase, r), severe: isSevereError(evalCase, r) }
   } catch (e) {
     if (!(e instanceof Error)) throw e
+    // NCM malformado ("10063O21") é recusado na entrada, como a CLI faz: o item volta para
+    // revisão do cadastro sem classificar. É o resultado certo quando o caso espera `review`.
+    if (e.name === 'DomainError' && e.message.startsWith('invalid_ncm')) {
+      const ok = evalCase.expected.status === 'review'
+      return { evalCase, r: null, ok, severe: false, ...(ok ? {} : { error: e.message }) }
+    }
     if (e.name === 'AI_RetryError' && attempt < 4) {
       await sleep(20_000)
       return runCase(evalCase, attempt + 1)
@@ -210,7 +217,7 @@ for (const set of SETS) {
       : report.failures.filter((f) => f.severe || typeof f.actual === 'string')
   for (const f of shown)
     console.log(`  ✗ ${f.id} ${f.description} → ${JSON.stringify(f.actual)}`.slice(0, 220))
-  if (set.key === 'heldOut' && report.failures.length > shown.length) {
+  if (set.key !== 'development' && report.failures.length > shown.length) {
     console.log(
       `  (${report.failures.length - shown.length} more misses, none severe: see the report with --baseline)`,
     )
