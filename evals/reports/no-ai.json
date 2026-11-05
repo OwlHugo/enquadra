@@ -54,12 +54,12 @@
     "mode": "no-ai",
     "table": "V0066",
     "cases": 330,
-    "accuracy": 0.7515151515151515,
+    "accuracy": 0.7484848484848485,
     "severeErrors": 0,
     "correctAbstention": 0.7619047619047619,
     "outcome": {
-      "resolved": 232,
-      "review": 18,
+      "resolved": 231,
+      "review": 19,
       "needsInfo": 80
     },
     "aiCalls": 0,
@@ -72,7 +72,7 @@
       },
       "annex-VII": {
         "total": 39,
-        "ok": 35
+        "ok": 34
       },
       "none": {
         "total": 111,
@@ -152,6 +152,20 @@
         "expected": {
           "status": "resolved",
           "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "ho-021",
+        "description": "OLEO SOJA SOYA PET 900ML",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200034"
         },
         "severe": false,
         "actual": {
@@ -1303,12 +1317,12 @@
     "mode": "no-ai",
     "table": "V0066",
     "cases": 120,
-    "accuracy": 0.7916666666666666,
+    "accuracy": 0.7833333333333333,
     "severeErrors": 0,
     "correctAbstention": 1,
     "outcome": {
-      "resolved": 69,
-      "review": 16,
+      "resolved": 68,
+      "review": 17,
       "needsInfo": 34
     },
     "aiCalls": 0,
@@ -1361,7 +1375,7 @@
       },
       "annex-VII": {
         "total": 6,
-        "ok": 6
+        "ok": 5
       },
       "annex-IX": {
         "total": 12,
@@ -1705,6 +1719,20 @@
           "status": "needs_info",
           "cClassTrib": null,
           "layer": "description"
+        }
+      },
+      {
+        "id": "h2-080",
+        "description": "OLEO DE SOJA LIZA PET 900ML",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200034"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
         }
       },
       {

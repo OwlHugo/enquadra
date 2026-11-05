@@ -80,7 +80,7 @@ const HEALTH_CONTEXT: readonly RegExp[] = [
   /\bprocedimento/,
   /\besteril/,
   /\bdiagnostic/,
-  /\bglicemia/,
+  /\bdiabet/,
   /\bultrassom/,
 ]
 /** Contexto agropecuário: o NCM do Anexo IX também é de alimento e de produto comum. */
