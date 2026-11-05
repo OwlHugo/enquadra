@@ -53,7 +53,9 @@ Itens de anexo sem efeito: os de serviço (NBS) dos Anexos II, III, IX (22 a 34)
 | 5.501, 5.502, 6.501, 6.502 | **pergunta**: suspensão do art. 82 | 550001 ou 000001 |
 | 1.xxx, 2.xxx, 3.xxx | entrada: fora do escopo (o Enquadra classifica saídas) | alerta |
 | devoluções (5.201 a 5.219, 5.411, 5.413, 5.414, 5.503, 5.504, 5.553 a 5.556, 5.660 a 5.662) | fora do escopo: segue a nota original | alerta |
-| demais (comodato, demonstração, consignação, conserto, brinde 5.911, amostra grátis 5.912...) | **não coberto**: `out_of_scope` com alerta | alerta |
+| 5.901 industrialização por encomenda, 5.908/5.909 comodato, 5.911 amostra grátis, 5.912/5.913 demonstração, 5.915/5.916 conserto, 5.917 a 5.919 consignação (e 6.xxx) | **fora do escopo**, com o motivo de cada um no alerta: não há transferência do bem, o fato tributável é serviço, ou a tributação acontece na venda posterior. Amostra grátis só é tributada nos casos do art. 5º, I e II, que a nota não diz | alerta |
+| brinde | usa o CFOP 5.910 (bonificação, doação ou brinde): **pergunta**, e o brinde segue a tributação do produto (art. 5º, II) | por produto |
+| demais | **não coberto**: `out_of_scope` com alerta | alerta |
 
 ## Todos os 170 códigos
 

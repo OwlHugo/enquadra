@@ -1,6 +1,14 @@
 #!/usr/bin/env node
 import { disambiguatorFromEnv } from '@enquadra/ai'
-import { cfop, classify, type Dependencies, isoDate, ncm, PRODUCT_RULES } from '@enquadra/domain'
+import {
+  cfop,
+  classify,
+  type Dependencies,
+  isoDate,
+  ncm,
+  ORIGINS,
+  PRODUCT_RULES,
+} from '@enquadra/domain'
 import { createOfficialValidator, DEFAULT_TABLE, loadTable } from '@enquadra/sources'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
@@ -54,26 +62,7 @@ server.registerTool(
     description:
       'Lists the LC 214/2025 rules the engine applies, with the verbatim text of the law (in Portuguese).',
     inputSchema: {
-      origin: z
-        .enum([
-          'I',
-          'IV',
-          'V',
-          'VI',
-          'VII',
-          'VIII',
-          'IX',
-          'X',
-          'XI',
-          'XII',
-          'XIII',
-          'XV',
-          'art133',
-          'art146',
-          'art147',
-          'art9',
-        ])
-        .optional(),
+      origin: z.enum(ORIGINS).optional(),
     },
   },
   async ({ origin }) => {

@@ -11,6 +11,6 @@ export type {
   OfficialValidator,
 } from './ports.ts'
 export { operationByCfop } from './rules/operations.ts'
-export { COVERAGE, PRODUCT_RULES, type ProductRule } from './rules/products.ts'
+export { COVERAGE, ORIGINS, PRODUCT_RULES, type ProductRule } from './rules/products.ts'
 export { type Summary, summarize } from './summary.ts'
 export * from './types.ts'
