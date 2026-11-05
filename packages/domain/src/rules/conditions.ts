@@ -204,20 +204,23 @@ export const BOOK: Condition = {
  * Uso veterinário: os arts. 133 e 146 tratam de medicamento registrado na Anvisa (uso humano);
  * produto veterinário é registrado no MAPA e segue o Anexo IX ou a regra geral.
  */
-export const VETERINARY: readonly RegExp[] = [
-  /\bveterinari/,
-  /\bvet\b/,
-  /\bcaes?\b/,
-  /\bcachorro/,
-  /\bgatos?\b/,
-  /\bpet\b/,
-  /\bbovin/,
-  /\bsuin/,
-  /\bovin/,
-  /\bequin/,
-  /\baves\b/,
-  /\bgado\b/,
-]
+export const VETERINARY_USE = {
+  reason: 'a descrição indica uso veterinário, fora do medicamento registrado na Anvisa',
+  signals: [
+    /\bveterinari/,
+    /\bvet\b/,
+    /\bcaes?\b/,
+    /\bcachorro/,
+    /\bgatos?\b/,
+    /\bpet\b/,
+    /\bbovin/,
+    /\bsuin/,
+    /\bovin/,
+    /\bequin/,
+    /\baves\b/,
+    /\bgado\b/,
+  ],
+} as const
 
 export const PHONOGRAM: Condition = {
   id: 'phonogram',

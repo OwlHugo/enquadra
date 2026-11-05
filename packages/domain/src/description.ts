@@ -41,8 +41,6 @@ export interface Condition {
   readonly no: readonly RegExp[]
   /** Sinal fraco: não confirma, mas impede que um sinal contrário descarte a hipótese (fica pergunta). */
   readonly weak?: readonly RegExp[]
-  /** Sinal que descarta mesmo junto de sinal positivo (ex.: ração para cães no Anexo IX). */
-  readonly veto?: readonly RegExp[]
   /** Contexto exigido junto dos sinais (ao menos um): evita confundir NCM de uso geral. */
   readonly context?: readonly RegExp[]
   /** Sem sinal positivo a hipótese é descartada em vez de virar pergunta. */
@@ -52,7 +50,6 @@ export interface Condition {
 }
 
 export const evaluate = (condition: Condition, normalizedDescription: string): Evaluation => {
-  if (condition.veto?.some((r) => r.test(normalizedDescription))) return 'fails'
   const negative = condition.no.some((r) => r.test(normalizedDescription))
   const positive =
     condition.yes.filter((r) => r.test(normalizedDescription)).length >= (condition.minMatches ?? 1)

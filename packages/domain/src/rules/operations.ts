@@ -86,6 +86,32 @@ const SALE = { kind: 'sale' } as const satisfies Operation
 const SALE_SUFFIXES = /^(10[1-9]|11[0-9]|12[0-5]|40[1-5]|65[1-6]|667)$/
 const TRANSFER_SUFFIXES = /^(15[1-5]|408|409|552|557|658|659)$/
 
+/**
+ * Remessas sem venda que o motor não classifica, cada uma com o motivo. Brinde não está aqui:
+ * usa o CFOP 5.910 (bonificação, doação ou brinde), que vira pergunta.
+ */
+const REMESSAS: Readonly<Record<string, string>> = {
+  '901':
+    'remessa para industrialização por encomenda. Não há transferência do bem; o IBS e a CBS incidem sobre o serviço de industrialização, que o Enquadra não classifica.',
+  '908':
+    'remessa em comodato. Empréstimo sem transferência de propriedade, sem código próprio na tabela; confira com o contador.',
+  '909':
+    'retorno de comodato. Empréstimo sem transferência de propriedade, sem código próprio na tabela; confira com o contador.',
+  '911':
+    'amostra grátis. Fornecimento não oneroso: a LC 214 só tributa os casos do art. 5º, I e II (partes relacionadas, brindes e bonificações), e a nota não diz qual é.',
+  '912':
+    'remessa para demonstração. O bem volta ou é faturado depois; a classificação é a da nota de venda, se houver.',
+  '913': 'retorno de demonstração. A classificação é a da nota de venda, se houver.',
+  '915':
+    'remessa para conserto ou reparo. Não há transferência do bem; o conserto é serviço, que o Enquadra não classifica.',
+  '916':
+    'retorno de conserto ou reparo. Não há transferência do bem; o conserto é serviço, que o Enquadra não classifica.',
+  '917':
+    'remessa em consignação. A tributação acontece na venda ao consumidor (CFOP 5.113/5.114), não na remessa.',
+  '918': 'devolução de consignação. Segue a nota de remessa, sem venda.',
+  '919': 'devolução simbólica de consignação. Segue a nota de remessa, sem venda.',
+}
+
 export const operationByCfop = (code: Cfop | undefined): Operation => {
   if (code === undefined) return SALE
   const origin = code[0]
@@ -108,5 +134,7 @@ export const operationByCfop = (code: Cfop | undefined): Operation => {
     }
   }
   if (suffix === '501' || suffix === '502') return EXPORT_SUSPENSION
+  const remessa = REMESSAS[suffix]
+  if (remessa) return { kind: 'out_of_scope', reason: `CFOP ${code}: ${remessa}` }
   return { kind: 'out_of_scope', reason: `CFOP ${code}: operação sem regra no motor.` }
 }
