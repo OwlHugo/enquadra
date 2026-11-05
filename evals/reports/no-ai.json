@@ -2,22 +2,22 @@
   "development": {
     "mode": "no-ai",
     "table": "V0066",
-    "cases": 88,
+    "cases": 95,
     "accuracy": 1,
     "severeErrors": 0,
     "correctAbstention": 1,
     "outcome": {
-      "resolved": 69,
-      "review": 3,
-      "needsInfo": 16
+      "resolved": 72,
+      "review": 5,
+      "needsInfo": 18
     },
     "aiCalls": 0,
     "aiCostUsd": 0,
     "avgAiMs": 0,
     "byCategory": {
       "direct": {
-        "total": 34,
-        "ok": 34
+        "total": 35,
+        "ok": 35
       },
       "default": {
         "total": 8,
@@ -32,20 +32,20 @@
         "ok": 4
       },
       "conditional": {
-        "total": 16,
-        "ok": 16
+        "total": 18,
+        "ok": 18
       },
       "ambiguous": {
-        "total": 11,
-        "ok": 11
+        "total": 12,
+        "ok": 12
       },
       "operation": {
         "total": 7,
         "ok": 7
       },
       "adversarial": {
-        "total": 4,
-        "ok": 4
+        "total": 7,
+        "ok": 7
       }
     },
     "failures": []
@@ -54,13 +54,13 @@
     "mode": "no-ai",
     "table": "V0066",
     "cases": 330,
-    "accuracy": 0.7393939393939394,
+    "accuracy": 0.7515151515151515,
     "severeErrors": 0,
-    "correctAbstention": 0.6190476190476191,
+    "correctAbstention": 0.7619047619047619,
     "outcome": {
-      "resolved": 231,
-      "review": 30,
-      "needsInfo": 69
+      "resolved": 232,
+      "review": 18,
+      "needsInfo": 80
     },
     "aiCalls": 0,
     "aiCostUsd": 0,
@@ -92,7 +92,7 @@
       },
       "ambiguous": {
         "total": 21,
-        "ok": 13
+        "ok": 16
       },
       "art133": {
         "total": 6,
@@ -108,7 +108,7 @@
       },
       "annex-IV": {
         "total": 10,
-        "ok": 3
+        "ok": 4
       },
       "annex-V": {
         "total": 2,
@@ -396,9 +396,9 @@
         },
         "severe": false,
         "actual": {
-          "status": "review",
-          "cClassTrib": "000001",
-          "layer": "default"
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
         }
       },
       {
@@ -410,9 +410,9 @@
         },
         "severe": false,
         "actual": {
-          "status": "review",
-          "cClassTrib": "000001",
-          "layer": "default"
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
         }
       },
       {
@@ -424,9 +424,9 @@
         },
         "severe": false,
         "actual": {
-          "status": "review",
-          "cClassTrib": "000001",
-          "layer": "default"
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
         }
       },
       {
@@ -438,9 +438,9 @@
         },
         "severe": false,
         "actual": {
-          "status": "review",
-          "cClassTrib": "000001",
-          "layer": "default"
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
         }
       },
       {
@@ -452,9 +452,9 @@
         },
         "severe": false,
         "actual": {
-          "status": "review",
-          "cClassTrib": "000001",
-          "layer": "default"
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
         }
       },
       {
@@ -466,9 +466,9 @@
         },
         "severe": false,
         "actual": {
-          "status": "review",
-          "cClassTrib": "000001",
-          "layer": "default"
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
         }
       },
       {
@@ -480,9 +480,9 @@
         },
         "severe": false,
         "actual": {
-          "status": "review",
-          "cClassTrib": "000001",
-          "layer": "default"
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
         }
       },
       {
@@ -494,9 +494,9 @@
         },
         "severe": false,
         "actual": {
-          "status": "review",
-          "cClassTrib": "000001",
-          "layer": "default"
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
         }
       },
       {
@@ -508,60 +508,9 @@
         },
         "severe": false,
         "actual": {
-          "status": "review",
-          "cClassTrib": "000001",
-          "layer": "default"
-        }
-      },
-      {
-        "id": "ho-159",
-        "description": "SINVASTATINA 20MG C/30 CPR",
-        "expected": {
           "status": "needs_info",
-          "options": [
-            "200009",
-            "200032"
-          ]
-        },
-        "severe": false,
-        "actual": {
-          "status": "review",
-          "cClassTrib": "000001",
-          "layer": "default"
-        }
-      },
-      {
-        "id": "ho-160",
-        "description": "AAS INFANTIL 100MG C/30 CPR",
-        "expected": {
-          "status": "needs_info",
-          "options": [
-            "200009",
-            "200032"
-          ]
-        },
-        "severe": false,
-        "actual": {
-          "status": "review",
-          "cClassTrib": "000001",
-          "layer": "default"
-        }
-      },
-      {
-        "id": "ho-161",
-        "description": "ANTICONCEPCIONAL CICLO 21 LEVONORGESTREL+ETINILESTRADIOL",
-        "expected": {
-          "status": "needs_info",
-          "options": [
-            "200009",
-            "200032"
-          ]
-        },
-        "severe": false,
-        "actual": {
-          "status": "review",
-          "cClassTrib": "000001",
-          "layer": "default"
+          "cClassTrib": null,
+          "layer": "description"
         }
       },
       {
@@ -640,20 +589,6 @@
         "expected": {
           "status": "resolved",
           "cClassTrib": "000001"
-        },
-        "severe": false,
-        "actual": {
-          "status": "needs_info",
-          "cClassTrib": null,
-          "layer": "description"
-        }
-      },
-      {
-        "id": "ho-174",
-        "description": "PRESERVATIVO JONTEX LUBRIF C/3",
-        "expected": {
-          "status": "resolved",
-          "cClassTrib": "200030"
         },
         "severe": false,
         "actual": {
@@ -1360,6 +1295,444 @@
           "status": "needs_info",
           "cClassTrib": null,
           "layer": "description"
+        }
+      }
+    ]
+  },
+  "heldOut2": {
+    "mode": "no-ai",
+    "table": "V0066",
+    "cases": 120,
+    "accuracy": 0.7916666666666666,
+    "severeErrors": 0,
+    "correctAbstention": 1,
+    "outcome": {
+      "resolved": 69,
+      "review": 16,
+      "needsInfo": 34
+    },
+    "aiCalls": 0,
+    "aiCostUsd": 0,
+    "avgAiMs": 0,
+    "byCategory": {
+      "art133": {
+        "total": 5,
+        "ok": 5
+      },
+      "art146": {
+        "total": 6,
+        "ok": 6
+      },
+      "annex-IV": {
+        "total": 4,
+        "ok": 2
+      },
+      "art147": {
+        "total": 2,
+        "ok": 2
+      },
+      "annex-VIII": {
+        "total": 8,
+        "ok": 8
+      },
+      "annex-XII": {
+        "total": 2,
+        "ok": 0
+      },
+      "annex-XIII": {
+        "total": 2,
+        "ok": 1
+      },
+      "annex-V": {
+        "total": 1,
+        "ok": 0
+      },
+      "none": {
+        "total": 18,
+        "ok": 11
+      },
+      "annex-XV": {
+        "total": 13,
+        "ok": 13
+      },
+      "ambiguous": {
+        "total": 5,
+        "ok": 5
+      },
+      "annex-VII": {
+        "total": 6,
+        "ok": 6
+      },
+      "annex-IX": {
+        "total": 12,
+        "ok": 0
+      },
+      "annex-I": {
+        "total": 14,
+        "ok": 14
+      },
+      "art9-books": {
+        "total": 2,
+        "ok": 2
+      },
+      "operation": {
+        "total": 10,
+        "ok": 10
+      },
+      "data": {
+        "total": 10,
+        "ok": 10
+      }
+    },
+    "failures": [
+      {
+        "id": "h2-018",
+        "description": "TIRAS P/ GLICEMIA ACCU-CHEK ACTIVE C/50",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200030"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "h2-019",
+        "description": "LUVA PROCED LATEX C/PO TAM M CX 100",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200030"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "h2-020",
+        "description": "TERMOMETRO CLINICO DIGITAL G-TECH TH150",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200004"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "h2-021",
+        "description": "MULETA AXILAR ALUMINIO REGULAVEL PAR",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200004"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "h2-022",
+        "description": "APARELHO AUDITIVO RETROAURICULAR DIGITAL",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200007"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "h2-024",
+        "description": "BENGALA DOBRAVEL P/ DEF VISUAL PONTEIRA NYLON",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200031"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "h2-045",
+        "description": "AZEITONA VERDE C/ CAROCO CONSERVA 200G",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "h2-049",
+        "description": "AREIA SANITARIA GATOS PIPICAT 4KG",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "h2-050",
+        "description": "VACINA V10 CAES 1 DOSE",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "h2-051",
+        "description": "VERMIFUGO DRONTAL PLUS CAES 10KG 2CP",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "h2-052",
+        "description": "INSETICIDA SBP MULTI AEROSOL 300ML",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "h2-053",
+        "description": "RACAO BOVINOS ENGORDA 22% PROT SACO 40KG",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200038"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "h2-054",
+        "description": "SAL MINERAL BOVINO CORTE 80 FOSFORO 30KG",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200038"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "h2-055",
+        "description": "VACINA FEBRE AFTOSA BOVINOS 15 DOSES",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200038"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "h2-056",
+        "description": "IVERMECTINA 1% INJ BOVINOS 500ML",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200038"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "h2-057",
+        "description": "ADUBO NPK 10-10-10 SACO 50KG",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200038"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "h2-058",
+        "description": "UREIA AGRICOLA 45% N SC 50KG",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200038"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "h2-059",
+        "description": "SEMENTE MILHO HIBRIDO SC 60.000 SEM",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200038"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "h2-060",
+        "description": "SEMENTE ALFACE CRESPA ENVELOPE 1000 SEM",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200038"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "h2-061",
+        "description": "CALCARIO DOLOMITICO CORRETIVO SOLO TON",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200038"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "h2-062",
+        "description": "HERBICIDA GLIFOSATO 480 SL GALAO 20L AGRO",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200038"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "h2-063",
+        "description": "PINTINHO DE 1 DIA CORTE COBB UN",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200038"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "h2-064",
+        "description": "SEMEN BOVINO NELORE PALHETA",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "200038"
+        },
+        "severe": false,
+        "actual": {
+          "status": "needs_info",
+          "cClassTrib": null,
+          "layer": "description"
+        }
+      },
+      {
+        "id": "h2-085",
+        "description": "AZEITE OLIVA EXTRA VIRGEM GALLO 500ML",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
+        }
+      },
+      {
+        "id": "h2-097",
+        "description": "DESINFETANTE PINHO SOL ORIGINAL 1L",
+        "expected": {
+          "status": "resolved",
+          "cClassTrib": "000001"
+        },
+        "severe": false,
+        "actual": {
+          "status": "review",
+          "cClassTrib": "000001",
+          "layer": "default"
         }
       }
     ]

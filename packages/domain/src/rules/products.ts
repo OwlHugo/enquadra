@@ -502,8 +502,11 @@ const MANUAL_RULES: readonly ProductRule[] = [
     cClassTrib: cClassTrib('200053'),
     provision: 'LC 214/2025, art. 146, § 1º, III',
     label: 'Soros e vacinas registrados na Anvisa, alíquota zero',
-    text: 'São também reduzidas a zero as alíquotas do IBS e da CBS sobre o fornecimento de medicamentos registrados na Anvisa quando: III - classificados como soros ou vacinas, conforme regulamentação sanitária específica. (NCM/SH 3002.41, vacinas para medicina humana)',
-    include: ['300241'],
+    text: 'São também reduzidas a zero as alíquotas do IBS e da CBS sobre o fornecimento de medicamentos registrados na Anvisa quando: III - classificados como soros ou vacinas, conforme regulamentação sanitária específica. (NCM/SH 3002.41, vacinas para medicina humana; 3002.12.1, antissoros)',
+    include: ['300241', '3002121'],
+    derivedInclusion:
+      'A lei diz "soros ou vacinas" sem NCM. Vacinas de medicina humana são a 3002.41; os soros (antitetânico, antiofídico, antidiftérico...) são os antissoros da 3002.12.1. A API oficial aceita 200053 nos dois.',
+    veto: c.VETERINARY_USE,
     registration: 'Anvisa',
   },
 

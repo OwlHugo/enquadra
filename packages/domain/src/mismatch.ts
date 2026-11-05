@@ -19,7 +19,30 @@ const CHAPTERS_BY_HEAD_WORD: Readonly<Record<string, readonly string[]>> = {
   absorvente: ['48', '56', '96'],
   sabonete: ['34'],
   preservativo: ['40'],
+  // Produtos sem benefício que, com NCM de alimento ou de saúde, dariam alíquota reduzida.
+  camiseta: ['61', '62'],
+  camisa: ['61', '62'],
+  calca: ['61', '62'],
+  blusa: ['61', '62'],
+  vestido: ['61', '62'],
+  bermuda: ['61', '62'],
+  meia: ['61', '62'],
+  tenis: ['64'],
+  sapato: ['64'],
+  sandalia: ['64'],
+  chinelo: ['64'],
+  celular: ['85'],
+  carregador: ['85'],
+  cerveja: ['22'],
+  refrigerante: ['22'],
+  cigarro: ['24'],
 }
+
+/** Descrição sem nenhuma palavra de 3 letras ou mais: não diz o que é o produto. */
+export const isBlankDescription = (description: string): boolean =>
+  !normalizeDescription(description)
+    .split(' ')
+    .some((w) => /[a-z]{3,}/.test(w))
 
 /** A palavra que não combina com o capítulo do NCM, ou `undefined` quando combina ou não se sabe. */
 export const descriptionNcmMismatch = (description: string, code: Ncm): string | undefined => {
