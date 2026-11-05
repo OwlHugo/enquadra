@@ -494,6 +494,20 @@ const MANUAL_RULES: readonly ProductRule[] = [
     unconfirmed:
       'O fonograma foi produzido no Brasil e tem obra ou intérprete brasileiro (art. 9º, V)?',
   },
+  {
+    id: 'art9.VII',
+    origin: 'art9',
+    cClassTrib: cClassTrib('410011'),
+    provision: 'LC 214/2025, art. 9º, VII',
+    label: 'Ouro como ativo financeiro ou instrumento cambial, imunidade',
+    text: 'São imunes também ao IBS e à CBS os fornecimentos: VII - de ouro, quando definido em lei como ativo financeiro ou instrumento cambial.',
+    include: ['7108'],
+    // Ouro em bruto ou em pó (posição 71.08) pode ser mercadoria (joalheria, indústria) ou ativo
+    // financeiro (Lei 7.766/1989: operação em bolsa ou com instituição autorizada pelo Banco Central).
+    // A nota não diz qual: sempre pergunta. Joia (71.13) fica fora, mesmo que a API aceite o NCM.
+    unconfirmed:
+      'O ouro é negociado como ativo financeiro ou instrumento cambial (Lei 7.766/1989: em bolsa ou com instituição autorizada pelo Banco Central), e não como mercadoria?',
+  },
 
   // ── Medicamentos: soros e vacinas ───────────────────────────────────────
   {
