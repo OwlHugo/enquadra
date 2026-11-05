@@ -43,7 +43,7 @@ const evaluateRule = (rule: ProductRule, text: string): Hypothesis | Discarded =
     return {
       rule,
       by: 'condition',
-      reason: 'a descrição indica ração ou uso animal, fora de alimento humano',
+      reason: 'a descrição indica ração ou uso animal, fora do consumo humano',
     }
   }
   const evaluation = rule.condition ? evaluate(rule.condition, text) : 'meets'

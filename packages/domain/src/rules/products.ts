@@ -25,6 +25,7 @@ export type Origin =
   | 'XII'
   | 'XIII'
   | 'XV'
+  | 'art133'
   | 'art146'
   | 'art147'
   | 'art9'
@@ -481,6 +482,41 @@ const MANUAL_RULES: readonly ProductRule[] = [
     text: 'São também reduzidas a zero as alíquotas do IBS e da CBS sobre o fornecimento de medicamentos registrados na Anvisa quando: III - classificados como soros ou vacinas, conforme regulamentação sanitária específica. (NCM/SH 3002.41, vacinas para medicina humana)',
     include: ['300241'],
     registration: 'Anvisa',
+  },
+
+  // ── Medicamentos: art. 133 (60%) x art. 146, caput (zero) ──────────────
+  // O zero do art. 146 vale pela finalidade no registro sanitário e pela lista do ato conjunto
+  // (§ 3º), que a nota não traz: o NCM e o princípio ativo não bastam. As duas hipóteses ficam
+  // vivas e viram pergunta; o motor nunca escolhe uma delas sozinho.
+  {
+    id: 'art133',
+    origin: 'art133',
+    cClassTrib: cClassTrib('200032'),
+    provision: 'LC 214/2025, art. 133, caput',
+    label: 'Medicamentos registrados na Anvisa (art. 133), redução de 60%',
+    text: 'Ficam reduzidas em 60% (sessenta por cento) as alíquotas do IBS e da CBS incidentes sobre o fornecimento dos medicamentos registrados na Anvisa ou produzidos por farmácias de manipulação, ressalvados os medicamentos sujeitos à alíquota zero de que trata o art. 146 desta Lei Complementar.',
+    include: ['3003', '3004'],
+    derivedInclusion:
+      'A lei não cita NCM para medicamento: as posições 30.03 e 30.04 da NCM/SH são as de medicamentos (Capítulo 30, Nota 1 e textos das posições). A API oficial aceita qualquer NCM neste código.',
+    veto: c.VETERINARY,
+    registration: 'Anvisa',
+    unconfirmed:
+      'O medicamento é registrado na Anvisa e fica fora da lista de alíquota zero do art. 146?',
+  },
+  {
+    id: 'art146.caput',
+    origin: 'art146',
+    cClassTrib: cClassTrib('200009'),
+    provision: 'LC 214/2025, art. 146, caput',
+    label: 'Medicamentos do art. 146 (doenças raras, oncologia, diabetes...), alíquota zero',
+    text: 'São reduzidas a zero as alíquotas do IBS e da CBS sobre o fornecimento dos medicamentos registrados na Anvisa, desde que destinados, de acordo com o registro sanitário, a: I - doenças raras; II - doenças negligenciadas; III - oncologia; IV - diabetes; V - HIV/aids e outras infecções sexualmente transmissíveis (IST); VI - doenças cardiovasculares; e VII - Programa Farmácia Popular do Brasil ou equivalente.',
+    include: ['3003', '3004'],
+    derivedInclusion:
+      'A lei não cita NCM para medicamento: as posições 30.03 e 30.04 da NCM/SH são as de medicamentos (Capítulo 30, Nota 1 e textos das posições). A API oficial aceita qualquer NCM neste código.',
+    veto: c.VETERINARY,
+    registration: 'Anvisa',
+    unconfirmed:
+      'O medicamento está na lista de alíquota zero do ato conjunto (art. 146, § 3º): doenças raras, negligenciadas, oncologia, diabetes, HIV/IST, cardiovasculares ou Farmácia Popular?',
   },
 ]
 

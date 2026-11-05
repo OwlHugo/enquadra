@@ -14,9 +14,9 @@ A coluna *Lista de NCM* diz se a API oficial restringe os NCM aceitos no código
 | Situação | Códigos |
 |---|---|
 | resolve | 14 |
-| pergunta | 8 |
+| pergunta | 10 |
 | aviso | 3 |
-| não coberto | 145 |
+| não coberto | 143 |
 
 ## Os 17 códigos com lista restrita de NCM
 
@@ -80,7 +80,7 @@ Itens de anexo sem efeito: os de serviço (NBS) dos Anexos II, III, IX (22 a 34)
 | 200006 | não coberto | não | NCM | Situação de emergência de saúde pública reconhecida pelo Poder público | Emergência de saúde pública: ato conjunto, sem lista de NCM. |
 | 200007 | resolve | sim | NCM | Fornecimento dos dispositivos de acessibilidade próprios para pessoas com defici | Anexo XIII (art. 145, I), lista de NCM + descrição. Só cadeira de rodas, suas partes e próteses (8713, 871420, 9021) decidem sozinhas; os demais itens (ex.: barra de apoio 8302.41) viram pergunta porque o NCM é de uso geral. |
 | 200008 | aviso | sim | NCM | Fornecimento dos dispositivos de acessibilidade próprios para pessoas com defici | Anexo V para órgão público ou entidade com CEBAS. Alerta `buyer_dependent_code` no 200031. |
-| 200009 | não coberto | não | NCM | Fornecimento dos medicamentos registrados na Anvisa | Art. 146: medicamento por finalidade (doenças raras, oncologia, diabetes...) e lista de ato conjunto; a API aceita qualquer NCM e o NCM não revela a finalidade. |
+| 200009 | pergunta | não | NCM | Fornecimento dos medicamentos registrados na Anvisa | Art. 146, caput: medicamento destinado a doenças raras, negligenciadas, oncologia, diabetes, HIV/IST, cardiovasculares ou Farmácia Popular, pela lista do ato conjunto (§ 3º). Posições 30.03 e 30.04; a nota não diz a finalidade do registro, então pergunta junto com o 200032. |
 | 200010 | não coberto | não | NCM | Fornecimento dos medicamentos registrados na Anvisa, adquiridos por órgãos da ad | Art. 146, § 1º: medicamento adquirido por órgão público ou entidade com CEBAS. |
 | 200011 | aviso | sim | NCM | Fornecimento das composições para nutrição enteral e parenteral quando adquirida | Anexo VI para órgão público ou entidade com CEBAS. Alerta `buyer_dependent_code` no 200033. |
 | 200012 | não coberto | não | NCM | Situação de emergência de saúde pública reconhecida pelo Poder público | Emergência de saúde pública: ato conjunto, sem lista de NCM. |
@@ -103,7 +103,7 @@ Itens de anexo sem efeito: os de serviço (NBS) dos Anexos II, III, IX (22 a 34)
 | 200029 | não coberto | não | NBS | Fornecimento dos serviços de saúde humana (Anexo III) | Serviço (NBS): fora do escopo; o Enquadra classifica mercadoria (NCM). |
 | 200030 | resolve | sim | NCM | Venda dos dispositivos médicos (Anexo IV) | Anexo IV (art. 131), lista de NCM + descrição. |
 | 200031 | pergunta | sim | NCM | Fornecimento dos dispositivos de acessibilidade próprios para pessoas com defici | Anexo V (art. 132): NCM + descrição indicam o dispositivo, mas o uso por pessoa com deficiência não está na nota; sai como pergunta. |
-| 200032 | não coberto | não | NCM | Fornecimento dos medicamentos registrados na Anvisa ou produzidos por farmácias  | Art. 133: medicamento registrado na Anvisa. Sem lista de NCM (a API aceita qualquer): depende do registro e da lista de ato conjunto. |
+| 200032 | pergunta | não | NCM | Fornecimento dos medicamentos registrados na Anvisa ou produzidos por farmácias  | Art. 133: medicamento registrado na Anvisa fora do art. 146. Posições 30.03 e 30.04; pergunta junto com o 200009 porque só a lista do ato conjunto separa os dois. Descrição de uso veterinário afasta os dois. |
 | 200033 | resolve | sim | NCM | Fornecimento das composições para nutrição enteral e parenteral (Anexo VI) | Anexo VI (art. 133, § 1º), NCM + sinal de nutrição enteral/parenteral ou EIM na descrição. |
 | 200034 | resolve | sim | NCM | Fornecimento dos alimentos destinados ao consumo humano (Anexo VII) | Anexo VII (art. 135), lista de NCM. |
 | 200035 | resolve | sim | NCM | Fornecimento dos produtos de higiene pessoal e limpeza (Anexo VIII) | Anexo VIII (art. 136), lista de NCM. |

@@ -200,6 +200,25 @@ export const BOOK: Condition = {
   no: [/\bcolorir/, /\bkit\b/, /\bpelucia/, /\bbrinquedo/, /\bbrinde/],
 }
 
+/**
+ * Uso veterinário: os arts. 133 e 146 tratam de medicamento registrado na Anvisa (uso humano);
+ * produto veterinário é registrado no MAPA e segue o Anexo IX ou a regra geral.
+ */
+export const VETERINARY: readonly RegExp[] = [
+  /\bveterinari/,
+  /\bvet\b/,
+  /\bcaes?\b/,
+  /\bcachorro/,
+  /\bgatos?\b/,
+  /\bpet\b/,
+  /\bbovin/,
+  /\bsuin/,
+  /\bovin/,
+  /\bequin/,
+  /\baves\b/,
+  /\bgado\b/,
+]
+
 export const PHONOGRAM: Condition = {
   id: 'phonogram',
   question: 'O item é fonograma musical gravado (CD, DVD musical ou disco de vinil)?',
