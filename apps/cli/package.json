@@ -1,6 +1,6 @@
 {
   "name": "enquadra",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Classifies a catalog or NF-e XML into IBS/CBS CST and cClassTrib, with the legal basis.",
   "type": "module",
   "license": "Apache-2.0",
