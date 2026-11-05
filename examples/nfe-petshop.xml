@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- NF-e fictícia para teste e demonstração. CNPJ, nomes e chave não existem. -->
+<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+  <NFe>
+    <infNFe Id="NFe51261100000000000272550010000021021000021021" versao="4.00">
+      <ide>
+        <cUF>51</cUF><natOp>VENDA DE MERCADORIA</natOp><mod>55</mod><serie>1</serie><nNF>2102</nNF>
+        <dhEmi>2026-11-03T10:30:00-04:00</dhEmi><tpNF>1</tpNF>
+      </ide>
+      <emit>
+        <CNPJ>00000000000272</CNPJ><xNome>PET E AGRO EXEMPLO LTDA</xNome><CRT>3</CRT>
+      </emit>
+      <dest>
+        <CPF>98765432100</CPF><xNome>FULANA DE TAL</xNome>
+        <enderDest><xLgr>RUA DOS TESTES</xLgr><nro>100</nro><xMun>RONDONOPOLIS</xMun><UF>MT</UF></enderDest>
+      </dest>
+      <det nItem="1">
+        <prod><cProd>301</cProd><xProd>RACAO CAES ADULTO CARNE 15KG</xProd><NCM>23091000</NCM><CFOP>5102</CFOP><vProd>149.90</vProd></prod>
+        <imposto />
+      </det>
+      <det nItem="2">
+        <prod><cProd>302</cProd><xProd>ALPISTE P/ PASSAROS 500G</xProd><NCM>10083090</NCM><CFOP>5102</CFOP><vProd>7.90</vProd></prod>
+        <imposto />
+      </det>
+      <det nItem="3">
+        <prod><cProd>303</cProd><xProd>VACINA FEBRE AFTOSA BOVINOS 50 DOSES</xProd><NCM>30024260</NCM><CFOP>5102</CFOP><vProd>89.00</vProd></prod>
+        <imposto />
+      </det>
+      <det nItem="4">
+        <prod><cProd>304</cProd><xProd>VERMIFUGO CAES 10KG C/4</xProd><NCM>30049069</NCM><CFOP>5102</CFOP><vProd>54.90</vProd></prod>
+        <imposto />
+      </det>
+      <det nItem="5">
+        <prod><cProd>305</cProd><xProd>MILHO EM GRAO SC 20KG</xProd><NCM>10059010</NCM><CFOP>5102</CFOP><vProd>42.00</vProd></prod>
+        <imposto />
+      </det>
+      <det nItem="6">
+        <prod><cProd>306</cProd><xProd>COMEDOURO INOX COMODATO</xProd><NCM>73239900</NCM><CFOP>5908</CFOP><vProd>0.00</vProd></prod>
+        <imposto />
+      </det>
+    </infNFe>
+  </NFe>
+</nfeProc>

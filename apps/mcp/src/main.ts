@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+import { existsSync } from 'node:fs'
+import { basename } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { disambiguatorFromEnv } from '@enquadra/ai'
 import {
   cfop,
@@ -19,7 +22,11 @@ import { z } from 'zod'
  * com fundamento, trilha e perguntas pendentes, para decidir se pergunta ao usuário.
  */
 
-const table = await loadTable(process.env['ENQUADRA_TABELA'] ?? DEFAULT_TABLE)
+// No pacote do npm a tabela vai junto em data/ (scripts/bundle-table.ts); no monorepo, vem de data/sources.
+const BUNDLED_TABLE = fileURLToPath(new URL(`../data/${basename(DEFAULT_TABLE)}`, import.meta.url))
+const table = await loadTable(
+  process.env['ENQUADRA_TABELA'] ?? (existsSync(BUNDLED_TABLE) ? BUNDLED_TABLE : DEFAULT_TABLE),
+)
 const disambiguator = disambiguatorFromEnv()
 const deps = (date?: string): Dependencies => ({
   table,

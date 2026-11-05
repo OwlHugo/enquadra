@@ -1,7 +1,7 @@
 {
-  "name": "@enquadra/mcp",
+  "name": "enquadra-mcp",
   "version": "0.1.0",
-  "description": "Enquadra MCP server.",
+  "description": "MCP server for Enquadra: CST and cClassTrib (IBS/CBS) for Brazilian products, with the article of LC 214/2025 behind each one.",
   "type": "module",
   "license": "Apache-2.0",
   "repository": {
@@ -9,21 +9,40 @@
     "url": "git+https://github.com/OwlHugo/enquadra.git",
     "directory": "apps/mcp"
   },
-  "files": [
-    "dist"
+  "homepage": "https://github.com/OwlHugo/enquadra#readme",
+  "keywords": [
+    "mcp",
+    "ibs",
+    "cbs",
+    "cclasstrib",
+    "nfe",
+    "reforma-tributaria",
+    "lc-214"
   ],
-  "scripts": {
-    "build": "tsdown",
-    "typecheck": "tsc -p tsconfig.json"
+  "engines": {
+    "node": ">=24"
   },
-  "dependencies": {
-    "@enquadra/domain": "workspace:*",
-    "@enquadra/sources": "workspace:*",
-    "@enquadra/ai": "workspace:*",
-    "@modelcontextprotocol/sdk": "1.32.1",
-    "zod": "4.6.7"
-  },
+  "files": [
+    "dist",
+    "data"
+  ],
   "bin": {
     "enquadra-mcp": "./dist/main.mjs"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json",
+    "prepack": "pnpm build && node ../../scripts/bundle-table.ts mcp"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "zod": "4.6.7",
+    "ai": "7.0.143",
+    "@ai-sdk/google": "4.0.99"
+  },
+  "devDependencies": {
+    "@enquadra/domain": "workspace:*",
+    "@enquadra/sources": "workspace:*",
+    "@enquadra/ai": "workspace:*"
   }
 }

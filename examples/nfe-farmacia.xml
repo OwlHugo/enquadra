@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- NF-e fictícia para teste e demonstração. CNPJ, nomes e chave não existem. -->
+<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+  <NFe>
+    <infNFe Id="NFe51261100000000000272550010000021001000021001" versao="4.00">
+      <ide>
+        <cUF>51</cUF><natOp>VENDA DE MERCADORIA</natOp><mod>55</mod><serie>1</serie><nNF>2100</nNF>
+        <dhEmi>2026-11-03T10:30:00-04:00</dhEmi><tpNF>1</tpNF>
+      </ide>
+      <emit>
+        <CNPJ>00000000000272</CNPJ><xNome>FARMACIA EXEMPLO LTDA</xNome><CRT>3</CRT>
+      </emit>
+      <dest>
+        <CPF>98765432100</CPF><xNome>FULANA DE TAL</xNome>
+        <enderDest><xLgr>RUA DOS TESTES</xLgr><nro>100</nro><xMun>RONDONOPOLIS</xMun><UF>MT</UF></enderDest>
+      </dest>
+      <det nItem="1">
+        <prod><cProd>101</cProd><xProd>DIPIRONA SODICA 500MG C/10 CPR</xProd><NCM>30049069</NCM><CFOP>5102</CFOP><vProd>8.90</vProd></prod>
+        <imposto />
+      </det>
+      <det nItem="2">
+        <prod><cProd>102</cProd><xProd>PRESERVATIVO LUBRIFICADO C/3</xProd><NCM>40141000</NCM><CFOP>5102</CFOP><vProd>9.90</vProd></prod>
+        <imposto />
+      </det>
+      <det nItem="3">
+        <prod><cProd>103</cProd><xProd>SERINGA DESCARTAVEL 5ML C/AGULHA</xProd><NCM>90183119</NCM><CFOP>5102</CFOP><vProd>1.50</vProd></prod>
+        <imposto />
+      </det>
+      <det nItem="4">
+        <prod><cProd>104</cProd><xProd>ABSORVENTE INTIMUS NOTURNO C/ABAS 8UN</xProd><NCM>96190000</NCM><CFOP>5102</CFOP><vProd>12.90</vProd></prod>
+        <imposto />
+      </det>
+      <det nItem="5">
+        <prod><cProd>105</cProd><xProd>FRALDA GERIATRICA BIGFRAL G 8UN</xProd><NCM>96190000</NCM><CFOP>5102</CFOP><vProd>39.90</vProd></prod>
+        <imposto />
+      </det>
+      <det nItem="6">
+        <prod><cProd>106</cProd><xProd>PROTETOR SOLAR FPS50 200ML</xProd><NCM>33049990</NCM><CFOP>5102</CFOP><vProd>59.90</vProd></prod>
+        <imposto />
+      </det>
+    </infNFe>
+  </NFe>
+</nfeProc>

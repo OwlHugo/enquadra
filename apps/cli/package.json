@@ -16,7 +16,7 @@
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc -p tsconfig.json",
-    "prepack": "pnpm build && node ../../scripts/bundle-table.ts"
+    "prepack": "pnpm build && node ../../scripts/bundle-table.ts cli"
   },
   "dependencies": {
     "ai": "7.0.143",
