@@ -2,9 +2,10 @@
 
 Versions of the `enquadra` CLI on npm. `enquadra-mcp` follows the same engine.
 
-## Unreleased
+## enquadra 0.1.5 · enquadra-mcp 0.1.1 (2026-11-11)
 
 - Tested on 3,287 real NFC-e lines (Nota Paraná): benefits decided on a record with the wrong NCM went from 25 to 1. The description/NCM check now covers milk, flour, candy, broth, toilet paper, seasoning, noodles, snacks, bread, soap, vinegar, biscuits and chocolate.
+- README: since 3 Aug 2026 the IBS/CBS group is mandatory, but the rejection of invoices without it (UB12-10) was postponed with no date; the official assistant lists allowed codes per NCM.
 - Questions name the annex item ("Fórmulas infantis") instead of its id ("I.4").
 
 ## enquadra 0.1.4 · enquadra-mcp 0.1.0 (2026-11-05)
