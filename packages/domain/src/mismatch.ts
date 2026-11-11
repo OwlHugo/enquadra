@@ -36,6 +36,30 @@ const CHAPTERS_BY_HEAD_WORD: Readonly<Record<string, readonly string[]>> = {
   cerveja: ['22'],
   refrigerante: ['22'],
   cigarro: ['24'],
+  // Alimentos e limpeza que, em cadastro real (NFC-e do Paraná), aparecem com NCM de outro produto
+  // de benefício: bala com NCM de carne, papel higiênico com NCM de frango, tempero com NCM de arroz.
+  leite: ['04', '19', '21', '22', '18', '33', '34'],
+  farinha: ['11', '12', '19', '21', '23'],
+  bala: ['17', '18', '30'],
+  caldo: ['21', '16', '20'],
+  papel: ['48'],
+  amaciante: ['38', '34', '21'],
+  temp: ['21', '09', '20', '07'],
+  tempero: ['21', '09', '20', '07'],
+  condimento: ['21', '09', '20', '07'],
+  lamen: ['19', '21'],
+  macarrao: ['19', '21'],
+  miojo: ['19', '21'],
+  coxinha: ['16', '19', '20', '21'],
+  pastel: ['16', '19', '20', '21'],
+  salgadinho: ['19', '20', '21'],
+  salg: ['16', '19', '20', '21'],
+  pao: ['19', '21'],
+  sabao: ['34', '38'],
+  vinagre: ['22', '21'],
+  biscoito: ['19'],
+  bolacha: ['19'],
+  chocolate: ['18'],
 }
 
 /** Descrição sem nenhuma palavra de 3 letras ou mais: não diz o que é o produto. */
