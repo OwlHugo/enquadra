@@ -27,9 +27,9 @@ $ npx enquadra xmls ./notas-outubro --html relatorio.html
 
 ## The problem
 
-Brazil is replacing five consumption taxes with a dual VAT (IBS + CBS, Complementary Law 214/2025). Since **3 Aug 2026** an NF-e from a regular-regime company without the IBS/CBS group is **rejected** by the tax authority. In **January 2027** the same applies to the *Simples Nacional* regime, which covers most small businesses in the country.
+Brazil is replacing five consumption taxes with a dual VAT (IBS + CBS, Complementary Law 214/2025). Since **3 Aug 2026** a regular-regime company **must** fill the IBS/CBS group on every NF-e and NFC-e (Ato Conjunto RFB/CGIBS 4/2026). The automatic rejection of invoices without it (rule UB12-10, status 1115) was postponed right before that date and has no production date yet; invoices that do carry the group are already rejected when CST and `cClassTrib` do not match. *Simples Nacional*, which covers most small businesses in the country, joins on **1 Jan 2027**.
 
-Every invoice line now needs a `cClassTrib`: one of 170 codes that encode *why* an item is taxed the way it is. The government publishes the table and a calculator that **receives** the code. Nobody official tells you which code goes on `PAO KG` or `FRALDA PAMPERS G`. That gap is filled by hand, in spreadsheets, line by line.
+Every invoice line now needs a `cClassTrib`: one of 170 codes that encode *why* an item is taxed the way it is. The government publishes the table, a calculator that **receives** the code, and an assistant that lists the codes allowed for an NCM. None of them tells you which of those codes goes on `PAO KG` or `FRALDA PAMPERS G`. That gap is filled by hand, in spreadsheets, line by line.
 
 It is harder than a lookup because **the NCM product code does not decide alone**:
 
